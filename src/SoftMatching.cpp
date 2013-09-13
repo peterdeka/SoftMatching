@@ -9,6 +9,7 @@
 #include <iostream>
 #include <ctime>
 #include <string>
+#include <sstream>
 using namespace std;
 
 #define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
@@ -42,7 +43,8 @@ public:
     	void genUnaryConstraints();
     	void genBinaryConstraints();
     	void genChildren(int *curVarId);
-    	void JSONSubtree(std::string res );
+    	void JSONSubtree(string *res );
+    	void DOTSubtree(string *res,char* rootcall );
 
     CTreeNode() //destructor
     {
@@ -119,15 +121,42 @@ void CTreeNode::genChildren( int *curVarId){
 		this->genBinaryConstraints();
 }
 
-void CTreeNode::JSONSubtree(std::string res){
-	res+="{varId:0,children:[";	//TODO varid e constraints
+void CTreeNode::JSONSubtree(string *res){
+	char svarid[10];
+	snprintf(svarid,9,"%d",this->varId);
+	const char *t=svarid;
+	*res+="{varId:";
+	string ssv(t);
+	*res+=ssv;
+	*res+=",children:[";	//TODO varid e constraints
 	if(this->child_n>0){
 		for(int i=0;i<this->child_n;i++){
 			this->children[i]->JSONSubtree(res);
+			if(i<this->child_n-1)
+				*res+=",";
 		}
 	}
-	res+="]}";
-	std::cout << res << '\n';
+	*res+="]}";
+}
+
+//http://graphs.grevian.org/example.html
+void CTreeNode::DOTSubtree(string *res,char *rootcall){
+	char isrootcall=0;
+	if(*rootcall==1){
+		isrootcall=1;
+		*rootcall=0;
+		*res+="digraph {";
+	}
+	for(int i=0;i<this->child_n;i++){
+		char svarid[20];
+		sprintf(svarid,"%d -> %d;",this->varId,this->children[i]->varId);
+		string ssv(svarid);
+		*res+=ssv;
+		this->children[i]->DOTSubtree(res,rootcall);
+
+	}
+	if(isrootcall==1)
+		*res+="}";
 }
 
 //----FINE CLASSE TREENODE
@@ -186,8 +215,10 @@ int main() {
 	srand((unsigned)time(0));
 	buildVarDomains();
 	buildTree();
-	std::string st;
-	root->JSONSubtree(st);
+	string st;
+	//root->JSONSubtree(&st);
+	char rootcall=1;
+	root->DOTSubtree(&st,&rootcall);
 	std::cout << st << '\n';
 	return 0;
 }
