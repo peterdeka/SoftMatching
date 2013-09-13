@@ -1,0 +1,11 @@
+digraph g{
+    graph [nodesep=0.8];
+    0 -> 1 [label = <<FONT POINT-SIZE="10"><TABLE CELLBORDER="0" CELLPADDING="1" CELLSPACING="0"><TR ><TD >a</TD><TD >b</TD></TR><TR ><TD >0.4</TD><TD>0.8</TD></TR></TABLE></FONT>>];
+    1 -> 5;
+    1 -> 6;
+    1 -> 7;
+    1 -> 8;
+    0 -> 2;
+    0 -> 3;
+    0 -> 4;
+    }

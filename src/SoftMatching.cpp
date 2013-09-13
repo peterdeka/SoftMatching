@@ -9,14 +9,15 @@
 #include <iostream>
 #include <ctime>
 #include <string>
-#include <sstream>
+#include <fstream>
+
 using namespace std;
 
 #define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 char varDomains[NUMVARS][DOMAINS_SIZE];	//ogni varId è associato al suo dominio (che è un array di valori)
 
-
+#define DOT_TABLE_BEG "<<FONT POINT-SIZE=\"10\"><TABLE CELLBORDER=\"0\" CELLPADDING=\"1\" CELLSPACING=\"0\">"
 
 //definisce una tavola di binary constraints che lega valori di preferenza a
 //valori della variabile
@@ -117,8 +118,8 @@ void CTreeNode::genChildren( int *curVarId){
 		childnode->father=this;
 		childnode->genUnaryConstraints();
 	}
-	if(rand() % 100 >50)	//vedo se generare binary constraints TODO cosi  tutti figli li hanno o nessuno,invece devi differenziare
-		this->genBinaryConstraints();
+
+	this->genBinaryConstraints();
 }
 
 void CTreeNode::JSONSubtree(string *res){
@@ -147,9 +148,22 @@ void CTreeNode::DOTSubtree(string *res,char *rootcall){
 		*rootcall=0;
 		*res+="digraph {";
 	}
+	char svarid[650];
+	char tmp[150];
 	for(int i=0;i<this->child_n;i++){
-		char svarid[20];
-		sprintf(svarid,"%d -> %d;",this->varId,this->children[i]->varId);
+		//EDGE (Senza semicolon)
+		sprintf(svarid,"%d -> %d ",this->varId,this->children[i]->varId);
+		//scrivo tabelle con binary constraints sugli edge
+		sprintf(tmp,"[label=%s",DOT_TABLE_BEG);
+		strcat(svarid,tmp);
+		for(int d=0;d<DOMAINS_SIZE;d++){
+			for(int e=0;e<DOMAINS_SIZE;e++){
+				sprintf(tmp,"<TR><TD>%c%c</TD><TD>%.1f</TD></TR>",varDomains[this->varId][d],varDomains[this->children[i]->varId][e],this->childConstraints[i][d][e]);
+				strcat(svarid,tmp);
+			}
+		}
+		strcat(svarid,"</TABLE></FONT>>];\n");
+		///FINE tabella binary constraints
 		string ssv(svarid);
 		*res+=ssv;
 		this->children[i]->DOTSubtree(res,rootcall);
@@ -165,7 +179,7 @@ void CTreeNode::DOTSubtree(string *res,char *rootcall){
 void buildVarDomains(){
 
 	for(int i=0;i<NUMVARS;i++){
-		int charbase= rand() % 254-DOMAINS_SIZE;	//parto da questo char
+		int charbase= abs((rand() % 24)+97);	//parto da questo char
 		int u=0;
 		for(u=0;u<DOMAINS_SIZE;u++){
 			varDomains[i][u]=(char)(charbase+u);	//e ne metto domains_size
@@ -220,5 +234,9 @@ int main() {
 	char rootcall=1;
 	root->DOTSubtree(&st,&rootcall);
 	std::cout << st << '\n';
+	ofstream myfile;
+	myfile.open ("graph.gv");
+	myfile << st;
+	myfile.close();
 	return 0;
 }
