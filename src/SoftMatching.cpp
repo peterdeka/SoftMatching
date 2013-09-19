@@ -112,16 +112,26 @@ public:
 void CTree::genChildren( CTreeNode *curNode,int child_limit){
 	int childrenleft=child_limit;
 	int child_n=0;
-	if(childrenleft==1)
+	if(childrenleft<2)
 		child_n=(int)((float)rand()/(float)RAND_MAX);
 	else
-		child_n=rand() % childrenleft;	//quanti figli? TODO modulo 1 e modulo 0
+		child_n=rand() % 3;	//quanti figli? (0,1,2)
 
 	curNode->child_n=child_n;
 	curNode->children=(CTreeNode**)malloc(child_n*sizeof(CTreeNode*));
 
 	for(int i=0;i<child_n;i++){
-		CTreeNode* childnode=new CTreeNode(this->n_nodes,varDomains[this->n_nodes]);
+		//scelgo random var
+		int randomVarId=-1;
+		while(randomVarId<0){
+			randomVarId=rand()%NUMVARS;
+			//vedo se c' giˆ
+			for(int j=0;j<this->n_nodes;j++){
+				if(this->linearizedTree[j]->varId==randomVarId)
+					randomVarId=-1;
+			}
+		}
+		CTreeNode* childnode=new CTreeNode(randomVarId,varDomains[randomVarId]);
 		curNode->children[i]=childnode;
 		childnode->father=curNode;
 		childnode->genUnaryConstraints();
@@ -221,9 +231,6 @@ void CTreeNode::DOTSubtree(string *res,char *rootcall){
 
 
 
-
-
-
 //funzione che costruisce i domini delle variabili a caso
 void buildVarDomains(){
 
@@ -243,8 +250,8 @@ void buildTree(CTree *tree){
 
 	CTreeNode **curarr=(CTreeNode**)malloc(NUMVARS*sizeof(CTreeNode*));
 	CTreeNode **otherarr=(CTreeNode**)malloc(NUMVARS*sizeof(CTreeNode*));
-	//int curVarId=0;	//tiene traccia identificativo variabile per generazione ordinata USO n_nodes dell'albero
-	CTreeNode *root=new CTreeNode(0,varDomains[0]);
+	int randomVarId= rand() % NUMVARS;
+	CTreeNode *root=new CTreeNode(randomVarId,varDomains[randomVarId]);
 	root->genUnaryConstraints();
 	//ora aggiungo tutte le altre variabili (nodi)
 	CTreeNode *node=root;
@@ -252,7 +259,7 @@ void buildTree(CTree *tree){
 	curarr[0]=root;
 	int curlen=1;
 	int otherlen=0;
-	while(tree->n_nodes<NUMVARS-2){	//randomizzo discendenza
+	while(tree->n_nodes<NUMVARS){	//randomizzo discendenza
 		for(int i=0;i<curlen;i++){	//elaboro nodi sospesi
 			node=curarr[i];
 			int child_limit=NUMVARS-tree->n_nodes;
@@ -273,9 +280,10 @@ void buildTree(CTree *tree){
 	free(otherarr);
 }
 
-//TODO watchout,potrebbe generare intere table di zeri
+
 //riceve tree e annulla random dei constraint fino a raggiungere il livello di tightness desiderato
 void adjustTightness(CTree *tree,float tightness){
+	int domains_sz2=DOMAINS_SIZE*DOMAINS_SIZE;
 	//calcolo numero di binconstr da mettere a zero
 	int n_unbind=(float)tree->n_bin_constraints*(1.0f-tightness);
 	int chosen_var,chosen_child;
@@ -287,7 +295,26 @@ void adjustTightness(CTree *tree,float tightness){
 			continue;
 		}
 		chosen_child=rand() % n->child_n;
-		n->childConstraints[chosen_child][rand() % DOMAINS_SIZE][rand() % DOMAINS_SIZE]=0;
+		int x=rand() % DOMAINS_SIZE;
+		int y=rand() % DOMAINS_SIZE;
+		//verifico non sia giˆ nullo
+		if(n->childConstraints[chosen_child][x][y]==0){
+			i--;
+			continue;
+		}
+		//verifico tavola non diventi totalmente nulla
+		int zerocount=0;
+		for(int j=0;j<DOMAINS_SIZE;j++){
+			for(int jj=0;jj<DOMAINS_SIZE;jj++){
+				if(n->childConstraints[chosen_child][j][jj]==0)
+					zerocount++;
+			}
+		}
+		if(zerocount>=domains_sz2-1){	//skippo perch generei tavola di tutti zeri
+			i--;
+			continue;
+		}
+		n->childConstraints[chosen_child][x][y]=0;
 	}
 
 }
@@ -298,7 +325,7 @@ int main() {
 	buildVarDomains();
 	CTree albero(NUMVARS);
 	buildTree(&albero);
-	adjustTightness(&albero,0.2);
+	adjustTightness(&albero,0.7);
 	string st;
 	char rootcall=1;
 	albero.root->DOTSubtree(&st,&rootcall);
