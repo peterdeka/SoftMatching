@@ -10,6 +10,7 @@
 #include <ctime>
 #include <string>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -28,6 +29,7 @@ public:
 	int varId;	//nome della variabile
 	char* domain;
 	float *unaryConstraints;	//constraint unari
+	float *dacUnaryConstraints;
 	CTreeNode *father;	//pointer al nodo padre
 	CTreeNode **children;	//pointer ai nodi figli(array)
 	int child_n;	//numero di figli
@@ -49,6 +51,7 @@ public:
     	varId=avarId;
     	domain=vardomain;
     	unaryConstraints=NULL;
+    	dacUnaryConstraints=NULL;
     	father=NULL;
     	children=NULL;
     	child_n=0;
@@ -60,6 +63,7 @@ public:
     ~CTreeNode() //destructor
     {
     	free(this->unaryConstraints);
+    	free(this->dacUnaryConstraints);
     	free(this->children);
 
     };
@@ -105,6 +109,7 @@ public:
 	};
 
 	void genChildren( CTreeNode *curNode,int child_limit);
+	void DOTgraph(string *res);
 
 };
 
@@ -139,18 +144,48 @@ void CTree::genChildren( CTreeNode *curNode,int child_limit){
 	}
 
 	this->n_bin_constraints+=curNode->genBinaryConstraints();
-
 }
+
+//produce grafo generico, non assume alcuna ipotesi sia albero (serve per donne)
+void CTree::DOTgraph(string *res){
+	*res+="digraph {";
+	char svarid[650];
+	char tmp[150];
+	for(int j=0;j<this->n_nodes;j++){
+		CTreeNode *curnode=this->linearizedTree[j];
+		for(int i=0;i<curnode->child_n;i++){
+			//EDGE (Senza semicolon)
+			sprintf(svarid,"%d -> %d ",curnode->varId,curnode->children[i]->varId);
+			//scrivo tabelle con binary constraints sugli edge
+			sprintf(tmp,"[label=%s",DOT_TABLE_BEG);
+			strcat(svarid,tmp);
+			for(int d=0;d<DOMAINS_SIZE;d++){
+				for(int e=0;e<DOMAINS_SIZE;e++){
+					sprintf(tmp,"<TR><TD>%c%c</TD><TD>%.1f</TD></TR>",curnode->domain[d],curnode->children[i]->domain[e],curnode->childConstraints[i][d][e]);
+					strcat(svarid,tmp);
+				}
+			}
+			strcat(svarid,DOT_TABLE_END);
+		///FINE tabella binary constraints
+			string ssv(svarid);
+		*res+=ssv;
+		}
+	}
+	*res+="}";
+}
+
 
 //METODI CLASSE TREENODE
 //genera vincoli unari dato il dominio della variabile
 void CTreeNode::genUnaryConstraints(){
 	this->unaryConstraints=(float*)malloc(DOMAINS_SIZE*sizeof(float));
+	this->dacUnaryConstraints=(float*)malloc(DOMAINS_SIZE*sizeof(float));
 	for(int i=0;i<DOMAINS_SIZE;i++){	//assegno valori di preferenza random
 		float r = (float)rand()/(float)RAND_MAX;
 		if(r==0.0f)
 			r+=0.1f;
 		this->unaryConstraints[i]=r;
+		this->dacUnaryConstraints[i]=r;	//TODO check, questo va bene per inizializzare nodi foglia se non vengono elaborati(?Algo?)
 	}
 }
 
@@ -195,6 +230,7 @@ void CTreeNode::JSONSubtree(string *res){
 }
 
 //http://graphs.grevian.org/example.html
+//produce grafo a partire da un nodo, valido solo per alberi(no grafi generici), utile se si vuole sottoalbero specifico
 void CTreeNode::DOTSubtree(string *res,char *rootcall){
 	char isrootcall=0;
 	if(*rootcall==1){
@@ -227,6 +263,7 @@ void CTreeNode::DOTSubtree(string *res,char *rootcall){
 		*res+="}";
 }
 
+
 //----FINE CLASSE TREENODE
 
 
@@ -245,7 +282,7 @@ void buildVarDomains(){
 
 
 
-//generazione albero
+//generazione albero preferenze uomini
 void buildTree(CTree *tree){
 
 	CTreeNode **curarr=(CTreeNode**)malloc(NUMVARS*sizeof(CTreeNode*));
@@ -278,6 +315,53 @@ void buildTree(CTree *tree){
 	}
 	free(curarr);
 	free(otherarr);
+}
+
+//generazione grafo preferenze donne
+void buildWomenGraph(CTree *tree, float tightness){ //TODO non e tightness altro nome
+	int randomVarId= rand() % NUMVARS;
+	CTreeNode *root=new CTreeNode(randomVarId,varDomains[randomVarId]);
+	root->genUnaryConstraints();
+	//ora aggiungo tutte le altre variabili (nodi)
+	CTreeNode *node=root;
+	tree->setRoot(root);
+	while(tree->n_nodes<NUMVARS){
+		int randomVarId=-1;
+		while(randomVarId<0){
+			randomVarId=rand()%NUMVARS;
+			//vedo se c' giˆ
+			for(int j=0;j<tree->n_nodes;j++){
+			if(tree->linearizedTree[j]->varId==randomVarId)
+				randomVarId=-1;
+			}
+		}
+		CTreeNode* node=new CTreeNode(randomVarId,varDomains[randomVarId]);
+		node->genUnaryConstraints();
+		tree->addNode(node);
+	}
+	//ora genero i vincoli binari (non  un albero quindi faccio un sottoprodotto cartesiano)
+	int n_constr=(float)(NUMVARS*NUMVARS)*tightness;
+	int rndId2;
+	while(n_constr>0){
+		randomVarId=rand()%NUMVARS;
+		int nchild=rand()%3;
+		node=tree->linearizedTree[randomVarId];
+		if(node->child_n>0)	//gia generati per lui TODO occhio che rischi loop infinito
+			continue;
+
+		node->children=(CTreeNode **)malloc(nchild*sizeof(CTreeNode*));
+		node->child_n=nchild;
+		for(int j=0;j<nchild;j++){
+			rndId2=rand()%NUMVARS;
+			if(rndId2==randomVarId){
+				j--;
+				continue;
+			}
+			node->children[j]=tree->linearizedTree[randomVarId];
+			node->genBinaryConstraints();
+			n_constr-=nchild;
+		}
+	}
 }
 
 
@@ -319,6 +403,43 @@ void adjustTightness(CTree *tree,float tightness){
 
 }
 
+//TODO NOT COMPLETE NOT CHECKED (ALGO)
+/*void DAC_first_pass(CTreeNode * node, float *fatherunary){
+	float **myunary;
+	if(node->child_n>0){
+		myunary=(float**)malloc(node->child_n*sizeof(float*));	//qui accumulo i valori che vengono prodotti dai figli
+		for(int i =0;i<node->child_n;i++){
+			myunary[i]=(float*)malloc(DOMAINS_SIZE*sizeof(float));
+			DAC_first_pass(node->children[i],myunary[i]);
+		}
+		//per ogni elemento del mio dominio faccio il min per eleggere il valore da sostituire TODO check
+		for(int i=0;i<DOMAINS_SIZE;i++){
+			float min=node->unaryConstraints[i];
+			for(int j=0;j<node->child_n;j++){
+				if(myunary[j][i]<min)
+					min=myunary[j][i];
+			}
+			node->dacUnaryConstraints[i]=min;
+		}
+		if(node->tree->root==node)	//se sono la radice finisco
+			return;
+	}
+	//procedura vera e propria di propagazione bottom-up
+	for(int i=0;i<DOMAINS_SIZE;i++){	//fisso la variabile del padre
+		float curmax=-1.0f;
+		for(int j=0;j<DOMAINS_SIZE;j++){
+			float themin;
+			if(node->dacUnaryConstraints[j]<=node->father->childConstraints[i][j])
+				themin=node->dacUnaryConstraints[j];
+			else
+				themin=node->father->childConstraints[i][j];
+			if(themin>curmax)
+				curmax=themin;
+		}
+		fatherunary[i]=curmax;
+	}
+}*/
+
 
 int main() {
 	srand((unsigned)time(0));
@@ -326,10 +447,13 @@ int main() {
 	CTree albero(NUMVARS);
 	buildTree(&albero);
 	adjustTightness(&albero,0.7);
+
+	//CTree albero(NUMVARS);
+	//buildWomenGraph(&albero,0.4f);
 	string st;
 	char rootcall=1;
+	//albero.DOTgraph(&st);
 	albero.root->DOTSubtree(&st,&rootcall);
-
 	std::cout << st << '\n';
 	ofstream myfile;
 	myfile.open ("graph.gv");
