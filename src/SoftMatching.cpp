@@ -254,15 +254,16 @@ void CTreeNode::DOTSubtree(string *res,char *rootcall){
 	if(*rootcall==1){
 		isrootcall=1;
 		*rootcall=0;
-		*res+="digraph {";
+		*res+="digraph { node [fontsize=10];";
 	}
 	char svarid[650];
 	char tmp[150];
 	sprintf(svarid,"%d [label=\"{",this->varId);
 	for(int i=0;i<DOMAINS_SIZE;i++){
-		sprintf(tmp,"%c,",this->domain[i]);
+		sprintf(tmp,"%c:%.2f->%.2f,",this->domain[i],this->unaryConstraints[i],this->dacUnaryConstraints[i]);
 		strcat(svarid,tmp);
 	}
+	svarid[strlen(svarid)-1]='\0';
 	strcat(svarid,"}\"]; ");
 	string ssv(svarid);
 	*res+=ssv;
@@ -348,97 +349,90 @@ void buildTree(CTree *tree){
 void buildWomenGraph(CTree *tree, float tightness){ //TODO non e tightness altro nome
 	std::cout << "Building women graph \n";
 	int randomVarId= rand() % NUMVARS;
-	CTreeNode *root=new CTreeNode(randomVarId,varDomains[randomVarId]);
+	CTreeNode *root=new CTreeNode(0,varDomains[randomVarId]);
 	root->genUnaryConstraints();
 	//ora aggiungo tutte le altre variabili (nodi)
 	CTreeNode *node=root;
+	node->children=(CTreeNode **)malloc(NUMVARS*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
 	tree->setRoot(root);
-	while(tree->n_nodes<NUMVARS){
-		int randomVarId=-1;
+	for(int i=1;i<NUMVARS;i++){
+	//while(tree->n_nodes<NUMVARS){
+		/*int randomVarId=-1;
 		while(randomVarId<0){
 			randomVarId=rand()%NUMVARS;
 			//vedo se c'è già
 			if(tree->linearizedTree[randomVarId]!=NULL)
 				randomVarId=-1;
-		}
-		CTreeNode* node=new CTreeNode(randomVarId,varDomains[randomVarId]);
+		}*/
+		CTreeNode* node=new CTreeNode(i,varDomains[i]);
 		node->genUnaryConstraints();
+		node->children=(CTreeNode **)malloc(NUMVARS*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
 		tree->addNode(node);
 	}
 	//ora genero i vincoli binari (non è un albero quindi faccio un sottoprodotto cartesiano)
-	int n_constr=(float)(NUMVARS*NUMVARS)*tightness;
+	//ha rappresentazione albero ma non lo e, conto sul fatto che quando valuto un'istanziazione procedo in ordine
+	//sui nodi quindi non mi interessa propagare il binary anche nel figlio (rappresentato directed ma uso come undirected)
+	int n_constr=((float)((NUMVARS*(NUMVARS-1))/2))*tightness;
 	int rndId2;
-	for(int i=0;i<tree->n_nodes;i++){	//nessun problema con random perche non e albero
-		int nchild;
-		if(n_constr<1)
-			break;
-		else if(n_constr==1)
-			nchild=1;
-		else
-			nchild=rand()%3;
-		if(i==tree->n_nodes-1)	//se ultimo nodo, gli do tutti i rimanenti
-			nchild=n_constr;
-		node=tree->linearizedTree[i];
-		node->children=(CTreeNode **)malloc(nchild*sizeof(CTreeNode*));
-		node->child_n=nchild;
-		for(int j=0;j<nchild;j++){
-			bool skip=0;
-			rndId2=rand()%NUMVARS;
-			if(rndId2==i)	//no self constraint
-				skip=1;
-			for(int h=0;h<j;h++){	//no duplicates
-				if(rndId2==node->children[h]->varId){
-					skip=2;
-					break;
+	while(n_constr>0){
+		for(int i=0;i<tree->n_nodes;i++){	//nessun problema con random perche non e albero
+			int nchild;
+
+			if(n_constr==0)
+				break;
+			else if(n_constr==1)
+				nchild=1;
+			else
+				nchild=(rand()%3+1);//%n_constr; //FIXME
+
+			node=tree->linearizedTree[i];
+			//node->children=(CTreeNode **)malloc(nchild*sizeof(CTreeNode*));
+
+			for(int j=0;j<nchild;j++){
+				int skip=2;
+				while(skip>0){
+					skip=0;
+					rndId2=rand()%NUMVARS;
+					if(rndId2==i)	//no self constraint
+						rndId2=(rndId2+1)%NUMVARS;
+					for(int h=0;h<node->child_n;h++){	//no duplicates
+						CTreeNode *curchild=node->children[h];
+						if(rndId2==curchild->varId){
+							skip=2;
+							break;
+						}
+						for(int k=0;k<curchild->child_n;k++){
+							if(curchild->children[k]->varId==node->varId){
+								skip=2;
+								break;
+							}
+						}
+					}
+					if(skip>0){
+						std::cout << "SKIP" << skip << '\n';
+						j--;
+						continue;
+					}
+					CTreeNode *child=tree->linearizedTree[rndId2];
+					node->children[node->child_n++]=child;
+					//NOONOOOchild->children[child->child_n++]=node;	//simmetric
+					//node->genBinaryConstraints();
+					n_constr-=1;
 				}
 			}
-			if(skip>0){
-				std::cout << "SKIP" << skip << '\n';
-				j--;
-				continue;
-			}
-			node->children[j]=tree->linearizedTree[rndId2];
-			node->genBinaryConstraints();
-			n_constr-=nchild;
 		}
 	}
 
+	//ora che ho messo tutti i legami, genero i binary constraint
+	for(int i=0;i<NUMVARS;i++){
+		CTreeNode *node=tree->linearizedTree[i];
+		node->genBinaryConstraints();
+	}
 
-
-//	while(n_constr>0){
-//		randomVarId=rand()%NUMVARS;
-//		int nchild=rand()%3;
-//
-//		node=tree->linearizedTree[randomVarId];
-//		if(node->child_n>0)	//gia generati per lui TODO occhio che rischi loop infinito
-//			continue;
-//
-//		node->children=(CTreeNode **)malloc(nchild*sizeof(CTreeNode*));
-//		node->child_n=nchild;
-//		for(int j=0;j<nchild;j++){
-//			bool skip=0;
-//			rndId2=rand()%NUMVARS;
-//			if(rndId2==randomVarId)	//no self constraint
-//				skip=1;
-//			for(int h=0;h<j;h++){	//no duplicates
-//				if(rndId2==node->children[h]->varId){
-//					skip=1;
-//					break;
-//				}
-//			}
-//			if(skip==1){
-//				j--;
-//				continue;
-//			}
-//			node->children[j]=tree->linearizedTree[rndId2];
-//			node->genBinaryConstraints();
-//			n_constr-=nchild;
-//		}
-//	}
 }
 
 
-//riceve tree e annulla random dei constraint fino a raggiungere il livello di tightness desiderato
+//riceve tree e annulla random dei constraint fino a raggiungere il livello di tightness desiderato (solo per tree e quindi men)
 void adjustTightness(CTree *tree,float tightness){
 	int domains_sz2=DOMAINS_SIZE*DOMAINS_SIZE;
 	//calcolo numero di binconstr da mettere a zero
@@ -543,6 +537,9 @@ float DAC_opt(CTreeNode *node,int *opt_instance,int *curidx){
 	//prendo il max dei miei unary
 	opt_as_father(node,opt_instance,curidx);
 	cout << "Your opt is" << node->dacUnaryConstraints[opt_instance[0]] << "\n";
+	cout << "With solution: ";
+	for (int i=0;i<NUMVARS;i++)
+		cout << opt_instance[i];
 	return node->dacUnaryConstraints[opt_instance[0]];
 }
 
@@ -553,17 +550,17 @@ int main() {
 	srand((unsigned)time(0));
 	buildVarDomains();
 	CTree albero(NUMVARS);
-	buildTree(&albero);
-	adjustTightness(&albero,0.7);
-	DAC_first_pass(albero.root);
+	//buildTree(&albero);
+	//adjustTightness(&albero,0.7);
+	//DAC_first_pass(albero.root);
 	int opt_inst[NUMVARS];
 	int idx=0;
-	DAC_opt(albero.root,opt_inst,&idx);
-	//buildWomenGraph(&albero,0.2f);
+	//DAC_opt(albero.root,opt_inst,&idx);
+	buildWomenGraph(&albero,0.2f);
 	string st;
 	char rootcall=1;
-	//albero.DOTgraph(&st);
-	albero.root->DOTSubtree(&st,&rootcall);
+	albero.DOTgraph(&st);
+	//albero.root->DOTSubtree(&st,&rootcall);
 	//std::cout << st << '\n';
 	ofstream myfile;
 	myfile.open ("graph.gv");
