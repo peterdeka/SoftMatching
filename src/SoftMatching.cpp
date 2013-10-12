@@ -71,8 +71,8 @@ void testWomen(){
 int main() {
 	srand((unsigned)time(0));
 	buildVarDomains();
-	testMen();
-
+	//testMen();
+	testWomen();
 	return 0;
 }
 

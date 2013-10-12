@@ -50,7 +50,6 @@ void Women::buildGraph(int numvars,float connectedness,char **varDomains){ //TOD
 			else
 				nchild=(rand()%3+1)%n_constr;
 
-			//node->children=(CTreeNode **)malloc(nchild*sizeof(CTreeNode*));
 			rndId2=rand()%tree->n_nodes;
 			for(int j=0;j<nchild;j++){
 				int skip=2;
@@ -59,19 +58,25 @@ void Women::buildGraph(int numvars,float connectedness,char **varDomains){ //TOD
 					rndId2=(rndId2+1)%tree->n_nodes;
 					if(rndId2==i)	//no self constraint
 						rndId2=(rndId2+1)%tree->n_nodes;
-					for(int h=0;h<node->child_n;h++){	//no duplicates
+
+					for(int h=0;h<node->child_n;h++){	//check it's not already child
 						CTreeNode *curchild=node->children[h];
 						if(rndId2==curchild->varId){
 							skip=2;
 							break;
 						}
-						for(int k=0;k<curchild->child_n;k++){
-							if(curchild->children[k]->varId==node->varId){
-								skip=2;
-								break;
-							}
-						}
+
 					}
+					CTreeNode *rndchild=tree->linearizedTree[rndId2];
+					for(int h=0;h<rndchild->child_n;h++){	//check current node it's not chil dof candidate rnd children
+						CTreeNode *curchild=rndchild->children[h];
+						if(node->varId==curchild->varId){
+							skip=2;
+							break;
+						}
+
+					}
+
 					if(skip>0){
 						//std::cout << "SKIP" << skip << '\n';
 						j--;
@@ -79,8 +84,6 @@ void Women::buildGraph(int numvars,float connectedness,char **varDomains){ //TOD
 					}
 					CTreeNode *child=tree->linearizedTree[rndId2];
 					node->children[node->child_n++]=child;
-					//NOONOOOchild->children[child->child_n++]=node;	//simmetric
-					//node->genBinaryConstraints();
 					n_constr-=1;
 				}
 			}
