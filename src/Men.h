@@ -11,7 +11,7 @@
 
 class Men{
 	CTree *prefTree;
-	int myInstance[];
+	int *myInstance;
 	int domains_size;
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);

@@ -10,6 +10,7 @@
 Women::Women(int numvars,float connectedness,int domains_sz,char **varDomains){
 		this->domains_size=domains_sz;
 		this->prefGraph=new CTree(numvars,domains_sz);
+		this->myInstance=(int*)malloc(numvars*sizeof(int));
 		buildGraph(numvars,connectedness,varDomains);
 }
 
@@ -100,4 +101,31 @@ void Women::buildGraph(int numvars,float connectedness,char **varDomains){ //TOD
 
 void Women::DOT_representation(string *res){
 	this->prefGraph->DOTgraph(res);
+}
+
+//valuta il valore di preferenza di un'istanza (un uomo)
+int Women::instance_pref(int *instance){
+	float pref=10.0f;
+	for(int i=0;i<prefGraph->n_nodes;i++){
+		int curval=instance[i];
+		CTreeNode *curnode=prefGraph->linearizedTree[i];
+		pref=min(pref,curnode->unaryConstraints[curval]);
+		for(int k=0;k<curnode->child_n;k++){
+			CTreeNode* curchild=curnode->children[k];
+			pref=min(pref,curnode->childConstraints[k][curval][instance[curchild->varId]]);
+		}
+	}
+	return pref;
+}
+
+int Women::compare_instances(int *instance1,int* instance2){
+	float pref1,pref2;
+	pref1=instance_pref(instance1);
+	pref2=instance_pref(instance2);
+	if(pref1>pref2)
+		return 0;
+	else if(pref1>pref2)
+		return 1;
+	else
+		return -1;
 }

@@ -11,7 +11,7 @@
 Men::Men(int numvars,int domains_size, float tightness,char **varDomains){
 	this->domains_size=domains_size;
 	this->prefTree=new CTree(numvars,domains_size);
-
+	this->myInstance=(int*)malloc(numvars*sizeof(int));
 	buildTree(tightness,numvars,varDomains);
 }
 

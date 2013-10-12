@@ -43,6 +43,11 @@ void buildVarDomains(){
 	}
 }
 
+void gen_random_instance(int *instance){
+	for(int i=0;i<NUMVARS;i++){
+		instance[i]=(int)rand() % DOMAINS_SIZE;
+	}
+}
 
 void testMen(){
 	Men a=Men(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains);
@@ -66,6 +71,9 @@ void testWomen(){
 	myfile.open ("graph.gv");
 	myfile << st;
 	myfile.close();
+	int testinstance[NUMVARS];
+	gen_random_instance(testinstance);
+	cout << "Instance has pref "<< a.instance_pref(testinstance)<<"\n";
 }
 
 int main() {
