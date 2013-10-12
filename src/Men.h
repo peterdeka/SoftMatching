@@ -15,12 +15,13 @@ class Men{
 	int domains_size;
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);
+	void DAC_first_pass(CTreeNode *node);
 	void opt_as_child(CTreeNode *node,int *opt_instance,int *curidx);
 	void opt_as_father(CTreeNode *node,int *opt_instance,int *curidx);
 
 	public:
-	Men(int numvars,int domains_size,int tightness,char ** varDomains);
-	void DAC_first_pass(CTreeNode *node);
+	Men(int numvars,int domains_size,float tightness,char ** varDomains);
+	void DAC();
 	float DAC_opt(int *opt_instance,int *curidx);
 	void DOT_representation(string *res);
 };

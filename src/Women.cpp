@@ -7,22 +7,23 @@
 
 #include "Women.h"
 
-Women::Women(int numvars,int domains_sz,char **varDomains){
+Women::Women(int numvars,float connectedness,int domains_sz,char **varDomains){
 		this->domains_size=domains_sz;
 		this->prefGraph=new CTree(numvars,domains_sz);
+		buildGraph(numvars,connectedness,varDomains);
 }
 
 //generazione grafo preferenze donne
-void Women::buildGraph(float tightness,char **varDomains){ //TODO non e tightness altro nome
+void Women::buildGraph(int numvars,float connectedness,char **varDomains){ //TODO non e tightness altro nome
 	CTree *tree=this->prefGraph;
-	int randomVarId= rand() % tree->n_nodes;
-	CTreeNode *root=new CTreeNode(0,varDomains[randomVarId]);
+	//int randomVarId= rand() % numvars;
+	CTreeNode *root=new CTreeNode(0,varDomains[0]);
 	root->genUnaryConstraints(domains_size);
 	//ora aggiungo tutte le altre variabili (nodi)
 	CTreeNode *node=root;
 	node->children=(CTreeNode **)malloc(tree->n_nodes*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
 	tree->setRoot(root);
-	for(int i=1;i<tree->n_nodes;i++){
+	for(int i=1;i<numvars;i++){
 		CTreeNode* node=new CTreeNode(i,varDomains[i]);
 		node->genUnaryConstraints(domains_size);
 		node->children=(CTreeNode **)malloc(tree->n_nodes*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
@@ -31,13 +32,13 @@ void Women::buildGraph(float tightness,char **varDomains){ //TODO non e tightnes
 	//ora genero i vincoli binari (non  un albero quindi faccio un sottoprodotto cartesiano)
 	//ha rappresentazione albero ma non lo e, conto sul fatto che quando valuto un'istanziazione procedo in ordine
 	//sui nodi quindi non mi interessa propagare il binary anche nel figlio (rappresentato directed ma uso come undirected)
-	int n_constr=((float)((tree->n_nodes*(tree->n_nodes-1))/2))*tightness;
-	std::cout << "Building women graph with " <<n_constr<<" constraints that's "<<tightness<<" tightness.\n";
+	int n_constr=((float)((tree->n_nodes*(tree->n_nodes-1))/2))*connectedness;
+	std::cout << "Building women graph with "<<tree->n_nodes<< " nodes and " <<n_constr<<" constraints that's "<<connectedness<<" connected.\n";
 	int rndId2;
 	while(n_constr>0){
 		for(int i=0;i<tree->n_nodes;i++){	//nessun problema con random perche non e albero
 			node=tree->linearizedTree[i];
-			if(node->child_n>=tree->n_nodes) // verificare che: numero figli attuale<NUMVARS
+			if(node->child_n>=tree->n_nodes) // verifica che: numero figli attuale<NUMVARS
 				continue;
 
 			int nchild;

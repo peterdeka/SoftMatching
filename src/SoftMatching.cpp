@@ -20,6 +20,7 @@
 #include <fstream>
 #include <algorithm>
 #include "Men.h"
+#include "Women.h"
 using namespace std;
 
 #define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
@@ -43,25 +44,35 @@ void buildVarDomains(){
 }
 
 
-
-int main() {
-	srand((unsigned)time(0));
-	buildVarDomains();
+void testMen(){
 	Men a=Men(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains);
-
+	a.DAC();
 	int opt_inst[NUMVARS];
-	int idx=0;
-	//DAC_opt(albero.root,opt_inst,&idx);
-	//buildWomenGraph(&albero,0.3f);
+		int idx=0;
+	a.DAC_opt(opt_inst,&idx);
 	string st;
-	char rootcall=1;
-
-	//albero.root->DOTSubtree(&st,&rootcall);
-	//std::cout << st << '\n';
 	a.DOT_representation(&st);
 	ofstream myfile;
 	myfile.open ("graph.gv");
 	myfile << st;
 	myfile.close();
+}
+
+void testWomen(){
+	Women a=Women(NUMVARS,0.3f,DOMAINS_SIZE,varDomains);
+	string st;
+	a.DOT_representation(&st);
+	ofstream myfile;
+	myfile.open ("graph.gv");
+	myfile << st;
+	myfile.close();
+}
+
+int main() {
+	srand((unsigned)time(0));
+	buildVarDomains();
+	testMen();
+
 	return 0;
 }
+

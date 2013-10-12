@@ -8,7 +8,7 @@
 #include "Men.h"
 
 
-Men::Men(int numvars,int domains_size, int tightness,char **varDomains){
+Men::Men(int numvars,int domains_size, float tightness,char **varDomains){
 	this->domains_size=domains_size;
 	this->prefTree=new CTree(numvars,domains_size);
 
@@ -100,6 +100,9 @@ void Men::DOT_representation(string *res){
 	this->prefTree->DOTgraph(res);
 }
 
+void Men::DAC(){
+	DAC_first_pass(this->prefTree->root);
+}
 
 //primo passo DAC che propaga la directed arc consistency
 void Men::DAC_first_pass(CTreeNode *node){

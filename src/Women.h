@@ -14,10 +14,9 @@ class Women{
 	CTree *prefGraph;
 	int myInstance[];
 	int domains_size;
-
+	void buildGraph(int numvars,float connectedness, char **varDomains);
 public:
-	Women(int numvars,int domains_sz,char **varDomains);
-	void buildGraph(float connectedness, char **varDomains);
+	Women(int numvars,float connectedness,int domains_sz,char **varDomains);
 	void DOT_representation(string *res);
 };
 
