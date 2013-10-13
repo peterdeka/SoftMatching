@@ -23,8 +23,8 @@
 #include "Women.h"
 using namespace std;
 
-#define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
-#define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
+#define NUMVARS 25	//numero variabili (quindi nodi dell'albero)
+#define DOMAINS_SIZE 4	//dimensione dei domini delle variabili
 char **varDomains;//ogni varId è associato al suo dominio (che è un array di valori)
 
 #define MALE_TIGHTNESS 0.5	//percentuale di binary constraint NON nulli
@@ -73,7 +73,7 @@ void testWomen(){
 	myfile.close();
 	int testinstance[NUMVARS];
 	gen_random_instance(testinstance);
-	cout << "Instance has pref "<< a.instance_pref(testinstance)<<"\n";
+	//cout << "Instance has pref "<< a.instance_pref(testinstance)<<"\n";
 }
 
 int main() {

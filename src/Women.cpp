@@ -22,12 +22,12 @@ void Women::buildGraph(int numvars,float connectedness,char **varDomains){ //TOD
 	root->genUnaryConstraints(domains_size);
 	//ora aggiungo tutte le altre variabili (nodi)
 	CTreeNode *node=root;
-	node->children=(CTreeNode **)malloc(tree->n_nodes*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
+	node->children=(CTreeNode **)malloc(numvars*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
 	tree->setRoot(root);
 	for(int i=1;i<numvars;i++){
 		CTreeNode* node=new CTreeNode(i,varDomains[i]);
 		node->genUnaryConstraints(domains_size);
-		node->children=(CTreeNode **)malloc(tree->n_nodes*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
+		node->children=(CTreeNode **)malloc(numvars*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
 		tree->addNode(node);
 	}
 	//ora genero i vincoli binari (non è un albero quindi faccio un sottoprodotto cartesiano)
