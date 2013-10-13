@@ -17,9 +17,9 @@ class Women{
 	void buildGraph(int numvars,float connectedness, char **varDomains);
 
 public:
-	Women(int numvars,float connectedness,int domains_sz,char **varDomains);
+	Women(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance);
 	void DOT_representation(string *res);
-	int instance_pref(int *instance);
+	float instance_pref(int *instance);
 	int compare_instances(int *instance1,int *instance2);
 };
 

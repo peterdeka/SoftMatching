@@ -23,11 +23,11 @@
 #include "Women.h"
 using namespace std;
 
-#define NUMVARS 25	//numero variabili (quindi nodi dell'albero)
-#define DOMAINS_SIZE 4	//dimensione dei domini delle variabili
+#define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
+#define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 char **varDomains;//ogni varId è associato al suo dominio (che è un array di valori)
 
-#define MALE_TIGHTNESS 0.5	//percentuale di binary constraint NON nulli
+#define MALE_TIGHTNESS 0.8	//percentuale di binary constraint NON nulli
 
 
 //funzione che costruisce i domini delle variabili a caso
@@ -49,38 +49,56 @@ void gen_random_instance(int *instance){
 	}
 }
 
+void print_instance(int *inst){
+	for (int i=0;i<NUMVARS;i++)
+			cout << inst[i];
+	cout << " -> ";
+	for (int i=0;i<NUMVARS;i++)
+				cout << varDomains[i][inst[i]];
+}
+
 void testMen(){
-	Men a=Men(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains);
+	int instvals[NUMVARS];
+	gen_random_instance(instvals);
+	Men a=Men(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
 	a.DAC();
 	int opt_inst[NUMVARS];
-		int idx=0;
-	a.DAC_opt(opt_inst,&idx);
+	int idx=0;
+	a.DAC();
+	float pref=a.DAC_opt(opt_inst,&idx);
 	string st;
 	a.DOT_representation(&st);
 	ofstream myfile;
-	myfile.open ("graph.gv");
+	myfile.open ("Mgraph.gv");
 	myfile << st;
 	myfile.close();
+	cout << "Your men opt is instance ";
+	print_instance(opt_inst);
+	cout << " with pref " << pref;
 }
 
 void testWomen(){
-	Women a=Women(NUMVARS,0.3f,DOMAINS_SIZE,varDomains);
+	int instvals[NUMVARS];
+	gen_random_instance(instvals);
+	Women a=Women(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
 	string st;
 	a.DOT_representation(&st);
 	ofstream myfile;
-	myfile.open ("graph.gv");
+	myfile.open ("Wgraph.gv");
 	myfile << st;
 	myfile.close();
 	int testinstance[NUMVARS];
 	gen_random_instance(testinstance);
-	//cout << "Instance has pref "<< a.instance_pref(testinstance)<<"\n";
+	cout << "Instance ";
+	print_instance(testinstance);
+	cout << " has pref "<< a.instance_pref(testinstance)<<"\n";
 }
 
 int main() {
 	srand((unsigned)time(0));
 	buildVarDomains();
-	//testMen();
-	testWomen();
+	testMen();
+	//testWomen();
 	return 0;
 }
 

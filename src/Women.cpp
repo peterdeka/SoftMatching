@@ -7,10 +7,11 @@
 
 #include "Women.h"
 
-Women::Women(int numvars,float connectedness,int domains_sz,char **varDomains){
+Women::Women(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance){
 		this->domains_size=domains_sz;
 		this->prefGraph=new CTree(numvars,domains_sz);
 		this->myInstance=(int*)malloc(numvars*sizeof(int));
+		memcpy(this->myInstance,instance,numvars*sizeof(int));
 		buildGraph(numvars,connectedness,varDomains);
 }
 
@@ -104,7 +105,7 @@ void Women::DOT_representation(string *res){
 }
 
 //valuta il valore di preferenza di un'istanza (un uomo)
-int Women::instance_pref(int *instance){
+float Women::instance_pref(int *instance){
 	float pref=10.0f;
 	for(int i=0;i<prefGraph->n_nodes;i++){
 		int curval=instance[i];

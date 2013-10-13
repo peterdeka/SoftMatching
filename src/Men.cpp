@@ -8,10 +8,11 @@
 #include "Men.h"
 
 
-Men::Men(int numvars,int domains_size, float tightness,char **varDomains){
+Men::Men(int numvars,int domains_size, float tightness,char **varDomains,int *instance){
 	this->domains_size=domains_size;
 	this->prefTree=new CTree(numvars,domains_size);
 	this->myInstance=(int*)malloc(numvars*sizeof(int));
+	memcpy(this->myInstance,instance,numvars*sizeof(int));
 	buildTree(tightness,numvars,varDomains);
 }
 
@@ -170,10 +171,6 @@ void Men::opt_as_father(CTreeNode *node,int *opt_instance,int *curidx){
 float Men::DAC_opt(int *opt_instance,int *curidx){
 	//prendo il max dei miei unary
 	opt_as_father(this->prefTree->root,opt_instance,curidx);
-	cout << "Your opt is" << this->prefTree->root->dacUnaryConstraints[opt_instance[0]] << "\n";
-	cout << "With solution: ";
-	for (int i=0;i<this->prefTree->n_nodes;i++)
-		cout << opt_instance[i];
 	return this->prefTree->root->dacUnaryConstraints[opt_instance[0]];
 }
 

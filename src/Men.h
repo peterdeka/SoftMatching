@@ -20,7 +20,7 @@ class Men{
 	void opt_as_father(CTreeNode *node,int *opt_instance,int *curidx);
 
 	public:
-	Men(int numvars,int domains_size,float tightness,char ** varDomains);
+	Men(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
 	void DAC();
 	float DAC_opt(int *opt_instance,int *curidx);
 	void DOT_representation(string *res);
