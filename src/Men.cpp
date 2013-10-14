@@ -173,5 +173,67 @@ float Men::DAC_opt(int *opt_instance,int *curidx){
 	opt_as_father(this->prefTree->root,opt_instance,curidx);
 	return this->prefTree->root->dacUnaryConstraints[opt_instance[0]];
 }
-
 //FINE DAC 2nd pass
+
+//calcola valore di preferenza di un'istanza
+float Men::instance_pref(int *instance){
+	float pref=10.0f;
+		for(int i=0;i<prefTree->n_nodes;i++){
+			int curval=instance[i];
+			CTreeNode *curnode=prefTree->linearizedTree[i];
+			pref=min(pref,curnode->unaryConstraints[curval]);
+			for(int k=0;k<curnode->child_n;k++){
+				CTreeNode* curchild=curnode->children[k];
+				pref=min(pref,curnode->childConstraints[k][curval][instance[curchild->varId]]);
+			}
+		}
+		return pref;
+}
+
+//HCSP next applied to w-cut of SCSP tree
+bool Men::CSP_next(int *instance, float cutval, int *nextinstance){
+	//lintree is breadth first->ordering is ok
+	for(int i=0;i<prefTree->n_nodes;i++){		//istanzio la soluzione passata
+		prefTree->linearizedTree[i]->value=instance[i];
+		nextinstance[i]=instance[i];
+	}
+	//ora procedo con l'operazione risalendo l'albero
+	for(int i=prefTree->n_nodes-1;i>-1;i--){
+		CTreeNode *curnode=prefTree->linearizedTree[i];
+		bool found=false;
+		//cerco prossimo valore valido in ordinamento del dominio
+		for(int k=instance[i];k<domains_size;k++){
+			//verifico cutvalue
+			if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][instance[i]]>cutval){
+				instance[i]=k;
+				found=true;
+				break;
+			}
+		}
+		if(found){
+			//reset-succ, "riazzera contatore" di tutti i nodi successori
+			for(int k=i+1;k<prefTree->n_nodes;k++){
+				curnode=prefTree->linearizedTree[k];
+				for(int j=0;j<domains_size;j++){
+					//verifico cutvalue
+					if(curnode->dacUnaryConstraints[j]>=cutval && curnode->fatherConstraints[curnode->father->value][j]>cutval){
+						instance[k]=j;
+						break;
+					}
+				}
+			}
+			return true;	//trovato next, esco
+		}
+	}
+	return false;
+}
+
+bool Men::SOFT_next(int *instance,float optval,int *nextinstance){
+	float instpref=instance_pref(instance);
+	if(instpref==optval){
+		if(CSP_next(instance,optval,nextinstance))
+			return true;
+	}
+	//niente devo cercare ad un valore di preferenza inferiore
+
+}
