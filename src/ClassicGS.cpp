@@ -21,17 +21,22 @@ Classic_GS::Classic_GS(int num_males, Male** menarray, Female** womenarray) {
 	for(int i=0;i<num_males;i++){
 		menprefs[i]=(int*)malloc(num_males*sizeof(int));
 		for(int k=0;k<num_males;k++){
-			tmparr[i]=menarray[i]->instance_pref(womenarray[k]->myInstance);
+			tmparr[k]=men[i]->instance_pref(women[k]->myInstance);
+			cout<<"male tmparr pref "<<tmparr[k]<<"\n";
 		}
 		for(int j=0;j<num_males;j++){	//riordino prendendo ogni volta il max del tmparray
 			int curmaxidx=0;
 			for(int k=0;k<num_males;k++){
-				if(tmparr[curmaxidx]>tmparr[k]){
+				if(tmparr[curmaxidx]<tmparr[k]){
 					curmaxidx=k;
 				}
 			}
 			menprefs[i][j]=curmaxidx;	//metto id della donna curmax
 			tmparr[curmaxidx]=-1;	//cosi non lo prendo piu
+		}
+
+		for (int y=0;y<num_males;y++){
+			cout<<"women["<<i <<"]  pref: "<<menprefs[i][y]<<"\n";
 		}
 	}
 
@@ -40,6 +45,7 @@ Classic_GS::Classic_GS(int num_males, Male** menarray, Female** womenarray) {
 		womenprefs[i]=(float*)malloc(num_males*sizeof(float));
 		for(int k=0;k<num_males;k++){
 			womenprefs[i][k]=womenarray[i]->instance_pref(menarray[k]->myInstance);
+			//cout<<"pref["<<i<<"]["<<k<<"]="<<womenprefs[i][k]<<"\n";
 		}
 	}
 
@@ -72,11 +78,13 @@ void Classic_GS::gale_shapley_men_opt(int *matching){
 			if(matching[i]>-1)
 				continue;	//already matched
 			lastproposed[i]+=1;
+			//cout << "LASTPROP("<<i<<") = "<<lastproposed[i]<<"\n";
 			proposeto=menprefs[i][lastproposed[i]];
-			if(proposeto>num_individuals-1)
-				exit(-1);				//FIXME TODO
+			//if(proposeto>num_individuals-1)
+				//exit(-1);				//FIXME TODO
+			cout << "m"<<i<<" ? "<<proposeto<<"\n";
 			if(femalematching[proposeto]==-1){	//free girl
-				cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+				//cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
 				matching[i]=proposeto;
 				femalematching[proposeto]=i;
 				freemen--;
@@ -84,17 +92,20 @@ void Classic_GS::gale_shapley_men_opt(int *matching){
 			}
 			else{	//already engaged, see if prefers new proposal
 				if(womenprefs[proposeto][i] > womenprefs[proposeto][femalematching[proposeto]] ){
-					cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+					//cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 					matching[femalematching[proposeto]]=-1;
 					femalematching[proposeto]=i;
 					matching[i]=proposeto;
 				}
-				else if(womenprefs[proposeto][i] == womenprefs[proposeto][femalematching[proposeto]] && i>femalematching[proposeto]){
-					cout <<"TIEBREAK girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+				else if(womenprefs[proposeto][i] == womenprefs[proposeto][femalematching[proposeto]] && ((float)rand()/(float)RAND_MAX)>0.5f){// i<femalematching[proposeto]){
+					//cout <<"TIEBREAK val:"<<womenprefs[proposeto][i]<<" girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 					matching[femalematching[proposeto]]=-1;
 					femalematching[proposeto]=i;
 					matching[i]=proposeto;
 				}
+				/*else{
+					cout<<"i prefer my man ("<<womenprefs[proposeto][femalematching[proposeto]]<<") to you"<<womenprefs[proposeto][i]<<"\n";
+				}*/
 			}
 		}
 

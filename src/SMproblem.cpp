@@ -92,7 +92,7 @@ void SM_problem::solve_with_GS(){
 
 void SM_problem::print_arr(int *inst,int length){
 	for (int i=0;i<length;i++)
-			cout << inst[i];
+			cout << inst[i]<<"-";
 	cout << " \n ";
 
 }

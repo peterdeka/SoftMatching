@@ -12,7 +12,7 @@
 #include "Female.h"
 #include "ClassicGS.h"
 
-#define NUM_INDIVIDUALS 4
+#define NUM_INDIVIDUALS 15
 #define NUMVARS 5	//numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 
