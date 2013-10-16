@@ -19,11 +19,10 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
-#include "Men.h"
-#include "Women.h"
+#include "SMproblem.h"
 using namespace std;
 
-#define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
+/*#define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 char **varDomains;//ogni varId è associato al suo dominio (che è un array di valori)
 
@@ -60,7 +59,7 @@ void print_instance(int *inst){
 void testMen(){
 	int instvals[NUMVARS];
 	gen_random_instance(instvals);
-	Men a=Men(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
+	Male a=Male(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
 	a.DAC();
 	int opt_inst[NUMVARS];
 	int idx=0;
@@ -80,7 +79,7 @@ void testMen(){
 void testWomen(){
 	int instvals[NUMVARS];
 	gen_random_instance(instvals);
-	Women a=Women(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
+	Female a=Female(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
 	string st;
 	a.DOT_representation(&st);
 	ofstream myfile;
@@ -92,13 +91,10 @@ void testWomen(){
 	cout << "Instance ";
 	print_instance(testinstance);
 	cout << " has pref "<< a.instance_pref(testinstance)<<"\n";
-}
+}*/
 
 int main() {
-	srand((unsigned)time(0));
-	buildVarDomains();
-	testMen();
-	//testWomen();
+
 	return 0;
 }
 

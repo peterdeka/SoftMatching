@@ -1,17 +1,16 @@
 /*
- * Men.h
+ * Male.h
  *
  *  Created on: 10/ott/2013
  *      Author: deka
  */
 
-#ifndef MEN_H_
-#define MEN_H_
+#ifndef MALE_H_
+#define MALE_H_
 #include "CTree.h"
 
-class Men{
+class Male{
 	CTree *prefTree;
-	int *myInstance;
 	int domains_size;
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);
@@ -19,14 +18,16 @@ class Men{
 	void opt_as_child(CTreeNode *node,int *opt_instance,int *curidx);
 	void opt_as_father(CTreeNode *node,int *opt_instance,int *curidx);
 	bool CSP_next(int *instance, float cutval,int *nextinstance);	//risolve come un problema di HCSP applicando il cut a cutval
-	float Men::instance_pref(int *instance);
+
 
 	public:
-	Men(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
+	int *myInstance;
+	Male(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
 	void DAC();
 	float DAC_opt(int *opt_instance,int *curidx);
 	void DOT_representation(string *res);
-	bool Men::SOFT_next(int *instance,float optval,int *nextinstance);
+	bool SOFT_next(int *instance,float optval,int *nextinstance);
+	float instance_pref(int *instance);
 };
 
-#endif /* MEN_H_ */
+#endif /* MALE_H_ */

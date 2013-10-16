@@ -1,23 +1,24 @@
 /*
- * Women.h
+ * Female.h
  *
  *  Created on: 10/ott/2013
  *      Author: deka
  */
 
-#ifndef WOMEN_H_
-#define WOMEN_H_
+#ifndef FEMALE_H_
+#define FEMALE_H_
 
 #include "CTreeNode.h"
 
-class Women{
+class Female{
 	CTree *prefGraph;
-	int *myInstance;
+
 	int domains_size;
 	void buildGraph(int numvars,float connectedness, char **varDomains);
 
 public:
-	Women(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance);
+	int *myInstance;
+	Female(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance);
 	void DOT_representation(string *res);
 	float instance_pref(int *instance);
 	int compare_instances(int *instance1,int *instance2);
@@ -26,4 +27,4 @@ public:
 
 
 
-#endif /* WOMEN_H_ */
+#endif /* FEMALE_H_ */

@@ -1,13 +1,13 @@
 /*
- * Women.cpp
+ * Female.cpp
  *
  *  Created on: 10/ott/2013
  *      Author: deka
  */
 
-#include "Women.h"
+#include "Female.h"
 
-Women::Women(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance){
+Female::Female(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance){
 		this->domains_size=domains_sz;
 		this->prefGraph=new CTree(numvars,domains_sz);
 		this->myInstance=(int*)malloc(numvars*sizeof(int));
@@ -16,7 +16,7 @@ Women::Women(int numvars,float connectedness,int domains_sz,char **varDomains,in
 }
 
 //generazione grafo preferenze donne
-void Women::buildGraph(int numvars,float connectedness,char **varDomains){ //TODO non e tightness altro nome
+void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TODO non e tightness altro nome
 	CTree *tree=this->prefGraph;
 	//int randomVarId= rand() % numvars;
 	CTreeNode *root=new CTreeNode(0,varDomains[0]);
@@ -100,12 +100,12 @@ void Women::buildGraph(int numvars,float connectedness,char **varDomains){ //TOD
 	std::cout << "Women graph built\n";
 }
 
-void Women::DOT_representation(string *res){
+void Female::DOT_representation(string *res){
 	this->prefGraph->DOTgraph(res);
 }
 
 //valuta il valore di preferenza di un'istanza (un uomo)
-float Women::instance_pref(int *instance){
+float Female::instance_pref(int *instance){
 	float pref=10.0f;
 	for(int i=0;i<prefGraph->n_nodes;i++){
 		int curval=instance[i];
@@ -119,7 +119,7 @@ float Women::instance_pref(int *instance){
 	return pref;
 }
 
-int Women::compare_instances(int *instance1,int* instance2){
+int Female::compare_instances(int *instance1,int* instance2){
 	float pref1,pref2;
 	pref1=instance_pref(instance1);
 	pref2=instance_pref(instance2);

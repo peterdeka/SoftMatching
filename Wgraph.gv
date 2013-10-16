@@ -1,0 +1,4 @@
+digraph {0;0 -> 4 [label=<<FONT POINT-SIZE="10"><TABLE CELLBORDER="0" CELLPADDING="1" CELLSPACING="0"><TR><TD>iw</TD><TD>0.5</TD></TR><TR><TD>ix</TD><TD>0.1</TD></TR><TR><TD>jw</TD><TD>0.5</TD></TR><TR><TD>jx</TD><TD>0.4</TD></TR></TABLE></FONT>>];
+0 -> 1 [label=<<FONT POINT-SIZE="10"><TABLE CELLBORDER="0" CELLPADDING="1" CELLSPACING="0"><TR><TD>ip</TD><TD>0.1</TD></TR><TR><TD>iq</TD><TD>0.1</TD></TR><TR><TD>jp</TD><TD>0.1</TD></TR><TR><TD>jq</TD><TD>0.6</TD></TR></TABLE></FONT>>];
+1;1 -> 3 [label=<<FONT POINT-SIZE="10"><TABLE CELLBORDER="0" CELLPADDING="1" CELLSPACING="0"><TR><TD>ps</TD><TD>0.2</TD></TR><TR><TD>pt</TD><TD>0.7</TD></TR><TR><TD>qs</TD><TD>0.1</TD></TR><TR><TD>qt</TD><TD>0.8</TD></TR></TABLE></FONT>>];
+2;3;4;}

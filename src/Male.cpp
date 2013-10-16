@@ -1,14 +1,14 @@
 /*
- * Men.cpp
+ * Male.cpp
  *
  *  Created on: 10/ott/2013
  *      Author: deka
  */
 
-#include "Men.h"
+#include "Male.h"
 
 
-Men::Men(int numvars,int domains_size, float tightness,char **varDomains,int *instance){
+Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *instance){
 	this->domains_size=domains_size;
 	this->prefTree=new CTree(numvars,domains_size);
 	this->myInstance=(int*)malloc(numvars*sizeof(int));
@@ -19,7 +19,7 @@ Men::Men(int numvars,int domains_size, float tightness,char **varDomains,int *in
 
 
 //generazione albero preferenze uomini
-void Men::buildTree(float tightness,int numvars,char **varDomains){
+void Male::buildTree(float tightness,int numvars,char **varDomains){
 	cout <<"Building men tree \n";
 	CTree *tree=this->prefTree;
 	CTreeNode **curarr=(CTreeNode**)malloc(numvars*sizeof(CTreeNode*));
@@ -57,7 +57,7 @@ void Men::buildTree(float tightness,int numvars,char **varDomains){
 }
 
 //riceve tree e annulla random dei constraint fino a raggiungere il livello di tightness desiderato (solo per tree e quindi men)
-void Men::adjustTightness(float tightness){
+void Male::adjustTightness(float tightness){
 	cout << "Adjusting tightness \n";
 	CTree *tree=this->prefTree;
 	int domains_sz2=domains_size*domains_size;
@@ -97,16 +97,16 @@ void Men::adjustTightness(float tightness){
 	cout << "Tightness adjusted \n";
 }
 
-void Men::DOT_representation(string *res){
+void Male::DOT_representation(string *res){
 	this->prefTree->DOTgraph(res);
 }
 
-void Men::DAC(){
+void Male::DAC(){
 	DAC_first_pass(this->prefTree->root);
 }
 
 //primo passo DAC che propaga la directed arc consistency
-void Men::DAC_first_pass(CTreeNode *node){
+void Male::DAC_first_pass(CTreeNode *node){
 	for(int i=0;i<node->child_n;i++){
 		//step ricorsivo
 		DAC_first_pass(node->children[i]);
@@ -143,7 +143,7 @@ void Men::DAC_first_pass(CTreeNode *node){
 
 // DAC 2nd pass che estrae l'istanziazione ottima e la sua preferenza, output breadth first
 
-void Men::opt_as_child(CTreeNode *node,int *opt_instance,int *curidx){
+void Male::opt_as_child(CTreeNode *node,int *opt_instance,int *curidx){
 	//prendo il max dei miei unary
 	opt_instance[*curidx]=0;
 	float maxPref=node->dacUnaryConstraints[opt_instance[*curidx]];
@@ -157,7 +157,7 @@ void Men::opt_as_child(CTreeNode *node,int *opt_instance,int *curidx){
 }
 
 
-void Men::opt_as_father(CTreeNode *node,int *opt_instance,int *curidx){
+void Male::opt_as_father(CTreeNode *node,int *opt_instance,int *curidx){
 	if(*curidx==0)
 		opt_as_child(node,opt_instance,curidx);
 	for(int i=0;i<node->child_n;i++)
@@ -168,7 +168,7 @@ void Men::opt_as_father(CTreeNode *node,int *opt_instance,int *curidx){
 
 
 //per encapsulation devi passare opt_instance giˆ allocato
-float Men::DAC_opt(int *opt_instance,int *curidx){
+float Male::DAC_opt(int *opt_instance,int *curidx){
 	//prendo il max dei miei unary
 	opt_as_father(this->prefTree->root,opt_instance,curidx);
 	return this->prefTree->root->dacUnaryConstraints[opt_instance[0]];
@@ -176,7 +176,7 @@ float Men::DAC_opt(int *opt_instance,int *curidx){
 //FINE DAC 2nd pass
 
 //calcola valore di preferenza di un'istanza
-float Men::instance_pref(int *instance){
+float Male::instance_pref(int *instance){
 	float pref=10.0f;
 		for(int i=0;i<prefTree->n_nodes;i++){
 			int curval=instance[i];
@@ -191,7 +191,7 @@ float Men::instance_pref(int *instance){
 }
 
 //HCSP next applied to w-cut of SCSP tree
-bool Men::CSP_next(int *instance, float cutval, int *nextinstance){
+bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 	//lintree is breadth first->ordering is ok
 	for(int i=0;i<prefTree->n_nodes;i++){		//istanzio la soluzione passata
 		prefTree->linearizedTree[i]->value=instance[i];
@@ -228,7 +228,7 @@ bool Men::CSP_next(int *instance, float cutval, int *nextinstance){
 	return false;
 }
 
-bool Men::SOFT_next(int *instance,float optval,int *nextinstance){
+bool Male::SOFT_next(int *instance,float optval,int *nextinstance){
 	float instpref=instance_pref(instance);
 	if(instpref==optval){
 		if(CSP_next(instance,optval,nextinstance))
