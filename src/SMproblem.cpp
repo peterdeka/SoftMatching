@@ -10,6 +10,8 @@
 SM_problem::SM_problem() {
 	srand((unsigned)time(0));
 	buildVarDomains();
+	men=(Male**)malloc(NUM_INDIVIDUALS*sizeof(Male*));
+	women=(Female**)malloc(NUM_INDIVIDUALS*sizeof(Female*));
 	for(int i=0;i<NUM_INDIVIDUALS;i++){
 		int instvals[NUMVARS];
 		gen_random_instance(instvals);
@@ -79,4 +81,18 @@ bool SM_problem::verify_is_weakstable(){
 		}
 	}
 	return true;
+}
+
+void SM_problem::solve_with_GS(){
+	Classic_GS gs(NUM_INDIVIDUALS,men,women);
+	gs.gale_shapley_men_opt(this->men_matches);
+	cout << "Gale shapley stable match: ";
+	print_arr(this->men_matches,NUM_INDIVIDUALS);
+}
+
+void SM_problem::print_arr(int *inst,int length){
+	for (int i=0;i<length;i++)
+			cout << inst[i];
+	cout << " \n ";
+
 }

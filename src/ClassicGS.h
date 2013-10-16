@@ -7,19 +7,20 @@
 
 #ifndef CLASSICGS_H_
 #define CLASSICGS_H_
-#define NUM_INDIVIDUALS 10
+
 
 #include "Male.h"
 #include "Female.h"
 
 class Classic_GS {
 	int num_individuals;
-	Male *men;
-	Female *women;
-	int **menprefs, **womenprefs;	//liste di preferenza di ogni individuo (indice=varid, contenuto=pref)
+	Male **men;
+	Female **women;
+	int **menprefs;	//liste di preferenza di ogni individuo (indice=varid, contenuto=pref)
+	float **womenprefs;
 
 public:
-	Classic_GS(int num_males, Male* menarray, Female* womenarray);
+	Classic_GS(int num_males, Male** menarray, Female** womenarray);
 	virtual ~Classic_GS();
 	void gale_shapley_men_opt(int *matching);
 };

@@ -94,7 +94,8 @@ void testWomen(){
 }*/
 
 int main() {
-
+	SM_problem *p= new SM_problem();
+	p->solve_with_GS();
 	return 0;
 }
 

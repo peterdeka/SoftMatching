@@ -8,27 +8,30 @@
 #ifndef SMPROBLEM_H_
 #define SMPROBLEM_H_
 
-#import "Male.h"
-#import "Female.h"
+#include "Male.h"
+#include "Female.h"
+#include "ClassicGS.h"
 
-#define NUM_INDIVIDUALS 10
-#define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
+#define NUM_INDIVIDUALS 4
+#define NUMVARS 5	//numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 
 #define MALE_TIGHTNESS 0.8	//percentuale di binary constraint NON nulli
 
 class SM_problem {
-	Male *men[NUM_INDIVIDUALS];
-	Female *women[NUM_INDIVIDUALS];
+	Male **men;
+	Female **women;
 	int men_matches[NUM_INDIVIDUALS];
 	char **varDomains;//ogni varId è associato al suo dominio (che è un array di valori)
 	void gen_random_instance(int *instance);
 	void buildVarDomains();
+	void print_arr(int *inst,int length);
 
 public:
 	SM_problem();
 	virtual ~SM_problem();
 	bool verify_is_weakstable();
+	void solve_with_GS();
 };
 
 #endif /* SMPROBLEM_H_ */
