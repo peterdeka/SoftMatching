@@ -6,7 +6,7 @@
  */
 
 #include "SMproblem.h"
-
+#include <fstream>
 SM_problem::SM_problem() {
 	srand((unsigned)time(0));
 	buildVarDomains();
@@ -20,6 +20,12 @@ SM_problem::SM_problem() {
 		women[i]= new Female(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
 		men_matches[i]=-1;
 	}
+	string st;
+	men[0]->DOT_representation(&st);
+	ofstream myfile;
+	myfile.open ("Mgraph.gv");
+	myfile << st;
+	myfile.close();
 
 }
 
@@ -64,12 +70,12 @@ bool SM_problem::verify_is_weakstable(){
 		if(men_matches[i]==-1)//TODO single unmatched?????
 			continue;
 		Male *curmale=men[i];
-		float mcurpref=curmale->instance_pref(women[men_matches[i]]->myInstance);
+		float mcurpref=curmale->pref(women[men_matches[i]]);
 		for(int k=0;k<NUM_INDIVIDUALS;k++){
 			if(k==men_matches[i])
 				continue;
 			Female *curfemale= women[k];
-			if(curmale->instance_pref(curfemale->myInstance) > mcurpref){
+			if(curmale->pref(curfemale) > mcurpref){
 				if(women_matches[k]==-1)
 					continue;
 				float wcurpref=curfemale->instance_pref(men[women_matches[k]]->myInstance);
@@ -83,16 +89,20 @@ bool SM_problem::verify_is_weakstable(){
 	return true;
 }
 
-void SM_problem::solve_with_GS(){
+void SM_problem::solve_with_classicGS(){
 	Classic_GS gs(NUM_INDIVIDUALS,men,women);
 	gs.gale_shapley_men_opt(this->men_matches);
 	cout << "Gale shapley stable match: ";
 	print_arr(this->men_matches,NUM_INDIVIDUALS);
 }
 
+void SM_problem::solve_with_softGS(){
+
+}
 void SM_problem::print_arr(int *inst,int length){
 	for (int i=0;i<length;i++)
 			cout << inst[i]<<"-";
 	cout << " \n ";
 
 }
+

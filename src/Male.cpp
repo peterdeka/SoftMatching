@@ -12,8 +12,13 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	this->domains_size=domains_size;
 	this->prefTree=new CTree(numvars,domains_size);
 	this->myInstance=(int*)malloc(numvars*sizeof(int));
+	this->numvars=numvars;
+	this->myOpt=-1.0f;
+	this->myOptInstance=(int*)malloc(numvars*sizeof(int));
 	memcpy(this->myInstance,instance,numvars*sizeof(int));
 	buildTree(tightness,numvars,varDomains);
+	this->make_DAC();
+	this->myOpt=this->DAC_opt(this->myOptInstance);
 }
 
 
@@ -101,7 +106,7 @@ void Male::DOT_representation(string *res){
 	this->prefTree->DOTgraph(res);
 }
 
-void Male::DAC(){
+void Male::make_DAC(){
 	DAC_first_pass(this->prefTree->root);
 }
 
@@ -168,16 +173,18 @@ void Male::opt_as_father(CTreeNode *node,int *opt_instance,int *curidx){
 
 
 //per encapsulation devi passare opt_instance giˆ allocato
-float Male::DAC_opt(int *opt_instance,int *curidx){
+float Male::DAC_opt(int *opt_instance){
+	int curidx=0;
 	//prendo il max dei miei unary
-	opt_as_father(this->prefTree->root,opt_instance,curidx);
+	opt_as_father(this->prefTree->root,opt_instance,&curidx);
 	return this->prefTree->root->dacUnaryConstraints[opt_instance[0]];
 }
 //FINE DAC 2nd pass
 
 //calcola valore di preferenza di un'istanza
-float Male::instance_pref(int *instance){
+float Male::pref(Female *f){
 	float pref=10.0f;
+	int *instance=f->myInstance;
 		for(int i=0;i<prefTree->n_nodes;i++){
 			int curval=instance[i];
 			CTreeNode *curnode=prefTree->linearizedTree[i];
@@ -189,6 +196,22 @@ float Male::instance_pref(int *instance){
 		}
 		return pref;
 }
+
+//
+//int Male::opt(Female **women,int n_women){
+//	int bestidx=0;
+//	float bestpref=-1;
+//	int i=0;
+//	for( i=0;i<n_women;i++){
+//		float curpref=instance_pref(women[i]->myInstance);
+//			if(curpref > bestpref){
+//				bestpref=curpref;
+//				bestidx=i;
+//			}
+//	}
+//	return i;
+//}
+
 
 //HCSP next applied to w-cut of SCSP tree
 bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
@@ -228,12 +251,14 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 	return false;
 }
 
-bool Male::SOFT_next(int *instance,float optval,int *nextinstance){
-	float instpref=instance_pref(instance);
-	if(instpref==optval){
-		if(CSP_next(instance,optval,nextinstance))
+bool Male::SOFT_next(Female *curfemale,int *nextinstance){
+	float instpref=pref(curfemale);
+	if(instpref==this->myOpt){
+		if(CSP_next(curfemale->myInstance,this->myOpt,nextinstance))
 			return true;
 	}
 	//niente devo cercare ad un valore di preferenza inferiore
 
 }
+
+

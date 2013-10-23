@@ -11,6 +11,7 @@ Female::Female(int numvars,float connectedness,int domains_sz,char **varDomains,
 		this->domains_size=domains_sz;
 		this->prefGraph=new CTree(numvars,domains_sz);
 		this->myInstance=(int*)malloc(numvars*sizeof(int));
+		this->numvars=numvars;
 		memcpy(this->myInstance,instance,numvars*sizeof(int));
 		buildGraph(numvars,connectedness,varDomains);
 }
@@ -119,10 +120,10 @@ float Female::instance_pref(int *instance){
 	return pref;
 }
 
-int Female::compare_instances(int *instance1,int* instance2){
+int Female::compare(Male *m1,Male *m2){
 	float pref1,pref2;
-	pref1=instance_pref(instance1);
-	pref2=instance_pref(instance2);
+	pref1=instance_pref(m1->myInstance);
+	pref2=instance_pref(m2->myInstance);
 	if(pref1>pref2)
 		return 0;
 	else if(pref1>pref2)

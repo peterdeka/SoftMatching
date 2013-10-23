@@ -16,7 +16,7 @@
 #define NUMVARS 5	//numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 
-#define MALE_TIGHTNESS 0.8	//percentuale di binary constraint NON nulli
+#define MALE_TIGHTNESS 0.9	//percentuale di binary constraint NON nulli
 
 class SM_problem {
 	Male **men;
@@ -31,7 +31,8 @@ public:
 	SM_problem();
 	virtual ~SM_problem();
 	bool verify_is_weakstable();
-	void solve_with_GS();
+	void solve_with_classicGS();
+	void SM_problem::solve_with_softGS();
 };
 
 #endif /* SMPROBLEM_H_ */
