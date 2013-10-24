@@ -22,7 +22,7 @@ public:
 	Female(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance);
 	void DOT_representation(string *res);
 	float instance_pref(int *instance);
-	int compare(Male* m1, Male *m2);
+	int compare(Male *m1, Male *m2);
 };
 
 

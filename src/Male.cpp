@@ -128,9 +128,12 @@ void Male::DAC_first_pass(CTreeNode *node){
 				node->dacUnaryConstraints[j]=maxPref;
 		}
 	}
+
+	//****USELESS**
 	//fisso me stesso (figlio) e verifico col padre
-	if(node->father==NULL)
+	/*if(node->father==NULL)
 		return;
+
 	for(int j=0;j<domains_size;j++){
 		float maxPref=0.0f;
 		for(int k=0;k<domains_size;k++){
@@ -141,7 +144,7 @@ void Male::DAC_first_pass(CTreeNode *node){
 		}
 		if(maxPref<node->dacUnaryConstraints[j])
 			node->dacUnaryConstraints[j]=maxPref;
-	}
+	}*/
 
 }
 
@@ -225,9 +228,9 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 		CTreeNode *curnode=prefTree->linearizedTree[i];
 		bool found=false;
 		//cerco prossimo valore valido in ordinamento del dominio
-		for(int k=instance[i];k<domains_size;k++){
+		for(int k=instance[i]+1;k<domains_size;k++){
 			//verifico cutvalue
-			if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][instance[i]]>cutval){
+			if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][instance[i]]>cutval ){
 				instance[i]=k;
 				found=true;
 				break;
@@ -236,14 +239,18 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 		if(found){
 			//reset-succ, "riazzera contatore" di tutti i nodi successori
 			for(int k=i+1;k<prefTree->n_nodes;k++){
+				bool isconsistent=false;	//vedo se effettivamente resettando trovo soluzione consistente TODO check with prof
 				curnode=prefTree->linearizedTree[k];
 				for(int j=0;j<domains_size;j++){
 					//verifico cutvalue
 					if(curnode->dacUnaryConstraints[j]>=cutval && curnode->fatherConstraints[curnode->father->value][j]>cutval){
 						instance[k]=j;
+						isconsistent=true;
 						break;
 					}
 				}
+				if(!isconsistent)	//resettando non ho trovato un assegnamento consistente per la variabile k-esima
+					return false;
 			}
 			return true;	//trovato next, esco
 		}

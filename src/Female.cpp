@@ -120,7 +120,7 @@ float Female::instance_pref(int *instance){
 	return pref;
 }
 
-int Female::compare(Male *m1,Male *m2){
+int Female::compare(Male *m1, Male *m2){
 	float pref1,pref2;
 	pref1=instance_pref(m1->myInstance);
 	pref2=instance_pref(m2->myInstance);
