@@ -11,11 +11,19 @@
 #include "Female.h"
 
 class Male{
+	struct Tuple {
+		        int var_idx;
+		        int child_idx;
+		        int idx_in_bintbl[2];
+		    };
+
 	CTree *prefTree;
 	int domains_size;
 	int numvars;
 	float myOpt;
 	int *myOptInstance;
+	float **fixed_tuple_childconstr;		//mi serve quando faccio il fix, tavola di servizio per evitare malloc ogni volta
+	float **fixedtuple_backup;			//solo puntatore di backup per ripristinare fixed tuple
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);
 	void make_DAC();
@@ -24,7 +32,11 @@ class Male{
 	void opt_as_child(CTreeNode *node,int *opt_instance,int *curidx);
 	void opt_as_father(CTreeNode *node,int *opt_instance,int *curidx);
 	bool CSP_next(int *instance, float cutval,int *nextinstance);	//risolve come un problema di HCSP applicando il cut a cutval
-
+	void find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple);
+	void fix(Tuple *fixtuple);
+	void unfix(Tuple *fixtuple);
+	float next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref);
+	float find_next_pref_level(float curpref);
 
 	public:
 	int *myInstance;

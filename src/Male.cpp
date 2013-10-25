@@ -19,6 +19,9 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	buildTree(tightness,numvars,varDomains);
 	this->make_DAC();
 	this->myOpt=this->DAC_opt(this->myOptInstance);
+	this->fixed_tuple_childconstr=(float**)malloc(sizeof(float*)*domains_size*domains_size);
+	for(int i=0;i<domains_size;i++)
+		this->fixed_tuple_childconstr[i]=(float*)malloc(sizeof(float)*domains_size);
 }
 
 
@@ -216,6 +219,31 @@ float Male::pref(Female *f){
 //}
 
 
+void Male::fix(Tuple *fixtuple){
+
+		if(fixtuple!=NULL){
+			//salvo puntatore a tavola originale non fixata
+			fixedtuple_backup=prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx];
+			//fixo tavola di servizio di quest'uomo
+			for(int i=0;i<domains_size;i++){
+				for(int k=0;k<domains_size;k++){
+					if(fixtuple->idx_in_bintbl[0]==i && fixtuple->idx_in_bintbl[1]==k)
+						this->fixed_tuple_childconstr=1.0f;
+					else
+						this->fixed_tuple_childconstr=0;
+				}
+			}
+			//swappo i puntatori
+			this->prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx]=this->fixed_tuple_childconstr;
+		}
+}
+
+
+void Male::unfix(Tuple *fixtuple){
+	this->prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx]=this->fixedtuple_backup;
+}
+
+
 //HCSP next applied to w-cut of SCSP tree
 bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 	//lintree is breadth first->ordering is ok
@@ -223,6 +251,7 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 		prefTree->linearizedTree[i]->value=instance[i];
 		nextinstance[i]=instance[i];
 	}
+
 	//ora procedo con l'operazione risalendo l'albero
 	for(int i=prefTree->n_nodes-1;i>-1;i--){
 		CTreeNode *curnode=prefTree->linearizedTree[i];
@@ -260,16 +289,107 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 	return false;
 }
 
+float Male::next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref){
+	//1-CERCO CON STESSA PREFERENZA
+	//seguo linearizzazione quindi cerco in miei binary e poi in altri nodi (sempre successvi)
+	CTreeNode* curnode=prefTree->linearizedTree[tin->var_idx];
+	//cerco in base all'ordinamento del dominio nella mia tabella binary
+	for(int i=tin->idx_in_bintbl[0];i< domains_size;i++){
+		int kinit;
+		if(i==tin->idx_in_bintbl[0])
+			kinit=tin->idx_in_bintbl[1];
+		else
+			kinit=0;
+		for(int k=kinit;k<domains_size;k++){
+			if(curnode->childConstraints[tin->child_idx][i][k]==pref){
+				tout->idx_in_bintbl[0]=i;
+				tout->idx_in_bintbl[1]=k;
+				return pref;
+			}
+		}
+	}
+	//cerco nelle variabili successive
+	for(int i=tin->var_idx+1;i<numvars;i++){
+		curnode=prefTree->linearizedTree[i];
+		for(int k=0;k<curnode->child_n;k++){
+			float **tentry=curnode->childConstraints[k];
+			for(int j=0;j<domains_size;j++){
+				for(int o;o<domains_size;o++){
+					if(tentry[j][o]==pref){
+						tout->var_idx=i;
+						tout->child_idx=k;
+						tout->idx_in_bintbl[0]=j;
+						tout->idx_in_bintbl[1]=o;
+						return pref;
+					}
+				}
+			}
+		}
+	}
+
+}
+
+float Male::find_next_pref_level(float curpref){
+	float nextlevel=-1;
+	CTreeNode *curnode;
+	for(int i=0;i<numvars;i++){
+		curnode=prefTree->linearizedTree[i];
+		for(int k=0;k<curnode->child_n;k++){
+			float **tentry=curnode->childConstraints[k];
+			for(int j=0;j<domains_size;j++){
+				for(int o;o<domains_size;o++){
+					if(tentry[j][o]<curpref && tentry[j][o]>nextlevel){
+						nextlevel=tentry[j][o];
+					}
+				}
+			}
+		}
+	}
+	return nextlevel;
+}
 
 //salvagnini - rossi
-bool Male::SOFT_next(Female *curfemale,int *nextinstance){	//TODO work in progress
-	float instpref=pref(curfemale);
-	if(instpref==this->myOpt){
-		if(CSP_next(curfemale->myInstance,this->myOpt,nextinstance))
-			return true;
+bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
+	float p_star=pref(curfemale);
+	Tuple t_star;
+
+	//cerco la prima tupla dell'istanza(soluzione) corrente che ha preferenza uguale all'istanza corrente
+	find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star);
+	fix(&t_star);
+	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
+		unfix(&tstar);
+		return true;
 	}
-	//niente devo cercare ad un valore di preferenza inferiore
+	//non l'ho trovata, quindi devo trovare un altra tupla allo stesso livello di pref ma successiva
+	//1 annullo tutte le tuple dell'albero con preferenza = pstar e precedenti a t
+	float [numvars]***;
+	for(int i=t_star.var_idx-1 ;i<-1;i--){
+
+	}
+
+
+
 
 }
 
 
+//procedo secondo la linearizzazione (ordine tuple quindi breadth first) a trovare il primo binary che ha preferenza=pref
+void Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
+	if(instance!=NULL){ 	//devo cercarla all'interno della soluzione passata
+		for(int i=0;i<numvars;i++){
+			CTreeNode *curnode=prefTree->linearizedTree[i];
+			for(int k=0;k<curnode->child_n;k++){
+				if(curnode->childConstraints[k][instance[i]][instance[i+k+1]]==pref){
+					tuple->var_idx=i;
+					tuple->child_idx=k;
+					tuple->idx_in_bintbl[0]=instance[i];
+					tuple->idx_in_bintbl[1]=instance[i+k+1];
+					return;
+				}
+			}
+		}
+	}
+	else{		//non devo trovarla all'interno di una soluzione data ma all'interno dell'intero grafo
+
+	}
+}
