@@ -230,7 +230,7 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 		//cerco prossimo valore valido in ordinamento del dominio
 		for(int k=instance[i]+1;k<domains_size;k++){
 			//verifico cutvalue
-			if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][instance[i]]>cutval ){
+			if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][k]>=cutval ){  //TODO verifico unary del padre?! in teoria no
 				instance[i]=k;
 				found=true;
 				break;
@@ -239,26 +239,30 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 		if(found){
 			//reset-succ, "riazzera contatore" di tutti i nodi successori
 			for(int k=i+1;k<prefTree->n_nodes;k++){
-				bool isconsistent=false;	//vedo se effettivamente resettando trovo soluzione consistente TODO check with prof
+				bool foundconsistent=false;	//vedo se effettivamente resettando trovo soluzione consistente TODO check with prof
 				curnode=prefTree->linearizedTree[k];
 				for(int j=0;j<domains_size;j++){
 					//verifico cutvalue
-					if(curnode->dacUnaryConstraints[j]>=cutval && curnode->fatherConstraints[curnode->father->value][j]>cutval){
+					if(curnode->dacUnaryConstraints[j]>=cutval && curnode->fatherConstraints[curnode->father->value][j]>=cutval && curnode->father->dacUnaryConstraints[curnode->father->value]>=cutval){
 						instance[k]=j;
-						isconsistent=true;
+						foundconsistent=true;
 						break;
 					}
 				}
-				if(!isconsistent)	//resettando non ho trovato un assegnamento consistente per la variabile k-esima
+				if(!foundconsistent)	//resettando non ho trovato un assegnamento consistente per la variabile k-esima
 					return false;
+				//altrimenti continuo e passo alla prossima variabile successiva
 			}
+
 			return true;	//trovato next, esco
 		}
 	}
 	return false;
 }
 
-bool Male::SOFT_next(Female *curfemale,int *nextinstance){
+
+//salvagnini - rossi
+bool Male::SOFT_next(Female *curfemale,int *nextinstance){	//TODO work in progress
 	float instpref=pref(curfemale);
 	if(instpref==this->myOpt){
 		if(CSP_next(curfemale->myInstance,this->myOpt,nextinstance))
