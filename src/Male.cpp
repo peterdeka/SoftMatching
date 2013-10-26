@@ -289,8 +289,35 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 	return false;
 }
 
-float Male::next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref){
-	//1-CERCO CON STESSA PREFERENZA
+
+float Male::CSP_solve(float cutval, int *solution){
+	CTreeNode *curnode;
+	for(int i=0;i<numvars;i++){
+		curnode=prefTree->linearizedTree[i];
+		for(int j=0;j<domains_size;j++){
+			if(curnode->unaryConstraints[j]<cutval)
+				continue;
+			curnode->value=j;		//istanzio
+			for(int k=0;k<curnode->child_n;k++){
+				bool found=false;
+				for(int h=0;h<domains_size;h++){
+					if(curnode->childConstraints[k][j][h]>=cutval){
+						curnode->children[k]->value=h;
+						found=true;
+						break;
+					}
+				}
+				if(!found)
+					break;
+			}
+		}
+	}
+}
+
+
+bool Male::next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref){
+
+	//CERCO CON STESSA PREFERENZA
 	//seguo linearizzazione quindi cerco in miei binary e poi in altri nodi (sempre successvi)
 	CTreeNode* curnode=prefTree->linearizedTree[tin->var_idx];
 	//cerco in base all'ordinamento del dominio nella mia tabella binary
@@ -304,7 +331,7 @@ float Male::next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref){
 			if(curnode->childConstraints[tin->child_idx][i][k]==pref){
 				tout->idx_in_bintbl[0]=i;
 				tout->idx_in_bintbl[1]=k;
-				return pref;
+				return true;
 			}
 		}
 	}
@@ -320,14 +347,15 @@ float Male::next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref){
 						tout->child_idx=k;
 						tout->idx_in_bintbl[0]=j;
 						tout->idx_in_bintbl[1]=o;
-						return pref;
+						return true;
 					}
 				}
 			}
 		}
 	}
-
+	return false;
 }
+
 
 float Male::find_next_pref_level(float curpref){
 	float nextlevel=-1;
@@ -348,6 +376,7 @@ float Male::find_next_pref_level(float curpref){
 	return nextlevel;
 }
 
+
 //salvagnini - rossi
 bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	float p_star=pref(curfemale);
@@ -364,8 +393,26 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	//1 annullo tutte le tuple dell'albero con preferenza = pstar e precedenti a t
 	float [numvars]***;
 	for(int i=t_star.var_idx-1 ;i<-1;i--){
-
+			//TODO set to 0 previous
 	}
+	float cpref=p_star;
+	Tuple tfound;
+	while(cpref>0){
+		if(!next_tuple_with_pref(&t_star, &tfound, cpref)){		//finite tuple con preferenza cpref, scendo
+			cpref=find_next_pref_level(cpref);
+			if(cpref<=0)
+				return false;		//non si scende piu, fine
+			//TODO reset previuosly set to 0
+			find_first_tuple_with_pref(NULL,cpref,&tfound);
+		}
+		//secondo if
+		fix(&tfound);
+
+
+
+		unfix(&tfound);
+	}
+
 
 
 
@@ -379,7 +426,7 @@ void Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
 		for(int i=0;i<numvars;i++){
 			CTreeNode *curnode=prefTree->linearizedTree[i];
 			for(int k=0;k<curnode->child_n;k++){
-				if(curnode->childConstraints[k][instance[i]][instance[i+k+1]]==pref){
+				if(curnode->childConstraints[k][instance[i]][instance[i+k+1]]==pref){		//TODO FIXME i+k+1 non va bene
 					tuple->var_idx=i;
 					tuple->child_idx=k;
 					tuple->idx_in_bintbl[0]=instance[i];
@@ -390,6 +437,22 @@ void Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
 		}
 	}
 	else{		//non devo trovarla all'interno di una soluzione data ma all'interno dell'intero grafo
+		for(int i=0;i<numvars;i++){
+			CTreeNode *curnode=prefTree->linearizedTree[i];
+			for(int k=0;k<curnode->child_n;k++){
+				for(int j=0;j<domains_size;j++){
+					for(int h=0;h<domains_size;h++){
+						if(curnode->childConstraints[k][j][h]==pref){
+							tuple->var_idx=i;
+							tuple->child_idx=k;
+							tuple->idx_in_bintbl[0]=j;
+							tuple->idx_in_bintbl[1]=h;
+							return;
+						}
+					}
+				}
 
+			}
+		}
 	}
 }

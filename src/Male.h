@@ -35,7 +35,7 @@ class Male{
 	void find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple);
 	void fix(Tuple *fixtuple);
 	void unfix(Tuple *fixtuple);
-	float next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref);
+	bool next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref);
 	float find_next_pref_level(float curpref);
 
 	public:
