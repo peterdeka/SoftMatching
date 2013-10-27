@@ -290,28 +290,59 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 }
 
 
+
 float Male::CSP_solve(float cutval, int *solution){
-	CTreeNode *curnode;
-	for(int i=0;i<numvars;i++){
-		curnode=prefTree->linearizedTree[i];
-		for(int j=0;j<domains_size;j++){
-			if(curnode->unaryConstraints[j]<cutval)
-				continue;
-			curnode->value=j;		//istanzio
-			for(int k=0;k<curnode->child_n;k++){
-				bool found=false;
-				for(int h=0;h<domains_size;h++){
-					if(curnode->childConstraints[k][j][h]>=cutval){
-						curnode->children[k]->value=h;
-						found=true;
-						break;
-					}
-				}
-				if(!found)
+	bool solfound=false;
+	for(int i=0;i<domains_size;i++){
+		if(prefTree->root->dacUnaryConstraints[i]>=cutval){
+			prefTree->root->value=i;
+			bool found=true;
+			for(int k=0;k<prefTree->root->child_n;k++){
+				if(CSP_solve_arc_consist(prefTree->root->children[k],cutval)==false){
+					found=false;
 					break;
+				}
 			}
+			if(found){		//soluzione trovata
+				solfound=true;
+				break;
+			}
+
 		}
 	}
+	if(!solfound)
+		return -1;
+	//trovata quindi restituisco
+	for(int i=0;i<numvars;i++){
+		solution[i]=prefTree->linearizedTree[i]->value;
+	}
+	Female tmpf;
+	tmpf.myInstance=solution;
+	return pref(&tmpf);
+}
+
+
+
+//funzione ricorsiva necessaria per csp solve
+bool Male::CSP_solve_arc_consist(CTreeNode *node, float cutval){
+	int fatherval=node->father->value;
+	for(int i=0;i<domains_size;i++){
+		//trovo un valore che va bene con mio padre
+		if(node->dacUnaryConstraints>=cutval && node->fatherConstraints[fatherval][i]>=cutval){
+			node->value=i;
+			//propago nei figli
+			bool found=true;
+			for(int k=0;k<node->child_n;k++){
+				if(CSP_solve_arc_consist(node->children[k],cutval)==false){
+					found=false;
+					break;
+				}
+			}
+			if(found)
+				return true;
+		}
+	}
+	return false;
 }
 
 
@@ -382,41 +413,42 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	float p_star=pref(curfemale);
 	Tuple t_star;
 
-	//cerco la prima tupla dell'istanza(soluzione) corrente che ha preferenza uguale all'istanza corrente
+	//cerco soluzione successiva generata dalla stessa tupla dell'attuale (con stesso livello di pref)
 	find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star);
 	fix(&t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
 		unfix(&tstar);
 		return true;
 	}
-	//non l'ho trovata, quindi devo trovare un altra tupla allo stesso livello di pref ma successiva
+	unfix(&tstar);
+
+	//non l'ho trovata, quindi devo trovare un altra tupla allo stesso livello di pref ma lex successiva
 	//1 annullo tutte le tuple dell'albero con preferenza = pstar e precedenti a t
 	float [numvars]***;
-	for(int i=t_star.var_idx-1 ;i<-1;i--){
+	for(int i=t_star.var_idx-1 ;i>-1;i--){
 			//TODO set to 0 previous
 	}
+	//2 procedo alla ricerca
 	float cpref=p_star;
 	Tuple tfound;
-	while(cpref>0){
+	float tmppref;
+	while(1){
 		if(!next_tuple_with_pref(&t_star, &tfound, cpref)){		//finite tuple con preferenza cpref, scendo
-			cpref=find_next_pref_level(cpref);
-			if(cpref<=0)
-				return false;		//non si scende piu, fine
+			tmppref=find_next_pref_level(cpref);
+			if(tmppref<=0)
+				return false;		//non si scende piu di preferenza, finite le soluzioni
+			find_first_tuple_with_pref(NULL,tmppref,&tfound);
 			//TODO reset previuosly set to 0
-			find_first_tuple_with_pref(NULL,cpref,&tfound);
 		}
-		//secondo if
+		//secondo if, ho trovato una tupla e voglio vedere se mi da soluzione al suo livello di preferenza
 		fix(&tfound);
-
-
-
+		float candpref=CSP_solve(tmppref, nextsol);
 		unfix(&tfound);
+		if(candpref==tmppref)
+			return true;
+		cpref=tmppref;
+		//TODO set tuple to 0
 	}
-
-
-
-
-
 }
 
 

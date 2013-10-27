@@ -37,6 +37,8 @@ class Male{
 	void unfix(Tuple *fixtuple);
 	bool next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref);
 	float find_next_pref_level(float curpref);
+	bool Male::CSP_solve_arc_consist(CTreeNode *node, float cutval);
+	float Male::CSP_solve(float cutval, int *solution);
 
 	public:
 	int *myInstance;
