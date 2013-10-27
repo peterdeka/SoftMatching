@@ -20,8 +20,10 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	this->make_DAC();
 	this->myOpt=this->DAC_opt(this->myOptInstance);
 	this->fixed_tuple_childconstr=(float**)malloc(sizeof(float*)*domains_size*domains_size);
+	this->zeroed_tuples_backup=(Tuple*)malloc(sizeof(Tuple)*domains_size*domains_size*numvars);
 	for(int i=0;i<domains_size;i++)
 		this->fixed_tuple_childconstr[i]=(float*)malloc(sizeof(float)*domains_size);
+
 }
 
 
@@ -408,6 +410,39 @@ float Male::find_next_pref_level(float curpref){
 }
 
 
+void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
+	//tengo traccia delle tuple che azzero
+	n_zeroed_tuples=0;
+	zeroed_pref=pref;
+	for(int i=t_star->var_idx ;i>-1;i--){
+				//TODO set to 0 previous
+			CTreeNode *curnode=prefTree->linearizedTree[i];
+			for(int j=t_star->child_idx;j>-1;j--){
+				for(int k=t_star->idx_in_bintbl[0];k>-1;k--){
+					for(int h=t_star->idx_in_bintbl[1]-1;h>-1;h--){
+						if(curnode->childConstraints[j][k][h]==pref){
+							zeroed_tuples_backup[n_zeroed_tuples].var_idx=i;
+							zeroed_tuples_backup[n_zeroed_tuples].child_idx=j;
+							zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[0]=k;
+							zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[1]=h;
+							n_zeroed_tuples++;
+							curnode->childConstraints[j][k][h]=0;
+						}
+					}
+				}
+			}
+		}
+}
+
+void Male::reset_zeroed_prectuples(){
+	Tuple *t;
+	for(int i=0;i<n_zeroed_tuples;i++){
+		t=n_zeroed_tuples+i;
+		prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=zeroed_pref;
+	}
+	n_zeroed_tuples=0;
+}
+
 //salvagnini - rossi
 bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	float p_star=pref(curfemale);
@@ -424,10 +459,7 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 
 	//non l'ho trovata, quindi devo trovare un altra tupla allo stesso livello di pref ma lex successiva
 	//1 annullo tutte le tuple dell'albero con preferenza = pstar e precedenti a t
-	float [numvars]***;
-	for(int i=t_star.var_idx-1 ;i>-1;i--){
-			//TODO set to 0 previous
-	}
+	zeroout_prectuples_with_pref(&t_star, p_star);
 	//2 procedo alla ricerca
 	float cpref=p_star;
 	Tuple tfound;
@@ -438,7 +470,8 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 			if(tmppref<=0)
 				return false;		//non si scende piu di preferenza, finite le soluzioni
 			find_first_tuple_with_pref(NULL,tmppref,&tfound);
-			//TODO reset previuosly set to 0
+			// reset previuosly set to 0
+			reset_zeroed_prectuples();  //TODO check
 		}
 		//secondo if, ho trovato una tupla e voglio vedere se mi da soluzione al suo livello di preferenza
 		fix(&tfound);

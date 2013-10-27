@@ -24,6 +24,9 @@ class Male{
 	int *myOptInstance;
 	float **fixed_tuple_childconstr;		//mi serve quando faccio il fix, tavola di servizio per evitare malloc ogni volta
 	float **fixedtuple_backup;			//solo puntatore di backup per ripristinare fixed tuple
+	Tuple *zeroed_tuples_backup;		//tengo traccia delle tuple azzerate
+	int n_zeroed_tuples;
+	float zeroed_pref;
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);
 	void make_DAC();
@@ -37,10 +40,12 @@ class Male{
 	void unfix(Tuple *fixtuple);
 	bool next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref);
 	float find_next_pref_level(float curpref);
-	bool Male::CSP_solve_arc_consist(CTreeNode *node, float cutval);
-	float Male::CSP_solve(float cutval, int *solution);
+	bool CSP_solve_arc_consist(CTreeNode *node, float cutval);
+	float CSP_solve(float cutval, int *solution);
+	void zeroout_prectuples_with_pref(Tuple *t_star,float pref);
+	void reset_zeroed_prectuples();
 
-	public:
+public:
 	int *myInstance;
 	Male(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
 	//int opt(Female **women,int n_women);
