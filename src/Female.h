@@ -11,14 +11,17 @@
 #include "CTreeNode.h"
 #include "Male.h"
 
+class Male;
 class Female{
 	CTree *prefGraph;
-	int numvars;
+
 	int domains_size;
 	void buildGraph(int numvars,float connectedness, char **varDomains);
 
 public:
 	int *myInstance;
+	int numvars;
+	Female();
 	Female(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance);
 	void DOT_representation(string *res);
 	float instance_pref(int *instance);

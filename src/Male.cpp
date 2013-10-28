@@ -230,9 +230,9 @@ void Male::fix(Tuple *fixtuple){
 			for(int i=0;i<domains_size;i++){
 				for(int k=0;k<domains_size;k++){
 					if(fixtuple->idx_in_bintbl[0]==i && fixtuple->idx_in_bintbl[1]==k)
-						this->fixed_tuple_childconstr=1.0f;
+						this->fixed_tuple_childconstr[i][k]=1.0f;
 					else
-						this->fixed_tuple_childconstr=0;
+						this->fixed_tuple_childconstr[i][k]=0;
 				}
 			}
 			//swappo i puntatori
@@ -330,7 +330,7 @@ bool Male::CSP_solve_arc_consist(CTreeNode *node, float cutval){
 	int fatherval=node->father->value;
 	for(int i=0;i<domains_size;i++){
 		//trovo un valore che va bene con mio padre
-		if(node->dacUnaryConstraints>=cutval && node->fatherConstraints[fatherval][i]>=cutval){
+		if(node->dacUnaryConstraints[i]>=cutval && node->fatherConstraints[fatherval][i]>=cutval){
 			node->value=i;
 			//propago nei figli
 			bool found=true;
@@ -410,6 +410,11 @@ float Male::find_next_pref_level(float curpref){
 }
 
 
+void Male::zeroout_tuple(Tuple *t){
+	prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=0;
+	n_zeroed_tuples++;
+}
+
 void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 	//tengo traccia delle tuple che azzero
 	n_zeroed_tuples=0;
@@ -437,7 +442,7 @@ void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 void Male::reset_zeroed_prectuples(){
 	Tuple *t;
 	for(int i=0;i<n_zeroed_tuples;i++){
-		t=n_zeroed_tuples+i;
+		t=zeroed_tuples_backup+i;
 		prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=zeroed_pref;
 	}
 	n_zeroed_tuples=0;
@@ -452,10 +457,10 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star);
 	fix(&t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
-		unfix(&tstar);
+		unfix(&t_star);
 		return true;
 	}
-	unfix(&tstar);
+	unfix(&t_star);
 
 	//non l'ho trovata, quindi devo trovare un altra tupla allo stesso livello di pref ma lex successiva
 	//1 annullo tutte le tuple dell'albero con preferenza = pstar e precedenti a t
@@ -463,7 +468,7 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	//2 procedo alla ricerca
 	float cpref=p_star;
 	Tuple tfound;
-	float tmppref;
+	float tmppref=p_star;
 	while(1){
 		if(!next_tuple_with_pref(&t_star, &tfound, cpref)){		//finite tuple con preferenza cpref, scendo
 			tmppref=find_next_pref_level(cpref);
@@ -471,7 +476,7 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 				return false;		//non si scende piu di preferenza, finite le soluzioni
 			find_first_tuple_with_pref(NULL,tmppref,&tfound);
 			// reset previuosly set to 0
-			reset_zeroed_prectuples();  //TODO check
+			reset_zeroed_prectuples();
 		}
 		//secondo if, ho trovato una tupla e voglio vedere se mi da soluzione al suo livello di preferenza
 		fix(&tfound);
@@ -480,8 +485,10 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 		if(candpref==tmppref)
 			return true;
 		cpref=tmppref;
-		//TODO set tuple to 0
+		// set tuple to 0
+		zeroout_tuple(&tfound);
 	}
+	return false; //never hit
 }
 
 

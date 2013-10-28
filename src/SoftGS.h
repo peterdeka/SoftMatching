@@ -14,7 +14,7 @@ class SoftGS {
 	int num_individuals;
 	Male **men;
 	Female **women;
-	int SoftGS::find_female_with_instance(Female *women,int *instance);
+	int find_female_with_instance(int *instance);
 
 public:
 	SoftGS(int num_males, Male** menarray, Female** womenarray);

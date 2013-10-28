@@ -10,6 +10,7 @@
 #include "CTree.h"
 #include "Female.h"
 
+class Female;
 class Male{
 	struct Tuple {
 		        int var_idx;
@@ -21,7 +22,7 @@ class Male{
 	int domains_size;
 	int numvars;
 	float myOpt;
-	int *myOptInstance;
+
 	float **fixed_tuple_childconstr;		//mi serve quando faccio il fix, tavola di servizio per evitare malloc ogni volta
 	float **fixedtuple_backup;			//solo puntatore di backup per ripristinare fixed tuple
 	Tuple *zeroed_tuples_backup;		//tengo traccia delle tuple azzerate
@@ -44,9 +45,11 @@ class Male{
 	float CSP_solve(float cutval, int *solution);
 	void zeroout_prectuples_with_pref(Tuple *t_star,float pref);
 	void reset_zeroed_prectuples();
+	void zeroout_tuple(Tuple *t);
 
 public:
 	int *myInstance;
+	int *myOptInstance;
 	Male(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
 	//int opt(Female **women,int n_women);
 	void DOT_representation(string *res);

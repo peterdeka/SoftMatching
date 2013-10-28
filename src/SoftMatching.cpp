@@ -100,6 +100,7 @@ int main() {
 		cout<< "Verified weak stable OK\n";
 	else
 		cout<< "Sorry solution not weak stable";
+	p->solve_with_softGS();
 	return 0;
 }
 

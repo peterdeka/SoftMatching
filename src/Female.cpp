@@ -16,6 +16,10 @@ Female::Female(int numvars,float connectedness,int domains_sz,char **varDomains,
 		buildGraph(numvars,connectedness,varDomains);
 }
 
+Female::Female(){
+
+}
+
 //generazione grafo preferenze donne
 void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TODO non e tightness altro nome
 	CTree *tree=this->prefGraph;

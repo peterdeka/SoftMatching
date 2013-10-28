@@ -16,8 +16,8 @@ SM_problem::SM_problem() {
 		int instvals[NUMVARS];
 		gen_random_instance(instvals);
 		men[i]= new Male(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
-		gen_random_instance(instvals);
-		women[i]= new Female(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
+		//gen_random_instance(instvals);
+		//women[i]= new Female(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
 		men_matches[i]=-1;
 	}
 	string st;
@@ -26,6 +26,19 @@ SM_problem::SM_problem() {
 	myfile.open ("Mgraph.gv");
 	myfile << st;
 	myfile.close();
+	//genero donne (tutte)
+
+		for(int h;h<DOMAINS_SIZE;h++){
+			for(int k=0;k<DOMAINS_SIZE;k++){
+
+			}
+		}
+			int instvals[NUMVARS];
+			gen_random_instance(instvals);
+			men[i]= new Male(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
+			//gen_random_instance(instvals);
+			//women[i]= new Female(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
+			men_matches[i]=-1;
 
 }
 
@@ -97,8 +110,12 @@ void SM_problem::solve_with_classicGS(){
 }
 
 void SM_problem::solve_with_softGS(){
-
+	SoftGS softgs(NUM_INDIVIDUALS,men,women);
+	softgs.gale_shapley_men_opt(this->men_matches);
+	cout << "SOFT Gale shapley stable match: ";
+	print_arr(this->men_matches,NUM_INDIVIDUALS);
 }
+
 void SM_problem::print_arr(int *inst,int length){
 	for (int i=0;i<length;i++)
 			cout << inst[i]<<"-";

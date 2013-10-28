@@ -29,11 +29,18 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 
 		for(int i=0;i<num_individuals;i++){
 			Male *curman=men[i];
-			int *curinstance;
-
+			int curinstance[num_individuals];
+			bool first=true;
 			while(matching[i]==-1){	//se free
-
-				int proposeto=curman->SOFT_next();
+				int proposeto;
+				if(first){
+					first=false;
+					proposeto=find_female_with_instance(curman->myOptInstance);
+				}
+				else{
+					curman->SOFT_next(women[matching[i]],curinstance);
+					proposeto=find_female_with_instance(curinstance);
+				}
 
 				cout << "m"<<i<<" ? "<<proposeto<<"\n";
 				if(femalematching[proposeto]==-1){	//free girl
@@ -67,12 +74,12 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 }
 
 //restituisce indice nell'array women della donna con queste carattiristiche (questa istanza)
-int SoftGS::find_female_with_instance(Female *women,int *instance){
+int SoftGS::find_female_with_instance(int *instance){
 	for(int i=0;i<num_individuals;i++){
 		Female *f=women[i];
 		bool sheis=true;
 		for(int k=0;k<f->numvars;k++){
-			if(instance[k]!=women->myInstance[k]){
+			if(instance[k]!=f->myInstance[k]){
 				sheis=false;
 				break;
 			}
