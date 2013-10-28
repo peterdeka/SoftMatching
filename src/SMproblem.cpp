@@ -16,29 +16,46 @@ SM_problem::SM_problem() {
 		int instvals[NUMVARS];
 		gen_random_instance(instvals);
 		men[i]= new Male(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
+		//********GENERAZIONE RANDOM DELLE DONNE (NON TUTTE)
 		//gen_random_instance(instvals);
-		//women[i]= new Female(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
+		//women[i]= new Female(NUMVARS,WOMEN_CONNECTEDNESS,DOMAINS_SIZE,varDomains,instvals);
 		men_matches[i]=-1;
+		cout << "*****men "<<i<<" generated\n";
 	}
-	string st;
+
+	/*string st;
 	men[0]->DOT_representation(&st);
 	ofstream myfile;
 	myfile.open ("Mgraph.gv");
 	myfile << st;
 	myfile.close();
-	//genero donne (tutte)
-
-		for(int h;h<DOMAINS_SIZE;h++){
-			for(int k=0;k<DOMAINS_SIZE;k++){
-
-			}
+*/
+	//GENERAZIONE NON RANDOM DELLE DONNE (TUTTE), BISOGNA ADEGUARE NUM_INDIVIDUALS PERCHE COSI NON E PIU UN PARAMETRO
+	int instvals[NUMVARS];
+	fill(instvals, instvals + NUMVARS, 0);
+	int curpos=0;
+	instvals[curpos]=-1;
+	int decpos=1;
+	for(int i=0;i<NUM_INDIVIDUALS;i++){
+		if(instvals[curpos]+1>=DOMAINS_SIZE){
+			curpos++;
 		}
-			int instvals[NUMVARS];
-			gen_random_instance(instvals);
-			men[i]= new Male(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
-			//gen_random_instance(instvals);
-			//women[i]= new Female(NUMVARS,0.3f,DOMAINS_SIZE,varDomains,instvals);
-			men_matches[i]=-1;
+		if(curpos>decpos){
+			//reset successivi
+				for(int k=curpos;k<NUMVARS;k++){
+					instvals[k]=0;
+				}
+				instvals[curpos]=1;
+				curpos=0;
+				decpos++;
+			}
+
+		instvals[curpos]+=1;
+		women[i]=new Female(NUMVARS,WOMEN_CONNECTEDNESS,DOMAINS_SIZE,varDomains,instvals);
+		print_arr(instvals,NUMVARS);
+	}
+
+	cout << "*****women generated\n";
 
 }
 

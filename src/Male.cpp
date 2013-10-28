@@ -34,7 +34,8 @@ void Male::buildTree(float tightness,int numvars,char **varDomains){
 	CTree *tree=this->prefTree;
 	CTreeNode **curarr=(CTreeNode**)malloc(numvars*sizeof(CTreeNode*));
 	CTreeNode **otherarr=(CTreeNode**)malloc(numvars*sizeof(CTreeNode*));
-	int randomVarId= rand() % numvars;
+	//int randomVarId= rand() % numvars;
+	int randomVarId=0;
 	CTreeNode *root=new CTreeNode(randomVarId,varDomains[randomVarId]);
 	root->genUnaryConstraints(domains_size);
 	//ora aggiungo tutte le altre variabili (nodi)

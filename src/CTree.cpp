@@ -8,8 +8,9 @@
 #include "CTree.h"
 
 void CTree::addNode(CTreeNode *node){
-		linearizedTree[node->varId]=node;
-		n_nodes++;
+		//linearizedTree[node->varId]=node;
+		//n_nodes++;
+		linearizedTree[n_nodes++]=node;
 	}
 
 	void CTree::setRoot(CTreeNode *node){
@@ -53,7 +54,7 @@ void CTree::genChildren( CTreeNode *curNode,int child_limit, char **varDomains,i
 	curNode->children=(CTreeNode**)malloc(child_n*sizeof(CTreeNode*));
 
 	for(int i=0;i<child_n;i++){
-		//scelgo random var
+		/*//scelgo random var
 		int randomVarId=-1;
 		while(randomVarId<0){
 			randomVarId=rand()%numvars;
@@ -61,8 +62,9 @@ void CTree::genChildren( CTreeNode *curNode,int child_limit, char **varDomains,i
 
 			if(this->linearizedTree[randomVarId]!=NULL)
 				randomVarId=-1;
-		}
-		CTreeNode* childnode=new CTreeNode(randomVarId,varDomains[randomVarId]);
+		}*/
+		//CTreeNode* childnode=new CTreeNode(randomVarId,varDomains[randomVarId]);
+		CTreeNode* childnode=new CTreeNode(n_nodes,varDomains[n_nodes]);
 		curNode->children[i]=childnode;
 		childnode->father=curNode;
 		childnode->genUnaryConstraints(this->domains_size);

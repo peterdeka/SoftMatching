@@ -86,7 +86,7 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 
 					if(skip>0){
 						//std::cout << "SKIP" << skip << '\n';
-						j--;
+						//j--;
 						continue;
 					}
 					CTreeNode *child=tree->linearizedTree[rndId2];
