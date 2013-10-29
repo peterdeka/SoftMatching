@@ -15,6 +15,8 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	this->numvars=numvars;
 	this->myOpt=-1.0f;
 	this->myOptInstance=(int*)malloc(numvars*sizeof(int));
+	for(int i=0;i<numvars;i++)
+		this->myOptInstance[i]=-1;
 	memcpy(this->myInstance,instance,numvars*sizeof(int));
 	buildTree(tightness,numvars,varDomains);
 	this->make_DAC();
@@ -181,11 +183,38 @@ void Male::opt_as_father(CTreeNode *node,int *opt_instance,int *curidx){
 }
 
 
+
+
 //per encapsulation devi passare opt_instance giˆ allocato
 float Male::DAC_opt(int *opt_instance){
 	int curidx=0;
 	//prendo il max dei miei unary
-	opt_as_father(this->prefTree->root,opt_instance,&curidx);
+	//opt_as_father(this->prefTree->root,opt_instance,&curidx);
+	//return this->prefTree->root->dacUnaryConstraints[opt_instance[0]];
+	CTreeNode *curnode=prefTree->root;
+	float maxPref=0.0f;
+	for(int j=0;j<domains_size;j++){
+		if(curnode->dacUnaryConstraints[j]>maxPref){
+			maxPref=curnode->dacUnaryConstraints[j];
+			curnode->value=j;
+		}
+	}
+
+	for(int i=0;i<prefTree->n_nodes;i++){
+		curnode=prefTree->linearizedTree[i];
+		for(int k=0;k<curnode->child_n;k++){
+			for(int j=0;j<domains_size;j++){
+				if(curnode->childConstraints[k][curnode->value][j]>=curnode->dacUnaryConstraints[curnode->value]){
+					curnode->children[k]->value=j;
+					break;
+				}
+			}
+		}
+	}
+
+	for(int i=0;i<prefTree->n_nodes;i++)
+		opt_instance[i]=prefTree->linearizedTree[i]->value;
+
 	return this->prefTree->root->dacUnaryConstraints[opt_instance[0]];
 }
 //FINE DAC 2nd pass
@@ -197,7 +226,7 @@ float Male::pref(Female *f){
 		for(int i=0;i<prefTree->n_nodes;i++){
 			int curval=instance[i];
 			CTreeNode *curnode=prefTree->linearizedTree[i];
-			pref=min(pref,curnode->unaryConstraints[curval]);
+			pref=min(pref,curnode->dacUnaryConstraints[curval]);
 			for(int k=0;k<curnode->child_n;k++){
 				CTreeNode* curchild=curnode->children[k];
 				pref=min(pref,curnode->childConstraints[k][curval][instance[curchild->varId]]);
@@ -262,10 +291,19 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 		//cerco prossimo valore valido in ordinamento del dominio
 		for(int k=instance[i]+1;k<domains_size;k++){
 			//verifico cutvalue
-			if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][k]>=cutval ){  //TODO verifico unary del padre?! in teoria no
-				instance[i]=k;
-				found=true;
-				break;
+			if(curnode==prefTree->root){
+				if(curnode->dacUnaryConstraints[k]>=cutval){
+					nextinstance[i]=k;
+					found=true;
+					break;
+				}
+			}
+			else{
+				if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][k]>=cutval ){  //TODO verifico unary del padre?! in teoria no
+					nextinstance[i]=k;
+					found=true;
+					break;
+				}
 			}
 		}
 		if(found){
@@ -276,7 +314,7 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 				for(int j=0;j<domains_size;j++){
 					//verifico cutvalue
 					if(curnode->dacUnaryConstraints[j]>=cutval && curnode->fatherConstraints[curnode->father->value][j]>=cutval && curnode->father->dacUnaryConstraints[curnode->father->value]>=cutval){
-						instance[k]=j;
+						nextinstance[k]=j;
 						foundconsistent=true;
 						break;
 					}
@@ -349,28 +387,31 @@ bool Male::CSP_solve_arc_consist(CTreeNode *node, float cutval){
 }
 
 
-bool Male::next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref){
+bool Male::next_tuple_with_pref(Tuple tin, Tuple *tout, float pref){
 
 	//CERCO CON STESSA PREFERENZA
 	//seguo linearizzazione quindi cerco in miei binary e poi in altri nodi (sempre successvi)
-	CTreeNode* curnode=prefTree->linearizedTree[tin->var_idx];
+	CTreeNode* curnode=prefTree->linearizedTree[tin.var_idx];
 	//cerco in base all'ordinamento del dominio nella mia tabella binary
-	for(int i=tin->idx_in_bintbl[0];i< domains_size;i++){
-		int kinit;
-		if(i==tin->idx_in_bintbl[0])
-			kinit=tin->idx_in_bintbl[1];
-		else
-			kinit=0;
-		for(int k=kinit;k<domains_size;k++){
-			if(curnode->childConstraints[tin->child_idx][i][k]==pref){
-				tout->idx_in_bintbl[0]=i;
-				tout->idx_in_bintbl[1]=k;
-				return true;
+	for(int c=tin.child_idx;c<curnode->child_n;c++){
+		for(int i=tin.idx_in_bintbl[0];i< domains_size;i++){
+			for(int k=tin.idx_in_bintbl[1];k<domains_size;k++){
+				if(curnode->childConstraints[tin.child_idx][i][k]==pref){
+					tout->var_idx=tin.var_idx;
+					tout->child_idx=tin.child_idx;
+					tout->idx_in_bintbl[0]=i;
+					tout->idx_in_bintbl[1]=k;
+					return true;
+				}
 			}
 		}
+		//riparto quando cambio figlio
+		tin.idx_in_bintbl[0]=0;
+		tin.idx_in_bintbl[1]=0;
 	}
+
 	//cerco nelle variabili successive
-	for(int i=tin->var_idx+1;i<numvars;i++){
+	for(int i=tin.var_idx+1;i<numvars;i++){
 		curnode=prefTree->linearizedTree[i];
 		for(int k=0;k<curnode->child_n;k++){
 			float **tentry=curnode->childConstraints[k];
@@ -455,7 +496,8 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	Tuple t_star;
 
 	//cerco soluzione successiva generata dalla stessa tupla dell'attuale (con stesso livello di pref)
-	find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star);
+	if(!find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star))
+		t_star.var_idx =0;
 	fix(&t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
 		unfix(&t_star);
@@ -471,7 +513,7 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	Tuple tfound;
 	float tmppref=p_star;
 	while(1){
-		if(!next_tuple_with_pref(&t_star, &tfound, cpref)){		//finite tuple con preferenza cpref, scendo
+		if(!next_tuple_with_pref(t_star, &tfound, cpref)){		//finite tuple con preferenza cpref, scendo
 			tmppref=find_next_pref_level(cpref);
 			if(tmppref<=0)
 				return false;		//non si scende piu di preferenza, finite le soluzioni
@@ -492,19 +534,26 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	return false; //never hit
 }
 
+//assegna un'istanziazione all'albero
+void Male::set_solution(int *instance){
+	for(int i=0;i<numvars;i++)
+		prefTree->linearizedTree[i]->value=instance[i];
+}
 
 //procedo secondo la linearizzazione (ordine tuple quindi breadth first) a trovare il primo binary che ha preferenza=pref
-void Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
+bool Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
 	if(instance!=NULL){ 	//devo cercarla all'interno della soluzione passata
+		//istanzio la soluzione
+		set_solution(instance);
 		for(int i=0;i<numvars;i++){
 			CTreeNode *curnode=prefTree->linearizedTree[i];
 			for(int k=0;k<curnode->child_n;k++){
-				if(curnode->childConstraints[k][instance[i]][instance[i+k+1]]==pref){		//TODO FIXME i+k+1 non va bene
+				if(curnode->childConstraints[k][curnode->value][curnode->children[k]->value]==pref){
 					tuple->var_idx=i;
 					tuple->child_idx=k;
-					tuple->idx_in_bintbl[0]=instance[i];
-					tuple->idx_in_bintbl[1]=instance[i+k+1];
-					return;
+					tuple->idx_in_bintbl[0]=curnode->value;
+					tuple->idx_in_bintbl[1]=curnode->children[k]->value;
+					return true;
 				}
 			}
 		}
@@ -520,7 +569,7 @@ void Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
 							tuple->child_idx=k;
 							tuple->idx_in_bintbl[0]=j;
 							tuple->idx_in_bintbl[1]=h;
-							return;
+							return true;
 						}
 					}
 				}
@@ -528,4 +577,5 @@ void Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
 			}
 		}
 	}
+	return false;
 }

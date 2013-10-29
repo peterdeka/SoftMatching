@@ -21,7 +21,7 @@ class Male{
 	CTree *prefTree;
 	int domains_size;
 	int numvars;
-	float myOpt;
+
 
 	float **fixed_tuple_childconstr;		//mi serve quando faccio il fix, tavola di servizio per evitare malloc ogni volta
 	float **fixedtuple_backup;			//solo puntatore di backup per ripristinare fixed tuple
@@ -36,20 +36,22 @@ class Male{
 	void opt_as_child(CTreeNode *node,int *opt_instance,int *curidx);
 	void opt_as_father(CTreeNode *node,int *opt_instance,int *curidx);
 	bool CSP_next(int *instance, float cutval,int *nextinstance);	//risolve come un problema di HCSP applicando il cut a cutval
-	void find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple);
+	bool find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple);
 	void fix(Tuple *fixtuple);
 	void unfix(Tuple *fixtuple);
-	bool next_tuple_with_pref(Tuple *tin, Tuple *tout, float pref);
+	bool next_tuple_with_pref(Tuple tin, Tuple *tout, float pref);
 	float find_next_pref_level(float curpref);
 	bool CSP_solve_arc_consist(CTreeNode *node, float cutval);
 	float CSP_solve(float cutval, int *solution);
 	void zeroout_prectuples_with_pref(Tuple *t_star,float pref);
 	void reset_zeroed_prectuples();
 	void zeroout_tuple(Tuple *t);
+	void set_solution(int *instance);
 
 public:
 	int *myInstance;
 	int *myOptInstance;
+	float myOpt;
 	Male(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
 	//int opt(Female **women,int n_women);
 	void DOT_representation(string *res);

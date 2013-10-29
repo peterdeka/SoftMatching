@@ -76,8 +76,9 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 
 //restituisce indice nell'array women della donna con queste carattiristiche (questa istanza)
 int SoftGS::find_female_with_instance(int *instance){
+	Female *f;
 	for(int i=0;i<num_individuals;i++){
-		Female *f=women[i];
+		f=women[i];
 		bool sheis=true;
 		for(int k=0;k<f->numvars;k++){
 			if(instance[k]!=f->myInstance[k]){
@@ -88,5 +89,14 @@ int SoftGS::find_female_with_instance(int *instance){
 		if(sheis)
 			return i;
 	}
+	//cout << "****FEMALE NOT FOUND ";
+	//print_arr(instance,f->numvars);
 	return -1;
+}
+
+void SoftGS::print_arr(int *inst,int length){
+	for (int i=0;i<length;i++)
+			cout << inst[i]<<"-";
+	cout << " \n ";
+
 }

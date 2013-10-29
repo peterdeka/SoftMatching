@@ -21,7 +21,8 @@ SM_problem::SM_problem() {
 		//gen_random_instance(instvals);
 		//women[i]= new Female(NUMVARS,WOMEN_CONNECTEDNESS,DOMAINS_SIZE,varDomains,instvals);
 		men_matches[i]=-1;
-		cout << "*****men "<<i<<" generated\n";
+		cout << "*****men "<<i<<" generated. opt:"<<men[i]->myOpt<<" optinst:";
+		print_arr(men[i]->myOptInstance,NUMVARS);
 	}
 
 	/*string st;

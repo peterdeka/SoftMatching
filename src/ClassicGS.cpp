@@ -22,7 +22,7 @@ Classic_GS::Classic_GS(int num_males, Male** menarray, Female** womenarray) {
 		menprefs[i]=(int*)malloc(num_males*sizeof(int));
 		for(int k=0;k<num_males;k++){
 			tmparr[k]=men[i]->pref(women[k]);
-			cout<<"male tmparr pref "<<tmparr[k]<<"\n";
+			//cout<<"male tmparr pref "<<tmparr[k]<<"\n";
 		}
 		for(int j=0;j<num_males;j++){	//riordino prendendo ogni volta il max del tmparray
 			int curmaxidx=0;
@@ -35,9 +35,9 @@ Classic_GS::Classic_GS(int num_males, Male** menarray, Female** womenarray) {
 			tmparr[curmaxidx]=-1;	//cosi non lo prendo piu
 		}
 
-		for (int y=0;y<num_males;y++){
+		/*for (int y=0;y<num_males;y++){
 			cout<<"women["<<i <<"]  pref: "<<menprefs[i][y]<<"\n";
-		}
+		}*/
 	}
 
 	//donne invece hanno in casella i-esima la preferenza per l'uomo i-esimo (random access)

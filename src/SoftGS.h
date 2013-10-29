@@ -15,6 +15,7 @@ class SoftGS {
 	Male **men;
 	Female **women;
 	int find_female_with_instance(int *instance);
+	void print_arr(int *inst,int length);
 
 public:
 	SoftGS(int num_males, Male** menarray, Female** womenarray);
