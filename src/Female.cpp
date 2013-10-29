@@ -128,10 +128,11 @@ int Female::compare(Male *m1, Male *m2){
 	float pref1,pref2;
 	pref1=instance_pref(m1->myInstance);
 	pref2=instance_pref(m2->myInstance);
-	if(pref1>pref2)
+	if(pref1==pref2)
 		return 0;
 	else if(pref1>pref2)
 		return 1;
 	else
 		return -1;
+
 }

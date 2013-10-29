@@ -6,7 +6,8 @@
  */
 
 #include "SMproblem.h"
-#include <fstream>
+//#include <fstream>
+
 SM_problem::SM_problem() {
 	srand((unsigned)time(0));
 	buildVarDomains();
@@ -35,22 +36,21 @@ SM_problem::SM_problem() {
 	fill(instvals, instvals + NUMVARS, 0);
 	int curpos=0;
 	instvals[curpos]=-1;
-	int decpos=1;
+
 	for(int i=0;i<NUM_INDIVIDUALS;i++){
-		if(instvals[curpos]+1>=DOMAINS_SIZE){
+		bool moved=false;
+		while(instvals[curpos]+1>=DOMAINS_SIZE){
 			curpos++;
+			for(int k=curpos-1;k>-1;k--){
+								instvals[k]=0;
+							}
+			moved=true;
 		}
-		if(curpos>decpos){
-			//reset successivi
-				for(int k=curpos;k<NUMVARS;k++){
-					instvals[k]=0;
-				}
-				instvals[curpos]=1;
-				curpos=0;
-				decpos++;
-			}
 
 		instvals[curpos]+=1;
+		if(moved)
+					curpos=0;
+
 		women[i]=new Female(NUMVARS,WOMEN_CONNECTEDNESS,DOMAINS_SIZE,varDomains,instvals);
 		print_arr(instvals,NUMVARS);
 	}

@@ -31,14 +31,15 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 			Male *curman=men[i];
 			int curinstance[num_individuals];
 			bool first=true;
+			int proposeto;
 			while(matching[i]==-1){	//se free
-				int proposeto;
+
 				if(first){
 					first=false;
 					proposeto=find_female_with_instance(curman->myOptInstance);
 				}
 				else{
-					curman->SOFT_next(women[matching[i]],curinstance);
+					curman->SOFT_next(women[proposeto],curinstance);
 					proposeto=find_female_with_instance(curinstance);
 				}
 
