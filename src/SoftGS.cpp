@@ -39,7 +39,11 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 					proposeto=find_female_with_instance(curman->myOptInstance);
 				}
 				else{
-					curman->SOFT_next(women[proposeto],curinstance);
+					if(!curman->SOFT_next(women[proposeto],curinstance))
+						{
+							cout<<"******* NEXT returned 0\n";
+							break;
+						}
 					proposeto=find_female_with_instance(curinstance);
 				}
 

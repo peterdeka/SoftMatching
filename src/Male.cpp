@@ -222,17 +222,16 @@ float Male::DAC_opt(int *opt_instance){
 //calcola valore di preferenza di un'istanza
 float Male::pref(Female *f){
 	float pref=10.0f;
-	int *instance=f->myInstance;
-		for(int i=0;i<prefTree->n_nodes;i++){
-			int curval=instance[i];
-			CTreeNode *curnode=prefTree->linearizedTree[i];
-			pref=min(pref,curnode->dacUnaryConstraints[curval]);
-			for(int k=0;k<curnode->child_n;k++){
-				CTreeNode* curchild=curnode->children[k];
-				pref=min(pref,curnode->childConstraints[k][curval][instance[curchild->varId]]);
-			}
+	set_solution(f->myInstance);
+	for(int i=0;i<prefTree->n_nodes;i++){
+		CTreeNode *curnode=prefTree->linearizedTree[i];
+		pref=min(pref,curnode->dacUnaryConstraints[curnode->value]);
+		for(int k=0;k<curnode->child_n;k++){
+			CTreeNode* curchild=curnode->children[k];
+			pref=min(pref,curnode->childConstraints[k][curnode->value][curchild->value]);
 		}
-		return pref;
+	}
+	return pref;
 }
 
 //
@@ -440,7 +439,7 @@ float Male::find_next_pref_level(float curpref){
 		for(int k=0;k<curnode->child_n;k++){
 			float **tentry=curnode->childConstraints[k];
 			for(int j=0;j<domains_size;j++){
-				for(int o;o<domains_size;o++){
+				for(int o=0;o<domains_size;o++){
 					if(tentry[j][o]<curpref && tentry[j][o]>nextlevel){
 						nextlevel=tentry[j][o];
 					}
@@ -497,10 +496,19 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 
 	//cerco soluzione successiva generata dalla stessa tupla dell'attuale (con stesso livello di pref)
 	if(!find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star))
-		t_star.var_idx =0;
+		{
+		string st;
+		char rootcall=1;
+			prefTree->root->DOTSubtree(&st,&rootcall,domains_size);
+			ofstream myfile;
+			myfile.open ("debug-graph-.gv");
+			myfile << st;
+			myfile.close();
+		}
 	fix(&t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
 		unfix(&t_star);
+		cout <<"foundnext";
 		return true;
 	}
 	unfix(&t_star);
@@ -513,8 +521,10 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	Tuple tfound;
 	float tmppref=p_star;
 	while(1){
+		cout<<"-\n";
 		if(!next_tuple_with_pref(t_star, &tfound, cpref)){		//finite tuple con preferenza cpref, scendo
 			tmppref=find_next_pref_level(cpref);
+			cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
 			if(tmppref<=0)
 				return false;		//non si scende piu di preferenza, finite le soluzioni
 			find_first_tuple_with_pref(NULL,tmppref,&tfound);
@@ -540,14 +550,23 @@ void Male::set_solution(int *instance){
 		prefTree->linearizedTree[i]->value=instance[i];
 }
 
+void Male::print_arr(int *inst,int length){
+	for (int i=0;i<length;i++)
+			cout << inst[i]<<"-";
+	cout << " \n ";
+
+}
 //procedo secondo la linearizzazione (ordine tuple quindi breadth first) a trovare il primo binary che ha preferenza=pref
 bool Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
 	if(instance!=NULL){ 	//devo cercarla all'interno della soluzione passata
 		//istanzio la soluzione
 		set_solution(instance);
+		cout <<"SEARCHING for pref tuple: p="<<pref<<" for sol:";
+		print_arr(instance,numvars);
 		for(int i=0;i<numvars;i++){
 			CTreeNode *curnode=prefTree->linearizedTree[i];
 			for(int k=0;k<curnode->child_n;k++){
+				cout<<"*"<<curnode->childConstraints[k][curnode->value][curnode->children[k]->value]<<"=?="<<pref<<"\n";
 				if(curnode->childConstraints[k][curnode->value][curnode->children[k]->value]==pref){
 					tuple->var_idx=i;
 					tuple->child_idx=k;

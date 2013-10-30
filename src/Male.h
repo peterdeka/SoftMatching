@@ -9,7 +9,7 @@
 #define MALE_H_
 #include "CTree.h"
 #include "Female.h"
-
+#include <fstream>
 class Female;
 class Male{
 	struct Tuple {
@@ -47,7 +47,7 @@ class Male{
 	void reset_zeroed_prectuples();
 	void zeroout_tuple(Tuple *t);
 	void set_solution(int *instance);
-
+	void print_arr(int *inst,int length);
 public:
 	int *myInstance;
 	int *myOptInstance;
