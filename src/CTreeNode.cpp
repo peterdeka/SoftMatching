@@ -39,6 +39,7 @@ void CTreeNode::genUnaryConstraints(int domains_size){
 		float r = (float)rand()/(float)RAND_MAX;
 		if(r<0.1f)
 			r+=0.1f;
+		r=1;
 		this->unaryConstraints[i]=r;
 		this->dacUnaryConstraints[i]=r;
 	}

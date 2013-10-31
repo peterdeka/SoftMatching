@@ -44,12 +44,13 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 							cout<<"******* NEXT returned 0\n";
 							break;
 						}
+					cout<<"NEXT\n";
 					proposeto=find_female_with_instance(curinstance);
 				}
 
 				cout << "m"<<i<<" ? "<<proposeto<<"\n";
 				if(femalematching[proposeto]==-1){	//free girl
-					//cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+					cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
 					matching[i]=proposeto;
 					femalematching[proposeto]=i;
 					freemen--;
@@ -58,13 +59,13 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 					Female *curwoman=women[proposeto];
 					int ispreferred=curwoman->compare(curman,men[femalematching[proposeto]]);
 					if(ispreferred>0){
-						//cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+						cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
 					}
 					else if(ispreferred==0 && ((float)rand()/(float)RAND_MAX)>0.5f){// i<femalematching[proposeto]){
-						//cout <<"TIEBREAK val:"<<womenprefs[proposeto][i]<<" girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+						cout <<"TIEBREAK girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;

@@ -40,17 +40,21 @@ void Male::buildTree(float tightness,int numvars,char **varDomains){
 	int randomVarId=0;
 	CTreeNode *root=new CTreeNode(randomVarId,varDomains[randomVarId]);
 	root->genUnaryConstraints(domains_size);
+	cout<<"unary ok\n";
 	//ora aggiungo tutte le altre variabili (nodi)
 	CTreeNode *node=root;
 	tree->setRoot(root);
 	curarr[0]=root;
 	int curlen=1;
 	int otherlen=0;
+	cout<<"GC\n";
 	while(tree->n_nodes<numvars){	//randomizzo discendenza
 		for(int i=0;i<curlen;i++){	//elaboro nodi sospesi
 			node=curarr[i];
 			int child_limit=numvars-tree->n_nodes;
+
 			tree->genChildren(node,child_limit,varDomains,numvars);
+
 			for(int j=0;j<node->child_n;j++)
 				otherarr[otherlen++]=node->children[j];
 		}
@@ -63,6 +67,7 @@ void Male::buildTree(float tightness,int numvars,char **varDomains){
 		otherlen=0;
 		otherarr=tmp;
 	}
+	cout<<"EGC\n";
 	free(curarr);
 	free(otherarr);
 	this->adjustTightness(tightness);
@@ -266,12 +271,14 @@ void Male::fix(Tuple *fixtuple){
 			}
 			//swappo i puntatori
 			this->prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx]=this->fixed_tuple_childconstr;
+			this->prefTree->linearizedTree[fixtuple->var_idx]->children[fixtuple->child_idx]->fatherConstraints=this->fixed_tuple_childconstr;
 		}
 }
 
 
 void Male::unfix(Tuple *fixtuple){
 	this->prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx]=this->fixedtuple_backup;
+	this->prefTree->linearizedTree[fixtuple->var_idx]->children[fixtuple->child_idx]->fatherConstraints=this->fixedtuple_backup;
 }
 
 
@@ -314,6 +321,7 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 					//verifico cutvalue
 					if(curnode->dacUnaryConstraints[j]>=cutval && curnode->fatherConstraints[curnode->father->value][j]>=cutval && curnode->father->dacUnaryConstraints[curnode->father->value]>=cutval){
 						nextinstance[k]=j;
+						curnode->value=j;
 						foundconsistent=true;
 						break;
 					}
@@ -460,12 +468,19 @@ void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 	//tengo traccia delle tuple che azzero
 	n_zeroed_tuples=0;
 	zeroed_pref=pref;
+	int ji=t_star->child_idx;
+	int ki=t_star->idx_in_bintbl[0];
+	int hi=t_star->idx_in_bintbl[1]-1;
 	for(int i=t_star->var_idx ;i>-1;i--){
-				//TODO set to 0 previous
-			CTreeNode *curnode=prefTree->linearizedTree[i];
-			for(int j=t_star->child_idx;j>-1;j--){
-				for(int k=t_star->idx_in_bintbl[0];k>-1;k--){
-					for(int h=t_star->idx_in_bintbl[1]-1;h>-1;h--){
+		CTreeNode *curnode=prefTree->linearizedTree[i];
+		if(i<t_star->var_idx){
+				ji=curnode->child_n-1;
+				ki=domains_size-1;
+				hi=domains_size-1;
+			}
+			for(int j=ji;j>-1;j--){
+				for(int k=ki;k>-1;k--){
+					for(int h=hi;h>-1;h--){
 						if(curnode->childConstraints[j][k][h]==pref){
 							zeroed_tuples_backup[n_zeroed_tuples].var_idx=i;
 							zeroed_tuples_backup[n_zeroed_tuples].child_idx=j;
@@ -473,6 +488,7 @@ void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 							zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[1]=h;
 							n_zeroed_tuples++;
 							curnode->childConstraints[j][k][h]=0;
+							curnode->children[j]->fatherConstraints[k][h]=0;
 						}
 					}
 				}
@@ -485,6 +501,7 @@ void Male::reset_zeroed_prectuples(){
 	for(int i=0;i<n_zeroed_tuples;i++){
 		t=zeroed_tuples_backup+i;
 		prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=zeroed_pref;
+		prefTree->linearizedTree[t->var_idx]->children[t->child_idx]->fatherConstraints[t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=zeroed_pref;
 	}
 	n_zeroed_tuples=0;
 }
@@ -498,17 +515,21 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	if(!find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star))
 		{
 		string st;
-		char rootcall=1;
-			prefTree->root->DOTSubtree(&st,&rootcall,domains_size);
-			ofstream myfile;
-			myfile.open ("debug-graph-.gv");
-			myfile << st;
-			myfile.close();
+//		char rootcall=1;
+//			prefTree->root->DOTSubtree(&st,&rootcall,domains_size);
+//			ofstream myfile;
+//			myfile.open ("debug-graph-.gv");
+//			myfile << st;
+//			myfile.close();
 		}
 	fix(&t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
 		unfix(&t_star);
-		cout <<"foundnext";
+		cout <<"**_____****foundnext";
+		print_arr(curfemale->myInstance,numvars);
+		cout<<"-->";
+		print_arr(nextsol,numvars);
+		cout<<"\n";
 		return true;
 	}
 	unfix(&t_star);
@@ -536,7 +557,12 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 		float candpref=CSP_solve(tmppref, nextsol);
 		unfix(&tfound);
 		if(candpref==tmppref)
+			{
+			print_arr(curfemale->myInstance,numvars);
+					cout<<"-->";
+					print_arr(nextsol,numvars);
 			return true;
+			}
 		cpref=tmppref;
 		// set tuple to 0
 		zeroout_tuple(&tfound);
@@ -561,12 +587,12 @@ bool Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
 	if(instance!=NULL){ 	//devo cercarla all'interno della soluzione passata
 		//istanzio la soluzione
 		set_solution(instance);
-		cout <<"SEARCHING for pref tuple: p="<<pref<<" for sol:";
-		print_arr(instance,numvars);
+		//cout <<"SEARCHING for pref tuple: p="<<pref<<" for sol:";
+		//print_arr(instance,numvars);
 		for(int i=0;i<numvars;i++){
 			CTreeNode *curnode=prefTree->linearizedTree[i];
 			for(int k=0;k<curnode->child_n;k++){
-				cout<<"*"<<curnode->childConstraints[k][curnode->value][curnode->children[k]->value]<<"=?="<<pref<<"\n";
+				//cout<<"*"<<curnode->childConstraints[k][curnode->value][curnode->children[k]->value]<<"=?="<<pref<<"\n";
 				if(curnode->childConstraints[k][curnode->value][curnode->children[k]->value]==pref){
 					tuple->var_idx=i;
 					tuple->child_idx=k;

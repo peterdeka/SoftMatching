@@ -14,7 +14,7 @@
 #include "SoftGS.h"
 
 #define NUM_INDIVIDUALS 32
-#define NUMVARS 3	//numero variabili (quindi nodi dell'albero)
+#define NUMVARS 5	//numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 #define WOMEN_CONNECTEDNESS 0.3
 #define MALE_TIGHTNESS 0.9	//percentuale di binary constraint NON nulli
