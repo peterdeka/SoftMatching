@@ -48,6 +48,7 @@ class Male{
 	void zeroout_tuple(Tuple *t);
 	void set_solution(int *instance);
 	void print_arr(int *inst,int length);
+	void debugTree(char* fname);
 public:
 	int *myInstance;
 	int *myOptInstance;

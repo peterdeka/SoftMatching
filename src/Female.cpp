@@ -128,8 +128,16 @@ int Female::compare(Male *m1, Male *m2){
 	float pref1,pref2;
 	pref1=instance_pref(m1->myInstance);
 	pref2=instance_pref(m2->myInstance);
-	if(pref1==pref2)
+	if(pref1==pref2){	//tie
+		//rompo tie secondo ordinamento linearizzazione
+		for(int i=0;i< numvars;i++){
+			if(m1->myInstance[i]>m2->myInstance[i])
+				return -1;
+			else if(m1->myInstance[i]<m2->myInstance[i])
+				return 1;
+		}
 		return 0;
+	}
 	else if(pref1>pref2)
 		return 1;
 	else

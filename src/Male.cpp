@@ -284,29 +284,32 @@ void Male::unfix(Tuple *fixtuple){
 
 //HCSP next applied to w-cut of SCSP tree
 bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
+	cout<<"CSPNEXT cutting at "<<cutval<<"\n";
 	//lintree is breadth first->ordering is ok
-	for(int i=0;i<prefTree->n_nodes;i++){		//istanzio la soluzione passata
-		prefTree->linearizedTree[i]->value=instance[i];
-		nextinstance[i]=instance[i];
-	}
-
 	//ora procedo con l'operazione risalendo l'albero
 	for(int i=prefTree->n_nodes-1;i>-1;i--){
+		//resetto istanziazione corrente perchè nell'operazione di ricerca la modifico
+		for(int ii=0;ii<prefTree->n_nodes;ii++){		//istanzio la soluzione passata
+				prefTree->linearizedTree[ii]->value=instance[ii];
+				nextinstance[ii]=instance[ii];
+		}
 		CTreeNode *curnode=prefTree->linearizedTree[i];
 		bool found=false;
 		//cerco prossimo valore valido in ordinamento del dominio
-		for(int k=instance[i]+1;k<domains_size;k++){
+		for(int k=curnode->value+1;k<domains_size;k++){
 			//verifico cutvalue
 			if(curnode==prefTree->root){
 				if(curnode->dacUnaryConstraints[k]>=cutval){
 					nextinstance[i]=k;
+					curnode->value=k;
 					found=true;
 					break;
 				}
 			}
 			else{
-				if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][k]>=cutval ){  //TODO verifico unary del padre?! in teoria no
+				if(curnode->dacUnaryConstraints[k]>=cutval && curnode->fatherConstraints[curnode->father->value][k]>=cutval ){  // verifico unary del padre?! in teoria no
 					nextinstance[i]=k;
+					curnode->value=k;
 					found=true;
 					break;
 				}
@@ -402,7 +405,7 @@ bool Male::next_tuple_with_pref(Tuple tin, Tuple *tout, float pref){
 	//cerco in base all'ordinamento del dominio nella mia tabella binary
 	for(int c=tin.child_idx;c<curnode->child_n;c++){
 		for(int i=tin.idx_in_bintbl[0];i< domains_size;i++){
-			for(int k=tin.idx_in_bintbl[1];k<domains_size;k++){
+			for(int k=tin.idx_in_bintbl[1]+1;k<domains_size;k++){
 				if(curnode->childConstraints[tin.child_idx][i][k]==pref){
 					tout->var_idx=tin.var_idx;
 					tout->child_idx=tin.child_idx;
@@ -423,7 +426,7 @@ bool Male::next_tuple_with_pref(Tuple tin, Tuple *tout, float pref){
 		for(int k=0;k<curnode->child_n;k++){
 			float **tentry=curnode->childConstraints[k];
 			for(int j=0;j<domains_size;j++){
-				for(int o;o<domains_size;o++){
+				for(int o=0;o<domains_size;o++){
 					if(tentry[j][o]==pref){
 						tout->var_idx=i;
 						tout->child_idx=k;
@@ -455,12 +458,20 @@ float Male::find_next_pref_level(float curpref){
 			}
 		}
 	}
+	cout<<"NEXTLEVEL________"<<curpref<<"--->>"<<nextlevel;
 	return nextlevel;
 }
 
 
 void Male::zeroout_tuple(Tuple *t){
+	zeroed_pref=prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]];
+	//cout<<"ZEROUT"<<zeroed_pref<<"\n";
 	prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=0;
+	prefTree->linearizedTree[t->var_idx]->children[t->child_idx]->fatherConstraints[t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=0;
+	zeroed_tuples_backup[n_zeroed_tuples].var_idx=t->var_idx;
+	zeroed_tuples_backup[n_zeroed_tuples].child_idx=t->child_idx;
+	zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[0]=t->idx_in_bintbl[0];
+	zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[1]=t->idx_in_bintbl[1];
 	n_zeroed_tuples++;
 }
 
@@ -470,7 +481,7 @@ void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 	zeroed_pref=pref;
 	int ji=t_star->child_idx;
 	int ki=t_star->idx_in_bintbl[0];
-	int hi=t_star->idx_in_bintbl[1]-1;
+	int hi=t_star->idx_in_bintbl[1];//**********************-1
 	for(int i=t_star->var_idx ;i>-1;i--){
 		CTreeNode *curnode=prefTree->linearizedTree[i];
 		if(i<t_star->var_idx){
@@ -504,32 +515,45 @@ void Male::reset_zeroed_prectuples(){
 		prefTree->linearizedTree[t->var_idx]->children[t->child_idx]->fatherConstraints[t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=zeroed_pref;
 	}
 	n_zeroed_tuples=0;
+	//cout << "ZEROED RESET to "<<zeroed_pref<<"\n";
+}
+
+
+
+void Male::debugTree(char* fname){
+	string st;
+		char rootcall=1;
+				prefTree->root->DOTSubtree(&st,&rootcall,domains_size);
+				ofstream myfile;
+			myfile.open (fname);
+			myfile << st;
+			myfile.close();
 }
 
 //salvagnini - rossi
 bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	float p_star=pref(curfemale);
 	Tuple t_star;
-
+	cout<<"CALLED NEXT\n*******************\n";
 	//cerco soluzione successiva generata dalla stessa tupla dell'attuale (con stesso livello di pref)
 	if(!find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star))
 		{
-		string st;
-//		char rootcall=1;
-//			prefTree->root->DOTSubtree(&st,&rootcall,domains_size);
-//			ofstream myfile;
-//			myfile.open ("debug-graph-.gv");
-//			myfile << st;
-//			myfile.close();
+			cout<<"***SORRY***";
+			exit(-1);
 		}
+	//debugTree("debug_prefix.gv");
+	cout <<"TSTAR:" <<t_star.var_idx<<" "<<t_star.child_idx<<" "<<t_star.idx_in_bintbl[0] <<" "<<t_star.idx_in_bintbl[1]<<"\n";
 	fix(&t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
-		unfix(&t_star);
-		cout <<"**_____****foundnext";
+
+		cout <<"***CSPNEXT";
 		print_arr(curfemale->myInstance,numvars);
 		cout<<"-->";
 		print_arr(nextsol,numvars);
 		cout<<"\n";
+		//debugTree("debug_fixed.gv");
+		unfix(&t_star);
+		//debugTree("debug_unfixed.gv");
 		return true;
 	}
 	unfix(&t_star);
@@ -537,6 +561,7 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	//non l'ho trovata, quindi devo trovare un altra tupla allo stesso livello di pref ma lex successiva
 	//1 annullo tutte le tuple dell'albero con preferenza = pstar e precedenti a t
 	zeroout_prectuples_with_pref(&t_star, p_star);
+	//debugTree("debug_prec_zeroed.gv");
 	//2 procedo alla ricerca
 	float cpref=p_star;
 	Tuple tfound;
@@ -553,15 +578,16 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 			reset_zeroed_prectuples();
 		}
 		//secondo if, ho trovato una tupla e voglio vedere se mi da soluzione al suo livello di preferenza
+		cout <<"TFOUND:" <<tfound.var_idx<<" "<<tfound.child_idx<<" "<<tfound.idx_in_bintbl[0] <<" "<<tfound.idx_in_bintbl[1]<<"\n";
 		fix(&tfound);
 		float candpref=CSP_solve(tmppref, nextsol);
 		unfix(&tfound);
 		if(candpref==tmppref)
 			{
-			print_arr(curfemale->myInstance,numvars);
-					cout<<"-->";
-					print_arr(nextsol,numvars);
-			return true;
+				print_arr(curfemale->myInstance,numvars);
+				cout<<"-->";
+				print_arr(nextsol,numvars);
+				return true;
 			}
 		cpref=tmppref;
 		// set tuple to 0
