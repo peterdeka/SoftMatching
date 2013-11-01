@@ -21,6 +21,7 @@ public:
 	SoftGS(int num_males, Male** menarray, Female** womenarray);
 	virtual ~SoftGS();
 	void gale_shapley_men_opt(int *matching);
+	bool test_soft_next();
 };
 
 #endif /* SOFTGS_H_ */

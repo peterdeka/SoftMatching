@@ -53,6 +53,7 @@ Classic_GS::Classic_GS(int num_males, Male** menarray, Female** womenarray) {
 }
 
 
+
 Classic_GS::~Classic_GS() {
 	for(int i=0;i<num_individuals;i++){
 		free(menprefs[i]);
@@ -61,6 +62,7 @@ Classic_GS::~Classic_GS() {
 	free(this->menprefs);
 	free(this->womenprefs);
 }
+
 
 void Classic_GS::gale_shapley_men_opt(int *matching){
 	int freemen=num_individuals;

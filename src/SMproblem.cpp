@@ -88,7 +88,6 @@ void SM_problem::gen_random_instance(int *instance){
 
 // a partire da men_matchings veriifca weak stability //TODO verify unmatched criteria
 bool SM_problem::verify_is_weakstable(){
-	bool stable=true;
 	int women_matches[NUM_INDIVIDUALS];	//struttra simmetrica di male_match che mi da i matching dal punto di vista delle donne
 	for(int i=0;i<NUM_INDIVIDUALS;i++)
 		women_matches[i]=-1;
@@ -111,6 +110,8 @@ bool SM_problem::verify_is_weakstable(){
 					continue;
 				float wcurpref=curfemale->instance_pref(men[women_matches[k]]->myInstance);
 				if(curfemale->instance_pref(curmale->myInstance) > wcurpref){
+					cout<<"|*|*|*BLOCKING PAIR*|*\n m:"<<curmale->pref(curfemale)<<">"<< mcurpref<< " f:"<<curfemale->instance_pref(curmale->myInstance)<< ">"<< wcurpref
+<<"\n";
 					return false;
 				}
 
@@ -129,9 +130,10 @@ void SM_problem::solve_with_classicGS(){
 
 void SM_problem::solve_with_softGS(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
-	softgs.gale_shapley_men_opt(this->men_matches);
-	cout << "SOFT Gale shapley stable match: ";
-	print_arr(this->men_matches,NUM_INDIVIDUALS);
+	softgs.test_soft_next();
+	//softgs.gale_shapley_men_opt(this->men_matches);
+	//cout << "SOFT Gale shapley stable match: ";
+	//print_arr(this->men_matches,NUM_INDIVIDUALS);
 }
 
 void SM_problem::print_arr(int *inst,int length){

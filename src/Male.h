@@ -20,7 +20,7 @@ class Male{
 
 	CTree *prefTree;
 	int domains_size;
-	int numvars;
+
 
 
 	float **fixed_tuple_childconstr;		//mi serve quando faccio il fix, tavola di servizio per evitare malloc ogni volta
@@ -48,17 +48,18 @@ class Male{
 	void zeroout_tuple(Tuple *t);
 	void set_solution(int *instance);
 	void print_arr(int *inst,int length);
-	void debugTree(char* fname);
+
 public:
 	int *myInstance;
 	int *myOptInstance;
 	float myOpt;
+	int numvars;
 	Male(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
 	//int opt(Female **women,int n_women);
 	void DOT_representation(string *res);
 	bool SOFT_next(Female *curfemale,int *nextinstance);
 	float pref(Female *f);
-
+	void debugTree(char* fname);
 };
 
 #endif /* MALE_H_ */

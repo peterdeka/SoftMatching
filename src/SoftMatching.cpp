@@ -94,6 +94,7 @@ void testWomen(){
 }*/
 
 int main() {
+
 	SM_problem *p= new SM_problem();
 	p->solve_with_classicGS();
 	if(p->verify_is_weakstable())

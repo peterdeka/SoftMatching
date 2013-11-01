@@ -110,7 +110,7 @@ void Female::DOT_representation(string *res){
 }
 
 //valuta il valore di preferenza di un'istanza (un uomo)
-float Female::instance_pref(int *instance){
+float Female::instance_pref(int *instance){ 	//TODO aggiungi in uscita tupla che da preferenza della soluzione (tupla minima)
 	float pref=10.0f;
 	for(int i=0;i<prefGraph->n_nodes;i++){
 		int curval=instance[i];

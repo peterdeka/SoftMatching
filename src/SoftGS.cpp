@@ -17,6 +17,36 @@ SoftGS::~SoftGS() {
 	// TODO Auto-generated destructor stub
 }
 
+bool SoftGS::test_soft_next(){
+	for(int i=0;i<num_individuals;i++){
+		int sol[men[i]->numvars],nx[men[i]->numvars];
+		int *cursol,*nextsol;
+		cursol=sol;
+		nextsol=nx;
+		float pref=men[i]->myOpt;
+		int count=1;
+		memcpy(sol,men[i]->myOptInstance,sizeof(int)*men[i]->numvars);
+
+		while(men[i]->SOFT_next(women[find_female_with_instance(cursol)],nextsol)){
+			count+=1;
+			if(men[i]->pref(women[find_female_with_instance(nextsol)])>pref){
+				cout<<"*****NOT MONOTONIC\n";
+				exit(-1);
+			}
+			pref=men[i]->pref(women[find_female_with_instance(nextsol)]);
+			int *tmp=cursol;
+			cursol=nextsol;
+			nextsol=tmp;
+			cout <<"SOL "<<pref<<" :";
+			print_arr(cursol,men[i]->numvars);
+		}
+		if(count!=num_individuals){
+			cout<<"*****COUNT ERROR "<<count<<"\n";
+			men[i]->debugTree("error.gv");
+			exit(-1);
+		}
+	}
+}
 void SoftGS::gale_shapley_men_opt(int *matching){
 	int freemen=num_individuals;
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
@@ -29,9 +59,10 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 
 		for(int i=0;i<num_individuals;i++){
 			Male *curman=men[i];
-			int curinstance[num_individuals];
+			int curinstance[curman->numvars];
 			bool first=true;
 			int proposeto;
+			cout <<"MEN**********************\n";
 			while(matching[i]==-1){	//se free
 
 				if(first){
@@ -48,7 +79,7 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 					proposeto=find_female_with_instance(curinstance);
 				}
 
-				cout << "m"<<i<<" ? "<<proposeto<<"\n";
+				cout << "m"<<i<<" ? "<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
 				if(femalematching[proposeto]==-1){	//free girl
 					cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
 					matching[i]=proposeto;
