@@ -37,15 +37,16 @@ bool SoftGS::test_soft_next(){
 			int *tmp=cursol;
 			cursol=nextsol;
 			nextsol=tmp;
-			cout <<"SOL "<<pref<<" :";
-			print_arr(cursol,men[i]->numvars);
+			//cout <<"SOL "<<pref<<" :";
+			//print_arr(cursol,men[i]->numvars);
 		}
-		if(count!=num_individuals){
+		if(count<num_individuals){
 			cout<<"*****COUNT ERROR "<<count<<"\n";
 			men[i]->debugTree("error.gv");
-			exit(-1);
+			return false;
 		}
 	}
+	return true;
 }
 void SoftGS::gale_shapley_men_opt(int *matching){
 	int freemen=num_individuals;

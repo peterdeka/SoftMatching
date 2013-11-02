@@ -226,6 +226,7 @@ float Male::DAC_opt(int *opt_instance){
 
 //calcola valore di preferenza di un'istanza
 float Male::pref(Female *f){
+	//cout<<"*****PREF****\n";
 	float pref=10.0f;
 	set_solution(f->myInstance);
 	for(int i=0;i<prefTree->n_nodes;i++){
@@ -234,8 +235,10 @@ float Male::pref(Female *f){
 		for(int k=0;k<curnode->child_n;k++){
 			CTreeNode* curchild=curnode->children[k];
 			pref=min(pref,curnode->childConstraints[k][curnode->value][curchild->value]);
+		//	cout<<"CHECK "<<curnode->childConstraints[k][curnode->value][curchild->value]<<"\n";
 		}
 	}
+//	cout<<"***END PREF****\n";
 	return pref;
 }
 
@@ -264,7 +267,7 @@ void Male::fix(Tuple *fixtuple){
 			for(int i=0;i<domains_size;i++){
 				for(int k=0;k<domains_size;k++){
 					if(fixtuple->idx_in_bintbl[0]==i && fixtuple->idx_in_bintbl[1]==k)
-						this->fixed_tuple_childconstr[i][k]=1.0f;
+						this->fixed_tuple_childconstr[i][k]=prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx][fixtuple->idx_in_bintbl[0]][fixtuple->idx_in_bintbl[1]];
 					else
 						this->fixed_tuple_childconstr[i][k]=0;
 				}
@@ -370,6 +373,9 @@ float Male::CSP_solve(float cutval, int *solution){
 	}
 	Female tmpf;
 	tmpf.myInstance=solution;
+	//cout <<"SOOOOOOOLVE FOUND cutval:"<<cutval<<" pref:"<<pref(&tmpf);
+	//print_arr(solution,numvars);
+
 	return pref(&tmpf);
 }
 
@@ -466,7 +472,6 @@ float Male::find_next_pref_level(float curpref){
 
 void Male::zeroout_tuple(Tuple *t){
 	zeroed_pref=prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]];
-	//cout<<"ZEROUT"<<zeroed_pref<<"\n";
 	prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=0;
 	prefTree->linearizedTree[t->var_idx]->children[t->child_idx]->fatherConstraints[t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=0;
 	zeroed_tuples_backup[n_zeroed_tuples].var_idx=t->var_idx;
@@ -482,7 +487,7 @@ void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 	zeroed_pref=pref;
 	int ji=t_star->child_idx;
 	int ki=t_star->idx_in_bintbl[0];
-	int hi=t_star->idx_in_bintbl[1];//**********************-1
+	int hi=t_star->idx_in_bintbl[1];//**********************-1 TODO
 	for(int i=t_star->var_idx ;i>-1;i--){
 		CTreeNode *curnode=prefTree->linearizedTree[i];
 		if(i<t_star->var_idx){
@@ -546,25 +551,17 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	//cout <<"TSTAR:" <<t_star.var_idx<<" "<<t_star.child_idx<<" "<<t_star.idx_in_bintbl[0] <<" "<<t_star.idx_in_bintbl[1]<<"\n";
 	fix(&t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
-
-	//	cout <<"***CSPNEXT";
-		//print_arr(curfemale->myInstance,numvars);
-	//	cout<<"-->";
-	//	print_arr(nextsol,numvars);
-	//	cout<<"\n";
-		//debugTree("debug_fixed.gv");
 		unfix(&t_star);
 		//debugTree("debug_unfixed.gv");
 		return true;
 	}
-	cout<<"NO CSPNEXT sol found for "<<p_star<<" after ";
-	print_arr(curfemale->myInstance,numvars);
+
 	unfix(&t_star);
 
 	//non l'ho trovata, quindi devo trovare un altra tupla allo stesso livello di pref ma lex successiva
 	//1 annullo tutte le tuple dell'albero con preferenza = pstar e precedenti a t
 	zeroout_prectuples_with_pref(&t_star, p_star);
-	//debugTree("debug_prec_zeroed.gv");
+
 	//2 procedo alla ricerca
 	float cpref=p_star;
 	Tuple tfound;
@@ -576,9 +573,10 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	//		cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
 			if(tmppref<=0)
 				return false;		//non si scende piu di preferenza, finite le soluzioni
-			find_first_tuple_with_pref(NULL,tmppref,&tfound);
+
 			// reset previuosly set to 0
 			reset_zeroed_prectuples();
+			find_first_tuple_with_pref(NULL,tmppref,&tfound);
 		}
 		//secondo if, ho trovato una tupla e voglio vedere se mi da soluzione al suo livello di preferenza
 	//	cout <<"TFOUND:" <<tfound.var_idx<<" "<<tfound.child_idx<<" "<<tfound.idx_in_bintbl[0] <<" "<<tfound.idx_in_bintbl[1]<<"\n";
@@ -594,6 +592,10 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 					cout << "****NOT NICE, solution doesnt come from correct tuple\n";
 				return true;
 			}
+
+		char s[255];
+		sprintf(s,"fixed_solve_%.2f-%.2f.gv",tmppref,candpref);
+		//debugTree(s);
 		cout<<"no CSPSOLVE sol found for "<<tmppref<<"\n";
 		cpref=tmppref;
 		// set tuple to 0

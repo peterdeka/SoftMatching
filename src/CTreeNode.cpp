@@ -6,7 +6,7 @@
  */
 
 #include "CTreeNode.h"
-
+#include <math.h>
 CTreeNode::CTreeNode(int avarId,char *vardomain) //constructor
     {
     	tree=NULL;
@@ -31,12 +31,15 @@ CTreeNode::CTreeNode(int avarId,char *vardomain) //constructor
 
     }*/
 
+
 //genera vincoli unari dato il dominio della variabile
 void CTreeNode::genUnaryConstraints(int domains_size){
 	this->unaryConstraints=(float*)malloc(domains_size*sizeof(float));
 	this->dacUnaryConstraints=(float*)malloc(domains_size*sizeof(float));
 	for(int i=0;i<domains_size;i++){	//assegno valori di preferenza random
 		float r = (float)rand()/(float)RAND_MAX;
+		r=floor(r*100)/100;
+
 		if(r<0.1f)
 			r+=0.1f;
 		r=1;
@@ -55,6 +58,7 @@ int CTreeNode::genBinaryConstraints(int domains_size){
 			tp[i]=(float*)malloc(domains_size*sizeof(float));
 			for(int z=0;z<domains_size;z++){
 				float r = (float)rand()/(float)RAND_MAX;
+				r=floor(r*100)/100;
 				if(r<0.1f)
 					r+=0.1f;
 				tp[i][z]=r;

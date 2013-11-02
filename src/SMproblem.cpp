@@ -130,10 +130,11 @@ void SM_problem::solve_with_classicGS(){
 
 void SM_problem::solve_with_softGS(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
-	softgs.test_soft_next();
-	//softgs.gale_shapley_men_opt(this->men_matches);
-	//cout << "SOFT Gale shapley stable match: ";
-	//print_arr(this->men_matches,NUM_INDIVIDUALS);
+	if(!softgs.test_soft_next())
+		cout<<"TEST FAILED\n";
+	softgs.gale_shapley_men_opt(this->men_matches);
+	cout << "SOFT Gale shapley stable match: ";
+	print_arr(this->men_matches,NUM_INDIVIDUALS);
 }
 
 void SM_problem::print_arr(int *inst,int length){
