@@ -70,7 +70,7 @@ void Male::buildTree(float tightness,int numvars,char **varDomains){
 	cout<<"EGC\n";
 	free(curarr);
 	free(otherarr);
-	//this->adjustTightness(tightness);
+	this->adjustTightness(tightness);
 	cout << "Tree built \n";
 }
 
@@ -80,7 +80,7 @@ void Male::adjustTightness(float tightness){
 	CTree *tree=this->prefTree;
 	int domains_sz2=domains_size*domains_size;
 	//calcolo numero di binconstr da mettere a zero
-	int n_unbind=(float)tree->n_bin_constraints*(1.0f-tightness);
+	int n_unbind=(float)tree->n_bin_constraints*(tightness);
 	int chosen_var,chosen_child;
 	for(int i=0;i<n_unbind;i++){
 		chosen_var=rand() % tree->n_nodes;
@@ -449,6 +449,48 @@ bool Male::next_tuple_with_pref(Tuple tin, Tuple *tout, float pref){
 }
 
 
+//mi serve per verificare stabilita rispettando ordinamento della linearizzazione NEXT
+int Male::compare(Female *f1, Female *f2){
+	float p1=pref(f1);
+	float p2=pref(f2);
+	if(p1>p2)
+		return 1;
+	else if(p1<p2)
+		return -1;
+	//tie
+	Tuple t1,t2;
+	find_first_tuple_with_pref(f1->myInstance,p1,&t1);
+	find_first_tuple_with_pref(f2->myInstance,p1,&t2);
+	//ordinamento lex variabili
+	if(t1.var_idx<t2.var_idx)
+		return 1;
+	else if(t1.var_idx>t2.var_idx)
+		return -1;
+	else{
+		if(t1.child_idx<t2.child_idx)
+			return 1;
+		else if(t1.child_idx>t2.child_idx)
+			return -1;
+		else{
+			if(t1.idx_in_bintbl[0]>t2.idx_in_bintbl[0])
+				return 1;
+			else if(t1.idx_in_bintbl[0]<t2.idx_in_bintbl[0])
+				return -1;
+			else{
+				if(t1.idx_in_bintbl[1]>t2.idx_in_bintbl[1])
+					return 1;
+				else if(t1.idx_in_bintbl[1]<t2.idx_in_bintbl[1])
+					return -1;
+				else
+					return 0;
+			}
+		}
+	}
+
+}
+
+
+
 float Male::find_next_pref_level(float curpref){
 	float nextlevel=-1;
 	CTreeNode *curnode;
@@ -579,15 +621,11 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 			find_first_tuple_with_pref(NULL,tmppref,&tfound);
 		}
 		//secondo if, ho trovato una tupla e voglio vedere se mi da soluzione al suo livello di preferenza
-	//	cout <<"TFOUND:" <<tfound.var_idx<<" "<<tfound.child_idx<<" "<<tfound.idx_in_bintbl[0] <<" "<<tfound.idx_in_bintbl[1]<<"\n";
 		fix(&tfound);
 		float candpref=CSP_solve(tmppref, nextsol);
 		unfix(&tfound);
 		if(candpref==tmppref)
 			{
-		//		print_arr(curfemale->myInstance,numvars);
-		//		cout<<"-->";
-		//		print_arr(nextsol,numvars);
 				if(prefTree->linearizedTree[tfound.var_idx]->children[tfound.child_idx]->value!=tfound.idx_in_bintbl[1] && prefTree->linearizedTree[tfound.var_idx]->value!=tfound.idx_in_bintbl[0])
 					cout << "****NOT NICE, solution doesnt come from correct tuple\n";
 				return true;
@@ -616,6 +654,7 @@ void Male::print_arr(int *inst,int length){
 	cout << " \n ";
 
 }
+
 //procedo secondo la linearizzazione (ordine tuple quindi breadth first) a trovare il primo binary che ha preferenza=pref
 bool Male::find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple){
 	if(instance!=NULL){ 	//devo cercarla all'interno della soluzione passata

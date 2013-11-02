@@ -60,6 +60,7 @@ public:
 	bool SOFT_next(Female *curfemale,int *nextinstance);
 	float pref(Female *f);
 	void debugTree(char* fname);
+	int compare(Female *f1, Female *f2);
 };
 
 #endif /* MALE_H_ */

@@ -27,7 +27,7 @@ bool SoftGS::test_soft_next(){
 		int count=1;
 		memcpy(sol,men[i]->myOptInstance,sizeof(int)*men[i]->numvars);
 
-		while(men[i]->SOFT_next(women[find_female_with_instance(cursol)],nextsol)){
+		while(men[i]->SOFT_next(women[find_female_with_instance(cursol)],nextsol) && count<num_individuals){
 			count+=1;
 			if(men[i]->pref(women[find_female_with_instance(nextsol)])>pref){
 				cout<<"*****NOT MONOTONIC\n";
@@ -41,7 +41,7 @@ bool SoftGS::test_soft_next(){
 			//print_arr(cursol,men[i]->numvars);
 		}
 		if(count<num_individuals){
-			cout<<"*****COUNT ERROR "<<count<<"\n";
+			cout<<"*****NOT ENOUGH SOLUTIONS "<<count<<"\n";
 			men[i]->debugTree("error.gv");
 			return false;
 		}
@@ -63,7 +63,10 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 			int curinstance[curman->numvars];
 			bool first=true;
 			int proposeto;
-			cout <<"MEN**********************\n";
+			//DBG
+			if(matching[i]==-1)
+				cout<<"*** m"<<i<<" is unmatched\n";
+			//EDBG
 			while(matching[i]==-1){	//se free
 
 				if(first){

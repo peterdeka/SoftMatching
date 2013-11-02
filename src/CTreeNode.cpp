@@ -38,7 +38,7 @@ void CTreeNode::genUnaryConstraints(int domains_size){
 	this->dacUnaryConstraints=(float*)malloc(domains_size*sizeof(float));
 	for(int i=0;i<domains_size;i++){	//assegno valori di preferenza random
 		float r = (float)rand()/(float)RAND_MAX;
-		r=floor(r*100)/100;
+		r=floor(r*100.0f)/100.0f;
 
 		if(r<0.1f)
 			r+=0.1f;
@@ -58,7 +58,7 @@ int CTreeNode::genBinaryConstraints(int domains_size){
 			tp[i]=(float*)malloc(domains_size*sizeof(float));
 			for(int z=0;z<domains_size;z++){
 				float r = (float)rand()/(float)RAND_MAX;
-				r=floor(r*100)/100;
+				r=floor(r*100.0f)/100.0f;
 				if(r<0.1f)
 					r+=0.1f;
 				tp[i][z]=r;

@@ -3,6 +3,7 @@
  *
  *  Created on: 19/ott/2013
  *      Author: deka
+ *  GS basato su alberi con soft constraints, obiettivo della ricerca
  */
 
 #ifndef SOFTGS_H_

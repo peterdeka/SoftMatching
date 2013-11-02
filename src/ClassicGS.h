@@ -3,6 +3,7 @@
  *
  *  Created on: 16/ott/2013
  *      Author: deka
+ *      Classico GS, costruisce prima le liste di preferenze a partire dal pref del SoftGS e poi applica GS classico
  */
 
 #ifndef CLASSICGS_H_
