@@ -19,7 +19,7 @@ SoftGS::~SoftGS() {
 
 bool SoftGS::test_soft_next(){
 	for(int i=0;i<num_individuals;i++){
-		cout<<"NEWINDIVIDUAL\n";
+		cout<<"NEWINDIVIDUAL opt:"<<men[i]->myOpt<<"\n";
 		int sol[men[i]->numvars],nx[men[i]->numvars];
 		int *cursol,*nextsol;
 		cursol=sol;
@@ -34,10 +34,19 @@ bool SoftGS::test_soft_next(){
 				cout<<"\n";
 		while(men[i]->SOFT_next(women[find_female_with_instance(cursol)],nextsol) && count<num_individuals){
 			cout<<men[i]->pref(women[find_female_with_instance(nextsol)])<< " ";
+			bool equals=true;
 			for(int k=0;k<men[i]->numvars;k++){
 				cout<<men[i]->prefTree->linearizedTree[k]->domain[nextsol[k]];
+				if(nextsol[k]!=cursol[k])
+					equals=false;
 			}
 			cout<<"\n";
+
+			if(equals)
+			{
+				cout<<"Error equals\n";
+				men[i]->debugTree("errorequals.gv");
+			}
 			if(men[i]->n_zeroed_tuples>0){
 				cout << "NOT CLEAN\n";
 				exit(-1);
