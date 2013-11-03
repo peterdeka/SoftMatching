@@ -19,6 +19,7 @@ SoftGS::~SoftGS() {
 
 bool SoftGS::test_soft_next(){
 	for(int i=0;i<num_individuals;i++){
+		cout<<"NEWINDIVIDUAL\n";
 		int sol[men[i]->numvars],nx[men[i]->numvars];
 		int *cursol,*nextsol;
 		cursol=sol;
@@ -26,8 +27,21 @@ bool SoftGS::test_soft_next(){
 		float pref=men[i]->myOpt;
 		int count=1;
 		memcpy(sol,men[i]->myOptInstance,sizeof(int)*men[i]->numvars);
-
+		cout<<men[i]->pref(women[find_female_with_instance(cursol)])<< " ";
+				for(int k=0;k<men[i]->numvars;k++){
+					cout<<men[i]->prefTree->linearizedTree[k]->domain[cursol[k]];
+				}
+				cout<<"\n";
 		while(men[i]->SOFT_next(women[find_female_with_instance(cursol)],nextsol) && count<num_individuals){
+			cout<<men[i]->pref(women[find_female_with_instance(nextsol)])<< " ";
+			for(int k=0;k<men[i]->numvars;k++){
+				cout<<men[i]->prefTree->linearizedTree[k]->domain[nextsol[k]];
+			}
+			cout<<"\n";
+			if(men[i]->n_zeroed_tuples>0){
+				cout << "NOT CLEAN\n";
+				exit(-1);
+			}
 			count+=1;
 			if(men[i]->pref(women[find_female_with_instance(nextsol)])>pref){
 				cout<<"*****NOT MONOTONIC\n";

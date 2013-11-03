@@ -46,7 +46,7 @@ void CTree::genChildren( CTreeNode *curNode,int child_limit, char **varDomains,i
 	int childrenleft=child_limit;
 	int child_n=0;
 	if(childrenleft<2)
-		child_n=(int)((float)rand()/(float)RAND_MAX);
+		child_n=1;//(int)((float)rand()/(float)RAND_MAX);
 	else
 		child_n=rand() % 3;	//quanti figli? (0,1,2)
 

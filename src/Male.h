@@ -18,7 +18,7 @@ class Male{
 		        int idx_in_bintbl[2];
 		    };
 
-	CTree *prefTree;
+
 	int domains_size;
 
 
@@ -26,7 +26,6 @@ class Male{
 	float **fixed_tuple_childconstr;		//mi serve quando faccio il fix, tavola di servizio per evitare malloc ogni volta
 	float **fixedtuple_backup;			//solo puntatore di backup per ripristinare fixed tuple
 	Tuple *zeroed_tuples_backup;		//tengo traccia delle tuple azzerate
-	int n_zeroed_tuples;
 	float zeroed_pref;
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);
@@ -50,10 +49,12 @@ class Male{
 	void print_arr(int *inst,int length);
 
 public:
+	CTree *prefTree;
 	int *myInstance;
 	int *myOptInstance;
 	float myOpt;
 	int numvars;
+	int n_zeroed_tuples;
 	Male(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
 	//int opt(Female **women,int n_women);
 	void DOT_representation(string *res);

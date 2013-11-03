@@ -190,7 +190,7 @@ float Male::DAC_opt(int *opt_instance){
 		curnode=prefTree->linearizedTree[i];
 		for(int k=0;k<curnode->child_n;k++){
 			for(int j=0;j<domains_size;j++){
-				if(curnode->childConstraints[k][curnode->value][j]>=curnode->dacUnaryConstraints[curnode->value]){
+				if(curnode->childConstraints[k][curnode->value][j]>=maxPref){
 					curnode->children[k]->value=j;
 					break;
 				}
@@ -301,12 +301,16 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 		}
 		if(found){
 			//reset-succ, "riazzera contatore" di tutti i nodi successori
+			bool foundconsistent=false;
+			//  l'ultimo nodo quindi non ho successivi da azzerare, ho finito
+			if(i==prefTree->n_nodes-1)
+				foundconsistent=true;
 			for(int k=i+1;k<prefTree->n_nodes;k++){
-				bool foundconsistent=false;	//vedo se effettivamente resettando trovo soluzione consistente TODO check with prof
+				foundconsistent=false;	//vedo se effettivamente resettando trovo soluzione consistente TODO check with prof
 				curnode=prefTree->linearizedTree[k];
 				for(int j=0;j<domains_size;j++){
 					//verifico cutvalue
-					if(curnode->dacUnaryConstraints[j]>=cutval && curnode->fatherConstraints[curnode->father->value][j]>=cutval && curnode->father->dacUnaryConstraints[curnode->father->value]>=cutval){
+					if(curnode->dacUnaryConstraints[j]>=cutval && curnode->fatherConstraints[curnode->father->value][j]>=cutval){// && curnode->father->dacUnaryConstraints[curnode->father->value]>=cutval){
 						nextinstance[k]=j;
 						curnode->value=j;
 						foundconsistent=true;
@@ -314,11 +318,11 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 					}
 				}
 				if(!foundconsistent)	//resettando non ho trovato un assegnamento consistente per la variabile k-esima
-					return false;
+					break;
 				//altrimenti continuo e passo alla prossima variabile successiva
 			}
-
-			return true;	//trovato next, esco
+			if(foundconsistent)
+				return true;	//trovato next, esco
 		}
 	}
 	return false;
@@ -391,9 +395,18 @@ bool Male::next_tuple_with_pref(Tuple tin, Tuple *tout, float pref){
 	//seguo linearizzazione quindi cerco in miei binary e poi in altri nodi (sempre successvi)
 	CTreeNode* curnode=prefTree->linearizedTree[tin.var_idx];
 	//cerco in base all'ordinamento del dominio nella mia tabella binary
+	int iinit,kinit;
 	for(int c=tin.child_idx;c<curnode->child_n;c++){
-		for(int i=tin.idx_in_bintbl[0];i< domains_size;i++){
-			for(int k=tin.idx_in_bintbl[1]+1;k<domains_size;k++){
+		if(c==tin.child_idx){
+			iinit=tin.idx_in_bintbl[0];
+			kinit=tin.idx_in_bintbl[1]+1;
+		}
+		else{
+			iinit=0;
+			kinit=0;
+		}
+		for(int i=iinit;i< domains_size;i++){
+			for(int k=kinit;k<domains_size;k++){
 				if(curnode->childConstraints[tin.child_idx][i][k]==pref){
 					tout->var_idx=tin.var_idx;
 					tout->child_idx=tin.child_idx;
@@ -488,7 +501,7 @@ float Male::find_next_pref_level(float curpref){
 			}
 		}
 	}
-	//cout<<"NEXTLEVEL________"<<curpref<<"--->>"<<nextlevel<<"\n";
+	cout<<"NEXTLEVEL________"<<curpref<<"--->>"<<nextlevel<<"\n";
 	return nextlevel;
 }
 
@@ -590,16 +603,19 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	Tuple tfound;
 	float tmppref=p_star;
 	while(1){
-	//	cout<<"-\n";
 		if(!next_tuple_with_pref(t_star, &tfound, cpref)){		//finite tuple con preferenza cpref, scendo
 			tmppref=find_next_pref_level(cpref);
-	//		cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
-			if(tmppref<=0)
+			cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
+
+			if(tmppref<=0){
+				reset_zeroed_prectuples();
 				return false;		//non si scende piu di preferenza, finite le soluzioni
+			}
+
 
 			// reset previuosly set to 0
-			reset_zeroed_prectuples();
 			find_first_tuple_with_pref(NULL,tmppref,&tfound);
+			reset_zeroed_prectuples();
 		}
 		//secondo if, ho trovato una tupla e voglio vedere se mi da soluzione al suo livello di preferenza
 		fix(&tfound);
@@ -609,6 +625,7 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 			{
 				if(prefTree->linearizedTree[tfound.var_idx]->children[tfound.child_idx]->value!=tfound.idx_in_bintbl[1] && prefTree->linearizedTree[tfound.var_idx]->value!=tfound.idx_in_bintbl[0])
 					cout << "****NOT NICE, solution doesnt come from correct tuple\n";
+				reset_zeroed_prectuples();
 				return true;
 			}
 
