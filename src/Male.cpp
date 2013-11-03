@@ -29,7 +29,6 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 }
 
 
-
 //generazione albero preferenze uomini
 void Male::buildTree(float tightness,int numvars,char **varDomains){
 	cout <<"Building men tree \n";
@@ -70,9 +69,10 @@ void Male::buildTree(float tightness,int numvars,char **varDomains){
 	cout<<"EGC\n";
 	free(curarr);
 	free(otherarr);
-	this->adjustTightness(tightness);
+	//this->adjustTightness(tightness);
 	cout << "Tree built \n";
 }
+
 
 //riceve tree e annulla random dei constraint fino a raggiungere il livello di tightness desiderato (solo per tree e quindi men)
 void Male::adjustTightness(float tightness){
@@ -141,29 +141,10 @@ void Male::DAC_first_pass(CTreeNode *node){
 				node->dacUnaryConstraints[j]=maxPref;
 		}
 	}
-
-	//****USELESS**
-	//fisso me stesso (figlio) e verifico col padre
-	/*if(node->father==NULL)
-		return;
-
-	for(int j=0;j<domains_size;j++){
-		float maxPref=0.0f;
-		for(int k=0;k<domains_size;k++){
-			float minPref=min(node->dacUnaryConstraints[j],node->fatherConstraints[k][j]);
-			minPref=min(minPref,node->father->dacUnaryConstraints[k]);
-			if(minPref>maxPref)
-				maxPref=minPref;
-		}
-		if(maxPref<node->dacUnaryConstraints[j])
-			node->dacUnaryConstraints[j]=maxPref;
-	}*/
-
 }
 
 
 // DAC 2nd pass che estrae l'istanziazione ottima e la sua preferenza, output breadth first
-
 void Male::opt_as_child(CTreeNode *node,int *opt_instance,int *curidx){
 	//prendo il max dei miei unary
 	opt_instance[*curidx]=0;

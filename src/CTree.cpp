@@ -93,7 +93,7 @@ void CTree::DOTgraph(string *res){
 			strcat(svarid,tmp);
 			for(int d=0;d<domains_size;d++){
 				for(int e=0;e<domains_size;e++){
-					sprintf(tmp,"<TR><TD>%c%c</TD><TD>%.1f</TD></TR>",curnode->domain[d],curnode->children[i]->domain[e],curnode->childConstraints[i][d][e]);
+					sprintf(tmp,"<TR><TD>%c%c</TD><TD>%.2f</TD></TR>",curnode->domain[d],curnode->children[i]->domain[e],curnode->childConstraints[i][d][e]);
 					strcat(svarid,tmp);
 				}
 			}

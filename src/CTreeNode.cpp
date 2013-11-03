@@ -41,7 +41,7 @@ void CTreeNode::genUnaryConstraints(int domains_size){
 		r=floor(r*100.0f)/100.0f;
 
 		if(r<0.1f)
-			r+=0.1f;
+			r=0.1f;
 		r=1;
 		this->unaryConstraints[i]=r;
 		this->dacUnaryConstraints[i]=r;
@@ -60,8 +60,12 @@ int CTreeNode::genBinaryConstraints(int domains_size){
 				float r = (float)rand()/(float)RAND_MAX;
 				r=floor(r*100.0f)/100.0f;
 				if(r<0.1f)
-					r+=0.1f;
+					//r+=0.1f;
+					r=0.1f;
 				tp[i][z]=r;
+				//cout<<"R:"<<r<<"\n";
+			//	if(r<0.1f || r==0)
+				//	cout<<"MINNNN"<<r<<"\n";
 				n_gen_constraints++;
 			}
 		}

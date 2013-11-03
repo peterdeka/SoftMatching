@@ -48,6 +48,8 @@ bool SoftGS::test_soft_next(){
 	}
 	return true;
 }
+
+
 void SoftGS::gale_shapley_men_opt(int *matching){
 	int freemen=num_individuals;
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
