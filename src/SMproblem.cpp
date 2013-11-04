@@ -121,20 +121,22 @@ bool SM_problem::verify_is_weakstable(){
 	return true;
 }
 
-void SM_problem::solve_with_classicGS(){
+int SM_problem::solve_with_classicGS(){
 	Classic_GS gs(NUM_INDIVIDUALS,men,women);
-	gs.gale_shapley_men_opt(this->men_matches);
+	int nprops=gs.gale_shapley_men_opt(this->men_matches);
 	cout << "Gale shapley stable match: ";
 	print_arr(this->men_matches,NUM_INDIVIDUALS);
+	return nprops;
 }
 
-void SM_problem::solve_with_softGS(){
+int SM_problem::solve_with_softGS(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
-	if(!softgs.test_soft_next())
-		cout<<"TEST FAILED\n";
-	softgs.gale_shapley_men_opt(this->men_matches);
+	//if(!softgs.test_soft_next())
+		//cout<<"TEST FAILED\n";
+	int nprops=softgs.gale_shapley_men_opt(this->men_matches);
 	cout << "SOFT Gale shapley stable match: ";
 	print_arr(this->men_matches,NUM_INDIVIDUALS);
+	return nprops;
 }
 
 void SM_problem::print_arr(int *inst,int length){

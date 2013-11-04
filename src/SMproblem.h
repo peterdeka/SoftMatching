@@ -32,8 +32,8 @@ public:
 	SM_problem();
 	virtual ~SM_problem();
 	bool verify_is_weakstable();
-	void solve_with_classicGS();
-	void solve_with_softGS();
+	int solve_with_classicGS();
+	int solve_with_softGS();
 };
 
 #endif /* SMPROBLEM_H_ */

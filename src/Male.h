@@ -32,8 +32,6 @@ class Male{
 	void make_DAC();
 	void DAC_first_pass(CTreeNode *node);
 	float DAC_opt(int *opt_instance);
-	void opt_as_child(CTreeNode *node,int *opt_instance,int *curidx);
-	void opt_as_father(CTreeNode *node,int *opt_instance,int *curidx);
 	bool CSP_next(int *instance, float cutval,int *nextinstance);	//risolve come un problema di HCSP applicando il cut a cutval
 	bool find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple);
 	void fix(Tuple *fixtuple);

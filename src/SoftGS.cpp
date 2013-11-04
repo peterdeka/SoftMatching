@@ -94,7 +94,8 @@ bool SoftGS::test_soft_next(){
 }
 
 
-void SoftGS::gale_shapley_men_opt(int *matching){
+int SoftGS::gale_shapley_men_opt(int *matching){
+	int nprops=0;
 	int freemen=num_individuals;
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
 	for(int i=0;i<num_individuals;i++){
@@ -110,8 +111,8 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 			bool first=true;
 			int proposeto;
 			//DBG
-			if(matching[i]==-1)
-				cout<<"*** m"<<i<<" is unmatched\n";
+			//if(matching[i]==-1)
+				//cout<<"*** m"<<i<<" is unmatched\n";
 			//EDBG
 			while(matching[i]==-1){	//se free
 
@@ -125,13 +126,17 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 							cout<<"******* NEXT returned 0\n";
 							break;
 						}
-					cout<<"NEXT\n";
+					//cout<<"NEXT\n";
 					proposeto=find_female_with_instance(curinstance);
 				}
-
+#ifdef GS_DBG
 				cout << "m"<<i<<" ? "<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
+#endif
+				nprops++;
 				if(femalematching[proposeto]==-1){	//free girl
+#ifdef GS_DBG
 					cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+#endif
 					matching[i]=proposeto;
 					femalematching[proposeto]=i;
 					freemen--;
@@ -140,7 +145,9 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 					Female *curwoman=women[proposeto];
 					int ispreferred=curwoman->compare(curman,men[femalematching[proposeto]]);
 					if(ispreferred>0){
+#ifdef GS_DBG
 						cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+#endif
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
@@ -157,7 +164,7 @@ void SoftGS::gale_shapley_men_opt(int *matching){
 
 		}
 	}
-
+	return nprops;
 }
 
 //restituisce indice nell'array women della donna con queste carattiristiche (questa istanza)

@@ -20,6 +20,7 @@
 #include <fstream>
 #include <algorithm>
 #include "SMproblem.h"
+#include "Profiler.h"
 using namespace std;
 
 /*#define NUMVARS 10	//numero variabili (quindi nodi dell'albero)
@@ -96,16 +97,22 @@ void testWomen(){
 int main() {
 
 	SM_problem *p= new SM_problem();
-	p->solve_with_classicGS();
+	Profiler *prof=new Profiler();
+	prof->start();
+	int npropsC=p->solve_with_classicGS();
+	double classictime=prof->stop();
 	if(p->verify_is_weakstable())
 		cout<< "Verified weak stable OK\n";
 	else
 		cout<< "Sorry solution not weak stable";
-	p->solve_with_softGS();
+	prof->start();
+	int npropsS=p->solve_with_softGS();
+	double softtime=prof->stop();
 	if(p->verify_is_weakstable())
 			cout<< "Verified weak stable OK\n";
 		else
 			cout<< "Sorry solution not weak stable";
+	cout << "(soft: "<<softtime<<"ms "<<npropsS<<" proposals"<<" classic: "<<classictime<<"ms "<<npropsC<<" proposals)\n";
 	return 0;
 }
 

@@ -23,7 +23,7 @@ class Classic_GS {
 public:
 	Classic_GS(int num_males, Male** menarray, Female** womenarray);
 	virtual ~Classic_GS();
-	void gale_shapley_men_opt(int *matching);
+	int gale_shapley_men_opt(int *matching);
 };
 
 #endif /* CLASSICGS_H_ */

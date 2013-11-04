@@ -64,7 +64,8 @@ Classic_GS::~Classic_GS() {
 }
 
 
-void Classic_GS::gale_shapley_men_opt(int *matching){
+int Classic_GS::gale_shapley_men_opt(int *matching){
+	int nprops=0;
 	int freemen=num_individuals;
 	//int *lastproposed=(int*)malloc(num_individuals*sizeof(int));
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
@@ -86,22 +87,31 @@ void Classic_GS::gale_shapley_men_opt(int *matching){
 				proposeto=menprefs[i][lastproposed];
 				//if(proposeto>num_individuals-1)
 				//exit(-1);
+#ifdef GS_DBG
 				cout << "m"<<i<<" ? "<<proposeto<<"\n";
+#endif
+				nprops++;
 				if(femalematching[proposeto]==-1){	//free girl
-					//cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+#ifdef GS_DBG
+					cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+#endif
 					matching[i]=proposeto;
 					femalematching[proposeto]=i;
 					freemen--;
 				}
 				else{	//already engaged, see if prefers new proposal
 					if(womenprefs[proposeto][i] > womenprefs[proposeto][femalematching[proposeto]] ){
-						//cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+#ifdef GS_DBG
+						cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+#endif
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
 					}
 					else if(womenprefs[proposeto][i] == womenprefs[proposeto][femalematching[proposeto]] && ((float)rand()/(float)RAND_MAX)>0.5f){// i<femalematching[proposeto]){
-						//cout <<"TIEBREAK val:"<<womenprefs[proposeto][i]<<" girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+
+						cout <<"TIEBREAK val:"<<womenprefs[proposeto][i]<<" girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
@@ -112,5 +122,5 @@ void Classic_GS::gale_shapley_men_opt(int *matching){
 
 		}
 	}
-
+	return nprops;
 }
