@@ -20,7 +20,7 @@ class ClassicGSNext {
 		int find_female_with_instance(int *instance);
 public:
 	ClassicGSNext(int num_males, Male** menarray, Female** womenarray);
-	void gale_shapley_men_opt(int *matching);
+	int gale_shapley_men_opt(int *matching);
 	virtual ~ClassicGSNext();
 };
 

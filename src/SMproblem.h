@@ -12,6 +12,7 @@
 #include "Female.h"
 #include "ClassicGS.h"
 #include "SoftGS.h"
+#include "ClassicGSNext.h"
 
 #define NUM_INDIVIDUALS 32
 #define NUMVARS 5	//numero variabili (quindi nodi dell'albero)
@@ -34,6 +35,7 @@ public:
 	bool verify_is_weakstable();
 	int solve_with_classicGS();
 	int solve_with_softGS();
+	int solve_with_classicGSNext();
 };
 
 #endif /* SMPROBLEM_H_ */

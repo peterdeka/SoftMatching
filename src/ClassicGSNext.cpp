@@ -15,8 +15,7 @@ ClassicGSNext::ClassicGSNext(int num_males, Male** menarray, Female** womenarray
 	this->menprefs=(int**)malloc(num_males*sizeof(int*));
 	this->womenprefs=(float**)malloc(num_males*sizeof(float*));
 	//inizializzo le liste di preferenza rendendole classiche GS
-	//1 calcolo preferenze
-	//2 ordino
+
 	float *tmparr=(float*)malloc(num_males*sizeof(float));
 	//uomini hanno in casella i-esima donna in posizione i-esima (linear access)
 	int nextsol[men[0]->numvars];
@@ -31,6 +30,8 @@ ClassicGSNext::ClassicGSNext(int num_males, Male** menarray, Female** womenarray
 		cnt++;
 		while(men[i]->SOFT_next(curf,nextsol)){
 			menprefs[i][cnt]=find_female_with_instance(nextsol);
+			if(menprefs[i][cnt]==-1)
+				break;
 			curf=women[menprefs[i][cnt]];
 			cnt++;
 		}
@@ -38,19 +39,21 @@ ClassicGSNext::ClassicGSNext(int num_males, Male** menarray, Female** womenarray
 	}
 
 	//donne invece hanno in casella i-esima la preferenza per l'uomo i-esimo (random access)
-	for(int i=0;i<num_males;i++){
+	//DEPR, COMPARE RESPECTS LINEARIZATION
+	/*for(int i=0;i<num_males;i++){
 		womenprefs[i]=(float*)malloc(num_males*sizeof(float));
 		for(int k=0;k<num_males;k++){
 			womenprefs[i][k]=womenarray[i]->instance_pref(menarray[k]->myInstance);
 			//cout<<"pref["<<i<<"]["<<k<<"]="<<womenprefs[i][k]<<"\n";
 		}
-	}
+	}*/
 
 	free(tmparr);
 }
 
 
-void ClassicGSNext::gale_shapley_men_opt(int *matching){
+int ClassicGSNext::gale_shapley_men_opt(int *matching){
+	int numprops=0;
 	int freemen=num_individuals;
 	//int *lastproposed=(int*)malloc(num_individuals*sizeof(int));
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
@@ -70,9 +73,12 @@ void ClassicGSNext::gale_shapley_men_opt(int *matching){
 				lastproposed+=1;
 				//cout << "LASTPROP("<<i<<") = "<<lastproposed[i]<<"\n";
 				proposeto=menprefs[i][lastproposed];
-				//if(proposeto>num_individuals-1)
-				//exit(-1);
+				if(proposeto==-1){	//finite donne accettabili
+					cout<<"*********WARNING PROBLEM BECAME SMTI\n************";
+					break;
+				}
 				cout << "m"<<i<<" ? "<<proposeto<<"\n";
+				numprops++;
 				if(femalematching[proposeto]==-1){	//free girl
 					//cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
 					matching[i]=proposeto;
@@ -80,14 +86,17 @@ void ClassicGSNext::gale_shapley_men_opt(int *matching){
 					freemen--;
 				}
 				else{	//already engaged, see if prefers new proposal
-					if(womenprefs[proposeto][i] > womenprefs[proposeto][femalematching[proposeto]] ){
-						//cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+					int preferred=women[proposeto]->compare(men[i],men[femalematching[proposeto]]);
+					//if(womenprefs[proposeto][i] > womenprefs[proposeto][femalematching[proposeto]] ){
+					if(preferred>1){
+					//cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
 					}
-					else if(womenprefs[proposeto][i] == womenprefs[proposeto][femalematching[proposeto]] && ((float)rand()/(float)RAND_MAX)>0.5f){// i<femalematching[proposeto]){
-						//cout <<"TIEBREAK val:"<<womenprefs[proposeto][i]<<" girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+					//else if(womenprefs[proposeto][i] == womenprefs[proposeto][femalematching[proposeto]] && ((float)rand()/(float)RAND_MAX)>0.5f){// i<femalematching[proposeto]){
+					else if(preferred==0 && ((float)rand()/(float)RAND_MAX)>0.5f){
+					//cout <<"TIEBREAK val:"<<womenprefs[proposeto][i]<<" girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
@@ -98,7 +107,7 @@ void ClassicGSNext::gale_shapley_men_opt(int *matching){
 
 		}
 	}
-
+	return numprops;
 }
 
 

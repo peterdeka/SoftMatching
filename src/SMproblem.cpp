@@ -13,25 +13,21 @@ SM_problem::SM_problem() {
 	buildVarDomains();
 	men=(Male**)malloc(NUM_INDIVIDUALS*sizeof(Male*));
 	women=(Female**)malloc(NUM_INDIVIDUALS*sizeof(Female*));
-	for(int i=0;i<NUM_INDIVIDUALS;i++){
+
+	//GENERAZIONE RANDOM UOMINI E DONNE
+	/*for(int i=0;i<NUM_INDIVIDUALS;i++){
 		int instvals[NUMVARS];
 		gen_random_instance(instvals);
 		men[i]= new Male(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
 		//********GENERAZIONE RANDOM DELLE DONNE (NON TUTTE)
-		//gen_random_instance(instvals);
-		//women[i]= new Female(NUMVARS,WOMEN_CONNECTEDNESS,DOMAINS_SIZE,varDomains,instvals);
+		gen_random_instance(instvals);
+		women[i]= new Female(NUMVARS,WOMEN_CONNECTEDNESS,DOMAINS_SIZE,varDomains,instvals);
 		men_matches[i]=-1;
 		cout << "*****men "<<i<<" generated. opt:"<<men[i]->myOpt<<" optinst:";
 		print_arr(men[i]->myOptInstance,NUMVARS);
 	}
-
-	/*string st;
-	men[0]->DOT_representation(&st);
-	ofstream myfile;
-	myfile.open ("Mgraph.gv");
-	myfile << st;
-	myfile.close();
 */
+
 	//GENERAZIONE NON RANDOM DELLE DONNE (TUTTE), BISOGNA ADEGUARE NUM_INDIVIDUALS PERCHE COSI NON E PIU UN PARAMETRO
 	int instvals[NUMVARS];
 	fill(instvals, instvals + NUMVARS, 0);
@@ -51,7 +47,10 @@ SM_problem::SM_problem() {
 		instvals[curpos]+=1;
 		if(moved)
 					curpos=0;
-
+		men[i]= new Male(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
+		men_matches[i]=-1;
+		cout << "*****men "<<i<<" generated. opt:"<<men[i]->myOpt<<" optinst:";
+		print_arr(men[i]->myOptInstance,NUMVARS);
 		women[i]=new Female(NUMVARS,WOMEN_CONNECTEDNESS,DOMAINS_SIZE,varDomains,instvals);
 		print_arr(instvals,NUMVARS);
 	}
@@ -135,6 +134,16 @@ int SM_problem::solve_with_softGS(){
 		//cout<<"TEST FAILED\n";
 	int nprops=softgs.gale_shapley_men_opt(this->men_matches);
 	cout << "SOFT Gale shapley stable match: ";
+	print_arr(this->men_matches,NUM_INDIVIDUALS);
+	return nprops;
+}
+
+int SM_problem::solve_with_classicGSNext(){
+	ClassicGSNext gsnext(NUM_INDIVIDUALS,men,women);
+	//if(!softgs.test_soft_next())
+		//cout<<"TEST FAILED\n";
+	int nprops=gsnext.gale_shapley_men_opt(this->men_matches);
+	cout << "Classic Gale shapley with NEXT stable match: ";
 	print_arr(this->men_matches,NUM_INDIVIDUALS);
 	return nprops;
 }

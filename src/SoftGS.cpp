@@ -129,9 +129,9 @@ int SoftGS::gale_shapley_men_opt(int *matching){
 					//cout<<"NEXT\n";
 					proposeto=find_female_with_instance(curinstance);
 				}
-#ifdef GS_DBG
+//#ifdef GS_DBG
 				cout << "m"<<i<<" ? "<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
-#endif
+//#endif
 				nprops++;
 				if(femalematching[proposeto]==-1){	//free girl
 #ifdef GS_DBG
