@@ -82,12 +82,12 @@ bool SoftGS::test_soft_next(){
 			//cout <<"SOL "<<pref<<" :";
 			//print_arr(cursol,men[i]->numvars);
 		}
-		if(count<num_individuals){
+		/*if(count<num_individuals){
 			cout<<"*****NOT ENOUGH SOLUTIONS "<<count<<"\n";
 			men[i]->debugTree("error.gv");
 			return false;
 		}
-		else
+		else*/
 			cout<<"m"<<i<<" "<<count<<" solutions.\n";
 	}
 	return true;
@@ -96,64 +96,67 @@ bool SoftGS::test_soft_next(){
 
 int SoftGS::gale_shapley_men_opt(int *matching){
 	int nprops=0;
-	int freemen=num_individuals;
+	ofstream mydbg;
+	mydbg.open("softgs.txt");
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
 	for(int i=0;i<num_individuals;i++){
 		matching[i]=-1;
 		femalematching[i]=-1;
 	}
 
-	while(freemen>0){
-
+	bool singles=true;
+	while(singles){
+		singles=false;
 		for(int i=0;i<num_individuals;i++){
 			Male *curman=men[i];
+			curman->reset_zeroed_prectuples();
 			int curinstance[curman->numvars];
 			bool first=true;
+
 			int proposeto;
 			//DBG
 			//if(matching[i]==-1)
-				//cout<<"*** m"<<i<<" is unmatched\n";
+			//cout<<"*** m"<<i<<" is unmatched\n";
 			//EDBG
 			while(matching[i]==-1){	//se free
-
+				singles=true;
 				if(first){
 					first=false;
 					proposeto=find_female_with_instance(curman->myOptInstance);
 				}
 				else{
 					if(!curman->SOFT_next(women[proposeto],curinstance))
-						{
-							cout<<"******* NEXT returned 0\n";
-							break;
-						}
+					{
+						cout<<"*********WARNING PROBLEM BECAME SMTI************\n";
+						break;
+					}
 					//cout<<"NEXT\n";
 					proposeto=find_female_with_instance(curinstance);
 				}
-//#ifdef GS_DBG
-				cout << "m"<<i<<" ? "<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
-//#endif
+				//#ifdef GS_DBG
+				mydbg << "m"<<i<<" ? "<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
+				//#endif
 				nprops++;
 				if(femalematching[proposeto]==-1){	//free girl
-#ifdef GS_DBG
-					cout <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
-#endif
+//#ifdef GS_DBG
+					mydbg <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+//#endif
 					matching[i]=proposeto;
 					femalematching[proposeto]=i;
-					freemen--;
 				}
 				else{	//already engaged, see if prefers new proposal
 					Female *curwoman=women[proposeto];
 					int ispreferred=curwoman->compare(curman,men[femalematching[proposeto]]);
 					if(ispreferred>0){
-#ifdef GS_DBG
-						cout <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
-#endif
+//#ifdef GS_DBG
+						mydbg <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+//#endif
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
 					}
 					else if(ispreferred==0 && ((float)rand()/(float)RAND_MAX)>0.5f){// i<femalematching[proposeto]){
-						cout <<"TIEBREAK girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+						mydbg <<"TIEBREAK girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
@@ -161,9 +164,10 @@ int SoftGS::gale_shapley_men_opt(int *matching){
 
 				}
 			}
-
+			curman->reset_zeroed_prectuples();
 		}
 	}
+	mydbg.close();
 	return nprops;
 }
 

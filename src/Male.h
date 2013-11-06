@@ -41,7 +41,7 @@ class Male{
 	bool CSP_solve_arc_consist(CTreeNode *node, float cutval);
 	float CSP_solve(float cutval, int *solution);
 	void zeroout_prectuples_with_pref(Tuple *t_star,float pref);
-	void reset_zeroed_prectuples();
+
 	void zeroout_tuple(Tuple *t);
 	void set_solution(int *instance);
 	void print_arr(int *inst,int length);
@@ -60,6 +60,7 @@ public:
 	float pref(Female *f);
 	void debugTree(char* fname);
 	int compare(Female *f1, Female *f2);
+	void reset_zeroed_prectuples();
 };
 
 #endif /* MALE_H_ */

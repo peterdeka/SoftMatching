@@ -160,24 +160,30 @@ float Male::DAC_opt(int *opt_instance){
 	}
 
 	Tuple t1,t2;
-	Tuple *tp,*tnp;
-	tp=&t1;
-	tnp=&t2;
+	Tuple *oldt=NULL,*newt=NULL;
+	oldt=&t1;
+	newt=&t2;
 	bool optfound=false;
-	if(!find_first_tuple_with_pref(NULL,maxPref,tnp))
+	if(!find_first_tuple_with_pref(NULL,maxPref,newt))
 		exit(1);
 
 	do{
-		fix(tnp);
+		fix(newt);
 		if(CSP_solve(maxPref,opt_instance)==maxPref)
 			optfound=true;
-		unfix(tnp);
-		Tuple *t=tnp;
-		tnp=tp;
-		tp=t;
+		unfix(newt);
+		cout<<"TOPT "<<prefTree->linearizedTree[newt->var_idx]->childConstraints[newt->child_idx][newt->idx_in_bintbl[0]][newt->idx_in_bintbl[1]]<<"\n";
+		if(!optfound){
+		Tuple *t=newt;
+		newt=oldt;
+		oldt=t;
+		}
 
-	}while(!optfound && next_tuple_with_pref(*tp,tnp,maxPref));
-
+	}while(!optfound && next_tuple_with_pref(*oldt,newt,maxPref));
+	//if(oldt!=NULL)
+	//cout<<"TOPT "<<prefTree->linearizedTree[oldt->var_idx]->childConstraints[oldt->child_idx][oldt->idx_in_bintbl[0]][oldt->idx_in_bintbl[1]]<<"\n";
+	//if(newt!=NULL)
+	//cout<<"TOPT "<<prefTree->linearizedTree[newt->var_idx]->childConstraints[newt->child_idx][newt->idx_in_bintbl[0]][newt->idx_in_bintbl[1]]<<"\n";
 	return this->prefTree->root->dacUnaryConstraints[opt_instance[0]];
 }
 
@@ -490,6 +496,8 @@ void Male::zeroout_tuple(Tuple *t){
 	zeroed_tuples_backup[n_zeroed_tuples].child_idx=t->child_idx;
 	zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[0]=t->idx_in_bintbl[0];
 	zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[1]=t->idx_in_bintbl[1];
+	//cout<<"zeroed alone "<<t->var_idx<<"."<<t->child_idx"."<<t->idx_in_bintbl[0]<<"\n";
+
 	n_zeroed_tuples++;
 }
 
@@ -518,6 +526,7 @@ void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 							n_zeroed_tuples++;
 							curnode->childConstraints[j][k][h]=0;
 							curnode->children[j]->fatherConstraints[k][h]=0;
+					//		cout<<"zeroed "<<t_star->var_idx<<"."<<t_star->child_idx"."<<t_star->idx_in_bintbl[0]<<"\n";
 						}
 					}
 				}

@@ -132,6 +132,7 @@ int SM_problem::solve_with_softGS(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
 	//if(!softgs.test_soft_next())
 		//cout<<"TEST FAILED\n";
+
 	int nprops=softgs.gale_shapley_men_opt(this->men_matches);
 	cout << "SOFT Gale shapley stable match: ";
 	print_arr(this->men_matches,NUM_INDIVIDUALS);
@@ -140,9 +141,11 @@ int SM_problem::solve_with_softGS(){
 
 int SM_problem::solve_with_classicGSNext(){
 	ClassicGSNext gsnext(NUM_INDIVIDUALS,men,women);
+	debugTrees("GSN");
 	//if(!softgs.test_soft_next())
 		//cout<<"TEST FAILED\n";
 	int nprops=gsnext.gale_shapley_men_opt(this->men_matches);
+	debugTrees("GSA");
 	cout << "Classic Gale shapley with NEXT stable match: ";
 	print_arr(this->men_matches,NUM_INDIVIDUALS);
 	return nprops;
@@ -153,5 +156,17 @@ void SM_problem::print_arr(int *inst,int length){
 			cout << inst[i]<<"-";
 	cout << " \n ";
 
+}
+
+void SM_problem::debugTrees(char *filename){
+	for(int i=0;i<NUM_INDIVIDUALS;i++)
+		{
+		 char s[10];
+		 char tmp[10];
+		 strcpy(s,filename);
+		 sprintf(tmp,"%d.gv",i);
+		 strcat(s,tmp);
+		men[i]->debugTree(s);
+		}
 }
 
