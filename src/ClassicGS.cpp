@@ -88,7 +88,7 @@ int Classic_GS::gale_shapley_men_opt(int *matching){
 				//if(proposeto>num_individuals-1)
 				//exit(-1);
 #ifdef GS_DBG
-				cout << "m"<<i<<" ? "<<proposeto<<"\n";
+				cout << "m"<<i<<" ? m"<<proposeto<<"\n";
 #endif
 				nprops++;
 				if(femalematching[proposeto]==-1){	//free girl

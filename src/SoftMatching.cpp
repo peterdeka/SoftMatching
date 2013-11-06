@@ -119,19 +119,19 @@ int main() {
 				cout<< "SOFTGS Sorry solution not weak stable\n";
 			}
 
-
+	//p->debugTrees("be");
 	prof->start();
 		int npropsCN=p->solve_with_classicGSNext();
-		p->debugTrees("me");
+		//p->debugTrees("me");
 		double classicnexttime=prof->stop();
 		if(p->verify_is_weakstable())
 			cout<< "GSNEXT Verified weak stable OK\n";
 		else
 			cout<< "GSNEXT Sorry solution not weak stable\n";
 
-	p->debugTrees("af");
+	//p->debugTrees("af");
 	//results
-	cout << "(soft: "<<softtime<<"ms "<<npropsS<<" proposals"<<" classic: "<<classictime<<"ms "<<npropsC<<" proposals"<<" classicNext: "<<classicnexttime<<"ms "<<npropsCN<<" proposals)\n";
+	cout << "(soft: "<<softtime<<"s "<<npropsS<<" proposals"<<" classic: "<<classictime<<"s "<<npropsC<<" proposals"<<" classicNext: "<<classicnexttime<<"s "<<npropsCN<<" proposals)\n";
 	return 0;
 }
 

@@ -496,14 +496,12 @@ void Male::zeroout_tuple(Tuple *t){
 	zeroed_tuples_backup[n_zeroed_tuples].child_idx=t->child_idx;
 	zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[0]=t->idx_in_bintbl[0];
 	zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[1]=t->idx_in_bintbl[1];
-	//cout<<"zeroed alone "<<t->var_idx<<"."<<t->child_idx"."<<t->idx_in_bintbl[0]<<"\n";
-
+	//cout<<"zeroed alone "<<t->var_idx<<"."<<t->child_idx<<"."<<t->idx_in_bintbl[0]<<"\n";
 	n_zeroed_tuples++;
 }
 
 void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 	//tengo traccia delle tuple che azzero
-	n_zeroed_tuples=0;
 	zeroed_pref=pref;
 	int ji=t_star->child_idx;
 	int ki=t_star->idx_in_bintbl[0];
@@ -526,7 +524,7 @@ void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 							n_zeroed_tuples++;
 							curnode->childConstraints[j][k][h]=0;
 							curnode->children[j]->fatherConstraints[k][h]=0;
-					//		cout<<"zeroed "<<t_star->var_idx<<"."<<t_star->child_idx"."<<t_star->idx_in_bintbl[0]<<"\n";
+							//cout<<"zeroed "<<i<<"."<<j<<"."<<k<<"\n";
 						}
 					}
 				}
@@ -540,6 +538,7 @@ void Male::reset_zeroed_prectuples(){
 		t=zeroed_tuples_backup+i;
 		prefTree->linearizedTree[t->var_idx]->childConstraints[t->child_idx][t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=zeroed_pref;
 		prefTree->linearizedTree[t->var_idx]->children[t->child_idx]->fatherConstraints[t->idx_in_bintbl[0]][t->idx_in_bintbl[1]]=zeroed_pref;
+		//cout<<"resetted "<<t->var_idx<<"."<<t->child_idx<<"."<<t->idx_in_bintbl[0]<<"\n";
 	}
 	n_zeroed_tuples=0;
 	//cout << "ZEROED RESET to "<<zeroed_pref<<"\n";
@@ -573,7 +572,6 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	fix(&t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
 		unfix(&t_star);
-		//debugTree("debug_unfixed.gv");
 		return true;
 	}
 
@@ -611,9 +609,6 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 			return true;
 		}
 
-		char s[255];
-		sprintf(s,"fixed_solve_%.2f-%.2f.gv",tmppref,candpref);
-		//debugTree(s);
 		//cout<<"no CSPSOLVE sol found for "<<tmppref<<"\n";
 		cpref=tmppref;
 		// set tuple to 0
