@@ -111,6 +111,8 @@ bool SM_problem::verify_is_weakstable(){
 				if(curfemale->instance_pref(curmale->myInstance) > wcurpref){
 					cout<<"|*|*|*BLOCKING PAIR*|*\n m:"<<curmale->pref(curfemale)<<">"<< mcurpref<< " f:"<<curfemale->instance_pref(curmale->myInstance)<< ">"<< wcurpref
 <<"\n";
+					curmale->debugTree("blm.gv");
+
 					return false;
 				}
 
@@ -123,31 +125,29 @@ bool SM_problem::verify_is_weakstable(){
 int SM_problem::solve_with_classicGS(){
 	Classic_GS gs(NUM_INDIVIDUALS,men,women);
 	int nprops=gs.gale_shapley_men_opt(this->men_matches);
-	cout << "Gale shapley stable match: ";
-	print_arr(this->men_matches,NUM_INDIVIDUALS);
+	cout << "Gale shapley match: ";
+	//print_arr(this->men_matches,NUM_INDIVIDUALS);
 	return nprops;
 }
 
 int SM_problem::solve_with_softGS(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
-	//if(!softgs.test_soft_next())
-		//cout<<"TEST FAILED\n";
-
+	/*if(!softgs.test_soft_next())
+		cout<<"TEST FAILED\n";
+*/
 	int nprops=softgs.gale_shapley_men_opt(this->men_matches);
-	cout << "SOFT Gale shapley stable match: ";
-	print_arr(this->men_matches,NUM_INDIVIDUALS);
+	//cout << "SOFT Gale shapley match: ";
+	//print_arr(this->men_matches,NUM_INDIVIDUALS);
 	return nprops;
 }
 
 int SM_problem::solve_with_classicGSNext(){
 	ClassicGSNext gsnext(NUM_INDIVIDUALS,men,women);
-	debugTrees("GSN");
-	//if(!softgs.test_soft_next())
-		//cout<<"TEST FAILED\n";
+	//debugTrees("GSN");
 	int nprops=gsnext.gale_shapley_men_opt(this->men_matches);
-	debugTrees("GSA");
-	cout << "Classic Gale shapley with NEXT stable match: ";
-	print_arr(this->men_matches,NUM_INDIVIDUALS);
+	//debugTrees("GSA");
+	//cout << "Classic Gale shapley with NEXT match: ";
+	//print_arr(this->men_matches,NUM_INDIVIDUALS);
 	return nprops;
 }
 
@@ -161,8 +161,8 @@ void SM_problem::print_arr(int *inst,int length){
 void SM_problem::debugTrees(char *filename){
 	for(int i=0;i<NUM_INDIVIDUALS;i++)
 		{
-		 char s[10];
-		 char tmp[10];
+		 char s[200];
+		 char tmp[200];
 		 strcpy(s,filename);
 		 sprintf(tmp,"%d.gv",i);
 		 strcat(s,tmp);

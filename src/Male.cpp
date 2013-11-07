@@ -31,7 +31,7 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 
 //generazione albero preferenze uomini
 void Male::buildTree(float tightness,int numvars,char **varDomains){
-	cout <<"Building men tree \n";
+	//cout <<"Building men tree \n";
 	CTree *tree=this->prefTree;
 	CTreeNode **curarr=(CTreeNode**)malloc(numvars*sizeof(CTreeNode*));
 	CTreeNode **otherarr=(CTreeNode**)malloc(numvars*sizeof(CTreeNode*));
@@ -39,14 +39,14 @@ void Male::buildTree(float tightness,int numvars,char **varDomains){
 	int randomVarId=0;
 	CTreeNode *root=new CTreeNode(randomVarId,varDomains[randomVarId]);
 	root->genUnaryConstraints(domains_size);
-	cout<<"unary ok\n";
+
 	//ora aggiungo tutte le altre variabili (nodi)
 	CTreeNode *node=root;
 	tree->setRoot(root);
 	curarr[0]=root;
 	int curlen=1;
 	int otherlen=0;
-	cout<<"GC\n";
+
 	while(tree->n_nodes<numvars){	//randomizzo discendenza
 		for(int i=0;i<curlen;i++){	//elaboro nodi sospesi
 			node=curarr[i];
@@ -66,11 +66,11 @@ void Male::buildTree(float tightness,int numvars,char **varDomains){
 		otherlen=0;
 		otherarr=tmp;
 	}
-	cout<<"EGC\n";
+
 	free(curarr);
 	free(otherarr);
 	//this->adjustTightness(tightness);
-	cout << "Tree built \n";
+	//cout << "Tree built \n";
 }
 
 
@@ -172,7 +172,7 @@ float Male::DAC_opt(int *opt_instance){
 		if(CSP_solve(maxPref,opt_instance)==maxPref)
 			optfound=true;
 		unfix(newt);
-		cout<<"TOPT "<<prefTree->linearizedTree[newt->var_idx]->childConstraints[newt->child_idx][newt->idx_in_bintbl[0]][newt->idx_in_bintbl[1]]<<"\n";
+		//cout<<"TOPT "<<prefTree->linearizedTree[newt->var_idx]->childConstraints[newt->child_idx][newt->idx_in_bintbl[0]][newt->idx_in_bintbl[1]]<<"\n";
 		if(!optfound){
 		Tuple *t=newt;
 		newt=oldt;
@@ -559,34 +559,35 @@ void Male::debugTree(char* fname){
 //salvagnini - rossi
 bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	float p_star=pref(curfemale);
-	Tuple t_star;
+	Tuple *t_star=new Tuple();
 	//cout<<"CALLED NEXT\n*******************\n";
 	//cerco soluzione successiva generata dalla stessa tupla dell'attuale (con stesso livello di pref)
-	if(!find_first_tuple_with_pref(curfemale->myInstance,p_star,&t_star))
+	if(!find_first_tuple_with_pref(curfemale->myInstance,p_star,t_star))
 	{
 		cout<<"***SORRY***";
 		exit(-1);
 	}
 	//debugTree("debug_prefix.gv");
 	//cout <<"TSTAR:" <<t_star.var_idx<<" "<<t_star.child_idx<<" "<<t_star.idx_in_bintbl[0] <<" "<<t_star.idx_in_bintbl[1]<<"\n";
-	fix(&t_star);
+	fix(t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
-		unfix(&t_star);
+		unfix(t_star);
 		return true;
 	}
 
-	unfix(&t_star);
+	unfix(t_star);
 
 	//non l'ho trovata, quindi devo trovare un altra tupla allo stesso livello di pref ma lex successiva
 	//1 annullo tutte le tuple dell'albero con preferenza = pstar e precedenti a t
-	zeroout_prectuples_with_pref(&t_star, p_star);
+	zeroout_prectuples_with_pref(t_star, p_star);
 
 	//2 procedo alla ricerca
 	float cpref=p_star;
-	Tuple tfound;
+	Tuple *tfound=new Tuple();
 	float tmppref=p_star;
 	while(1){
-		if(!next_tuple_with_pref(t_star, &tfound, cpref)){		//finite tuple con preferenza cpref, scendo
+		if(!next_tuple_with_pref(*t_star, tfound, cpref)){		//finite tuple con preferenza cpref, scendo
+			//cout<<"*NO MORE tuples with pref "<<cpref<<"\n";
 			tmppref=find_next_pref_level(cpref);
 			//cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
 			if(tmppref<=0){
@@ -594,25 +595,29 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 				return false;		//non si scende piu di preferenza, finite le soluzioni
 			}
 			// reset previuosly set to 0
-			find_first_tuple_with_pref(NULL,tmppref,&tfound);
+			find_first_tuple_with_pref(NULL,tmppref,tfound);
 			reset_zeroed_prectuples();
 		}
 		//secondo if, ho trovato una tupla e voglio vedere se mi da soluzione al suo livello di preferenza
-		fix(&tfound);
+		fix(tfound);
 		float candpref=CSP_solve(tmppref, nextsol);
-		unfix(&tfound);
+		unfix(tfound);
 		if(candpref==tmppref)
 		{
-			if(prefTree->linearizedTree[tfound.var_idx]->children[tfound.child_idx]->value!=tfound.idx_in_bintbl[1] && prefTree->linearizedTree[tfound.var_idx]->value!=tfound.idx_in_bintbl[0])
+			if(prefTree->linearizedTree[tfound->var_idx]->children[tfound->child_idx]->value!=tfound->idx_in_bintbl[1] && prefTree->linearizedTree[tfound->var_idx]->value!=tfound->idx_in_bintbl[0])
 				cout << "****NOT NICE, solution doesnt come from correct tuple\n";
 			//reset_zeroed_prectuples();
 			return true;
 		}
-
+		//cout<<"**TUPLE at pref "<<tmppref<<" does not solve\n";
 		//cout<<"no CSPSOLVE sol found for "<<tmppref<<"\n";
 		cpref=tmppref;
 		// set tuple to 0
-		zeroout_tuple(&tfound);
+		zeroout_tuple(tfound);
+		//swap tuples
+		Tuple *tmp=t_star;
+		t_star=tfound;
+		tfound=tmp;
 	}
 	return false; //never hit
 }

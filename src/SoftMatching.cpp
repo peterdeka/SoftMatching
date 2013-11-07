@@ -98,40 +98,31 @@ int main() {
 
 	SM_problem *p= new SM_problem();
 	Profiler *prof=new Profiler();
-	prof->start();
-	int npropsC=0;
-	//int npropsC=p->solve_with_classicGS();
-	double classictime=prof->stop();
-	//p->debugTrees("be");
-//	if(p->verify_is_weakstable())
-//		cout<< "Verified weak stable OK\n";
-//	else
-//		cout<< "Sorry solution not weak stable";
 
-		prof->start();
+	prof->start();
 	int npropsS=p->solve_with_softGS();
 	double softtime=prof->stop();
 	if(p->verify_is_weakstable())
-			cout<< "SOFTGS Verified weak stable OK\n";
-		else
-			{
+		cout<< "SOFTGS Verified weak stable OK\n";
+	else
+	{
 
-				cout<< "SOFTGS Sorry solution not weak stable\n";
-			}
+		cout<< "SOFTGS Sorry solution not weak stable\n";
+	}
 
 	//p->debugTrees("be");
 	prof->start();
-		int npropsCN=p->solve_with_classicGSNext();
-		//p->debugTrees("me");
-		double classicnexttime=prof->stop();
-		if(p->verify_is_weakstable())
-			cout<< "GSNEXT Verified weak stable OK\n";
-		else
-			cout<< "GSNEXT Sorry solution not weak stable\n";
+	int npropsCN=p->solve_with_classicGSNext();
+	//p->debugTrees("me");
+	double classicnexttime=prof->stop();
+	if(p->verify_is_weakstable())
+		cout<< "GSNEXT Verified weak stable OK\n";
+	else
+		cout<< "GSNEXT Sorry solution not weak stable\n";
 
 	//p->debugTrees("af");
 	//results
-	cout << "(soft: "<<softtime<<"s "<<npropsS<<" proposals"<<" classic: "<<classictime<<"s "<<npropsC<<" proposals"<<" classicNext: "<<classicnexttime<<"s "<<npropsCN<<" proposals)\n";
+	cout << "(soft: "<<softtime<<"s "<<npropsS<<" proposals; classicNext: "<<classicnexttime<<"s "<<npropsCN<<" proposals)\n";
 	return 0;
 }
 
