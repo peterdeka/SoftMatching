@@ -11,6 +11,7 @@
 
 #include "Male.h"
 #include "Female.h"
+
 class SoftGS {
 	int num_individuals;
 	Male **men;

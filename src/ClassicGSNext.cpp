@@ -58,6 +58,7 @@ ClassicGSNext::ClassicGSNext(int num_males, Male** menarray, Female** womenarray
 	}*/
 
 	free(tmparr);
+	cout<<"Classic GS with next lists: preference lists generated.\n";
 }
 
 
