@@ -40,7 +40,7 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 	//ha rappresentazione albero ma non lo e, conto sul fatto che quando valuto un'istanziazione procedo in ordine
 	//sui nodi quindi non mi interessa propagare il binary anche nel figlio (rappresentato directed ma uso come undirected)
 	int n_constr=((float)((tree->n_nodes*(tree->n_nodes-1))/2))*connectedness;
-	std::cout << "Building women graph with "<<tree->n_nodes<< " nodes and " <<n_constr<<" constraints that's "<<connectedness<<" connected.\n";
+	//std::cout << "Building women graph with "<<tree->n_nodes<< " nodes and " <<n_constr<<" constraints that's "<<connectedness<<" connected.\n";
 	int rndId2;
 	while(n_constr>0){
 		for(int i=0;i<tree->n_nodes;i++){	//nessun problema con random perche non e albero
@@ -102,7 +102,7 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 		CTreeNode *node=tree->linearizedTree[i];
 		node->genBinaryConstraints(domains_size);
 	}
-	std::cout << "Women graph built\n";
+	//std::cout << "Women graph built\n";
 }
 
 void Female::DOT_representation(string *res){

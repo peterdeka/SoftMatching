@@ -31,32 +31,25 @@ SM_problem::SM_problem() {
 	//GENERAZIONE NON RANDOM DELLE DONNE (TUTTE), BISOGNA ADEGUARE NUM_INDIVIDUALS PERCHE COSI NON E PIU UN PARAMETRO
 	int instvals[NUMVARS];
 	fill(instvals, instvals + NUMVARS, 0);
-	int curpos=0;
-	instvals[curpos]=-1;
-
+	instvals[NUMVARS-1]=-1;
 	for(int i=0;i<NUM_INDIVIDUALS;i++){
-		bool moved=false;
-		while(instvals[curpos]+1>=DOMAINS_SIZE){
-			curpos++;
-			for(int k=curpos-1;k>-1;k--){
-								instvals[k]=0;
-							}
-			moved=true;
+		for(int j=NUMVARS-1;j>-1;j--){
+			if(instvals[j]+1<DOMAINS_SIZE){
+				instvals[j]+=1;
+				break;
+			}
+			else
+				instvals[j]=0;
 		}
-
-		instvals[curpos]+=1;
-		if(moved)
-					curpos=0;
 		men[i]= new Male(NUMVARS,DOMAINS_SIZE,MALE_TIGHTNESS,varDomains,instvals);
 		men_matches[i]=-1;
-		cout << "*****men "<<i<<" generated. opt:"<<men[i]->myOpt<<" optinst:";
-		print_arr(men[i]->myOptInstance,NUMVARS);
+		//cout << "*****men "<<i<<" generated. opt:"<<men[i]->myOpt<<" optinst:";
+		//print_arr(men[i]->myOptInstance,NUMVARS);
 		women[i]=new Female(NUMVARS,WOMEN_CONNECTEDNESS,DOMAINS_SIZE,varDomains,instvals);
-		print_arr(instvals,NUMVARS);
+		//print_arr(instvals,NUMVARS);
 	}
 
-	cout << "*****women generated\n";
-
+	cout << "***** generated\n";
 }
 
 SM_problem::~SM_problem() {

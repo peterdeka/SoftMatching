@@ -98,31 +98,52 @@ int main() {
 
 	SM_problem *p= new SM_problem();
 	Profiler *prof=new Profiler();
+	char fname[255];
+	sprintf(fname,"output_dsz%d_nvars%d",p->domsz,p->numvars);
+	ofstream myfile;
+	myfile.open (fname);
+	myfile<<"t_Soft t_classic_next props_Soft props_classic_next\n";
 
-	prof->start();
-	int npropsS=p->solve_with_softGS();
-	double softtime=prof->stop();
-	if(p->verify_is_weakstable())
-		cout<< "SOFTGS Verified weak stable OK\n";
-	else
-	{
+	for(int j=0;j<10;j++){
+		delete p;
+		p= new SM_problem();
+		prof->start();
+		bool stable=true;
+		int npropsS=p->solve_with_softGS();
+		double softtime=prof->stop();
+		if(p->verify_is_weakstable())
+			cout<< "SOFTGS Verified weak stable OK\n";
+		else
+		{
+			stable=false;
+			cout<< "SOFTGS Sorry solution not weak stable\n";
+		}
 
-		cout<< "SOFTGS Sorry solution not weak stable\n";
+		//p->debugTrees("be");
+		prof->start();
+		int npropsCN=p->solve_with_classicGSNext();
+		//p->debugTrees("me");
+		double classicnexttime=prof->stop();
+		if(p->verify_is_weakstable())
+			cout<< "GSNEXT Verified weak stable OK\n";
+		else
+			{
+				stable=false;
+				cout<< "GSNEXT Sorry solution not weak stable\n";
+			}
+
+		//p->debugTrees("af");
+		//results
+		if(!stable){
+			cout<<"******ERROR NOT STABLE********** QUITTING...\n";
+			exit(1);
+		}
+		cout << "(soft: "<<softtime<<"s "<<npropsS<<" proposals; classicNext: "<<classicnexttime<<"s "<<npropsCN<<" proposals)\n";
+		myfile << softtime<< " "<<classicnexttime<< " "<<npropsS<<" "<<npropsCN<<"\n";
+
+
 	}
-
-	//p->debugTrees("be");
-	prof->start();
-	int npropsCN=p->solve_with_classicGSNext();
-	//p->debugTrees("me");
-	double classicnexttime=prof->stop();
-	if(p->verify_is_weakstable())
-		cout<< "GSNEXT Verified weak stable OK\n";
-	else
-		cout<< "GSNEXT Sorry solution not weak stable\n";
-
-	//p->debugTrees("af");
-	//results
-	cout << "(soft: "<<softtime<<"s "<<npropsS<<" proposals; classicNext: "<<classicnexttime<<"s "<<npropsCN<<" proposals)\n";
+	myfile.close();
 	return 0;
 }
 
