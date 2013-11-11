@@ -28,6 +28,7 @@ int main() {
 
 	SM_problem *p= new SM_problem();
 	Profiler *prof=new Profiler();
+	cout<<"problem generated\n";
 	char fname[255];
 	sprintf(fname,"output_dsz%d_nvars%d",p->domsz,p->numvars);
 	ofstream myfile;
@@ -37,6 +38,7 @@ int main() {
 	for(int j=0;j<10;j++){
 		delete p;
 		p= new SM_problem();
+		cout<<"problem generated\n";
 		prof->start();
 		bool stable=true;
 		int npropsS=p->solve_with_softGS();

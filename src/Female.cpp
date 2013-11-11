@@ -36,7 +36,7 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 		node->children=(CTreeNode **)malloc(numvars*sizeof(CTreeNode*));	//inizializzo con max num possibile di bin constr
 		tree->addNode(node);
 	}
-	//ora genero i vincoli binari (non  un albero quindi faccio un sottoprodotto cartesiano)
+	//ora genero i vincoli binari (non ï¿½ un albero quindi faccio un sottoprodotto cartesiano)
 	//ha rappresentazione albero ma non lo e, conto sul fatto che quando valuto un'istanziazione procedo in ordine
 	//sui nodi quindi non mi interessa propagare il binary anche nel figlio (rappresentato directed ma uso come undirected)
 	int n_constr=((float)((tree->n_nodes*(tree->n_nodes-1))/2))*connectedness;
@@ -45,7 +45,7 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 	while(n_constr>0){
 		for(int i=0;i<tree->n_nodes;i++){	//nessun problema con random perche non e albero
 			node=tree->linearizedTree[i];
-			if(node->child_n>=tree->n_nodes) // verifica che: numero figli attuale<NUMVARS
+			if(node->child_n>=tree->n_nodes-2) // verifica che: numero figli attuale<NUMVARS
 				continue;
 
 			int nchild;
@@ -55,12 +55,15 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 			else if(n_constr==1)
 				nchild=1;
 			else
-				nchild=(rand()%3+1)%n_constr;
+				nchild=(rand()%3+1)%(n_constr+1);
 
-			rndId2=rand()%tree->n_nodes;
+			//rndId2=rand()%tree->n_nodes;
 			for(int j=0;j<nchild;j++){
 				int skip=2;
-				while(skip>0){
+				rndId2=rand()%tree->n_nodes;
+				int retries=0;
+				while(skip>0 && retries<8){
+					retries++;
 					skip=0;
 					rndId2=(rndId2+1)%tree->n_nodes;
 					if(rndId2==i)	//no self constraint
@@ -74,6 +77,8 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 						}
 
 					}
+					if(skip==2)
+						continue;
 					CTreeNode *rndchild=tree->linearizedTree[rndId2];
 					for(int h=0;h<rndchild->child_n;h++){	//check current node it's not chil dof candidate rnd children
 						CTreeNode *curchild=rndchild->children[h];
@@ -93,15 +98,18 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 					node->children[node->child_n++]=child;
 					n_constr-=1;
 				}
+				if(retries>8)
+					break;
 			}
 		}
 	}
-
+cout<<"W tree gen, going for binarygen\n";
 	//ora che ho messo tutti i legami, genero i binary constraint
 	for(int i=0;i<tree->n_nodes;i++){
 		CTreeNode *node=tree->linearizedTree[i];
 		node->genBinaryConstraints(domains_size);
 	}
+	cout<<"Binary generated\n";
 	//std::cout << "Women graph built\n";
 }
 
