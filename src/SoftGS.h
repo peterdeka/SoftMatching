@@ -11,11 +11,13 @@
 
 #include "Male.h"
 #include "Female.h"
+#include "FemaleContainer.h"
 
 class SoftGS {
 	int num_individuals;
 	Male **men;
 	Female **women;
+	FemaleContainer *womencont;
 	int find_female_with_instance(int *instance);
 	void print_arr(int *inst,int length);
 

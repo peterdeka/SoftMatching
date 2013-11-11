@@ -23,7 +23,7 @@ void CTree::addNode(CTreeNode *node){
 		tightness=1;
 		n_bin_constraints=0;
 		this->linearizedTree=NULL;
-		this->n_nodes=NULL;
+		this->n_nodes=0;
 		domains_size=0;
 	}
 
@@ -65,7 +65,7 @@ void CTree::genChildren( CTreeNode *curNode,int child_limit, char **varDomains,i
 		int randomVarId=-1;
 		while(randomVarId<0){
 			randomVarId=rand()%numvars;
-			//vedo se c' giˆ
+			//vedo se c'ï¿½ giï¿½
 
 			if(this->linearizedTree[randomVarId]!=NULL)
 				randomVarId=-1;

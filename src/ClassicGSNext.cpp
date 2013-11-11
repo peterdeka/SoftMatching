@@ -15,7 +15,7 @@ ClassicGSNext::ClassicGSNext(int num_males, Male** menarray, Female** womenarray
 	this->menprefs=(int**)malloc(num_males*sizeof(int*));
 	this->womenprefs=(float**)malloc(num_males*sizeof(float*));
 	//inizializzo le liste di preferenza rendendole classiche GS
-
+	this->womencont=new FemaleContainer(this->women,num_males);
 	float *tmparr=(float*)malloc(num_males*sizeof(float));
 	//uomini hanno in casella i-esima donna in posizione i-esima (linear access)
 	int nextsol[men[0]->numvars];
@@ -26,12 +26,12 @@ ClassicGSNext::ClassicGSNext(int num_males, Male** menarray, Female** womenarray
 		menprefs[i]=(int*)malloc(num_males*sizeof(int));
 		for(int j=0;j<num_males;j++)
 			menprefs[i][j]=-1;		//inizializzo lista a -1 cosi vedo incompleteness
-		menprefs[i][0]=find_female_with_instance(men[i]->myOptInstance);
+		menprefs[i][0]=womencont->find_female_with_instance(men[i]->myOptInstance);
 		curf=women[menprefs[i][0]];
 		//cout<<"-"<<menprefs[i][cnt]<<":"<<men[i]->pref(curf);
 		cnt++;
 		while(men[i]->SOFT_next(curf,nextsol)){
-			menprefs[i][cnt]=find_female_with_instance(nextsol);
+			menprefs[i][cnt]=womencont->find_female_with_instance(nextsol);
 			if(menprefs[i][cnt]==-1){
 				cout<<"GS with next lists: girl not found\n";
 				exit(1);

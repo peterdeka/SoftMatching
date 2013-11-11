@@ -10,6 +10,8 @@
 #include "CTree.h"
 #include "Female.h"
 #include <fstream>
+#include <cstdlib>
+#include<cstring>
 class Female;
 class Male{
 	struct Tuple {

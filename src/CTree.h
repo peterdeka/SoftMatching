@@ -11,6 +11,9 @@
 #include <iostream>
 #include <string>
 #include "CTreeNode.h"
+#include <cstdlib>
+#include<cstring>
+#include<cstdio>
 #define DOT_TABLE_BEG "<<FONT POINT-SIZE=\"10\"><TABLE CELLBORDER=\"0\" CELLPADDING=\"1\" CELLSPACING=\"0\">"
 #define DOT_TABLE_END "</TABLE></FONT>>];\n"
 

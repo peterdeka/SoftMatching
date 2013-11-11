@@ -10,6 +10,7 @@
 #define CLASSICGSNEXT_H_
 #include "Male.h"
 #include "Female.h"
+#include "FemaleContainer.h"
 
 class ClassicGSNext {
 	Male **men;
@@ -17,6 +18,7 @@ class ClassicGSNext {
 		int **menprefs;	//liste di preferenza di ogni individuo (indice=varid, contenuto=pref)
 		float **womenprefs;
 		int num_individuals;
+		FemaleContainer *womencont;
 		int find_female_with_instance(int *instance);
 public:
 	ClassicGSNext(int num_males, Male** menarray, Female** womenarray);

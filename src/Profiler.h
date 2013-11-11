@@ -9,12 +9,14 @@
 #define PROFILER_H_
 #include <time.h>
 class Profiler {
-	clock_t tstart;
+	timespec tstart,tend;
+	timespec diff(timespec start, timespec end);
 public:
 	Profiler();
 	virtual ~Profiler();
 	void start();
-	double stop();
+	void stop(timespec *tout);
+
 };
 
 #endif /* PROFILER_H_ */

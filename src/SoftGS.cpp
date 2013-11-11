@@ -11,6 +11,7 @@ SoftGS::SoftGS(int num_males, Male** menarray, Female** womenarray) {
 	this->num_individuals=num_males;
 	this->men=menarray;
 	this->women=womenarray;
+	this->womencont=new FemaleContainer(this->women,num_males);
 }
 
 SoftGS::~SoftGS() {
@@ -128,7 +129,7 @@ int SoftGS::gale_shapley_men_opt(int *matching){
 				singles=true;
 				if(first){
 					first=false;
-					proposeto=find_female_with_instance(curman->myOptInstance);
+					proposeto=womencont->find_female_with_instance(curman->myOptInstance);
 				}
 				else{
 					if(!curman->SOFT_next(women[proposeto],curinstance))
@@ -137,7 +138,7 @@ int SoftGS::gale_shapley_men_opt(int *matching){
 						exit(1);
 					}
 					//cout<<"NEXT\n";
-					proposeto=find_female_with_instance(curinstance);
+					proposeto=womencont->find_female_with_instance(curinstance);//find_female_with_instance(curinstance);
 				}
 				//#ifdef GS_DBG
 			//	mydbg << "m"<<i<<" ? s"<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";

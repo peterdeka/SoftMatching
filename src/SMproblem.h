@@ -14,8 +14,8 @@
 #include "SoftGS.h"
 #include "ClassicGSNext.h"
 
-#define NUM_INDIVIDUALS 8192
-#define NUMVARS 13	//numero variabili (quindi nodi dell'albero)
+#define NUM_INDIVIDUALS 4096
+#define NUMVARS 12 //numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 #define WOMEN_CONNECTEDNESS 0.3
 #define MALE_TIGHTNESS 0.1	//percentuale di binary constraint NON nulli
@@ -24,7 +24,7 @@ class SM_problem {
 	Male **men;
 	Female **women;
 	int men_matches[NUM_INDIVIDUALS];
-	char **varDomains;//ogni varId è associato al suo dominio (che è un array di valori)
+	char **varDomains;//ogni varId ÔøΩ associato al suo dominio (che ÔøΩ un array di valori)
 	void gen_random_instance(int *instance);
 	void buildVarDomains();
 	void print_arr(int *inst,int length);
