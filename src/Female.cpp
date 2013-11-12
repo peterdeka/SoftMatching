@@ -16,7 +16,11 @@ Female::Female(int numvars,float connectedness,int domains_sz,char **varDomains,
 		buildGraph(numvars,connectedness,varDomains);
 }
 
-Female::Female(){
+Female::Female(){};
+
+Female::~Female() {
+	//delete this->prefGraph;
+	//free(this->myInstance);
 
 }
 

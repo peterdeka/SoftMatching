@@ -15,7 +15,7 @@ SoftGS::SoftGS(int num_males, Male** menarray, Female** womenarray) {
 }
 
 SoftGS::~SoftGS() {
-	// TODO Auto-generated destructor stub
+	delete this->womencont;
 }
 
 bool SoftGS::test_soft_next(){
@@ -92,7 +92,6 @@ bool SoftGS::test_soft_next(){
 		if(count<num_individuals){
 			cout<<"*****NOT ENOUGH SOLUTIONS "<<count<<"\n";
 			men[i]->debugTree("error.gv");
-			exit(1);
 			//return false;
 		}
 		//else*/
@@ -105,7 +104,7 @@ bool SoftGS::test_soft_next(){
 int SoftGS::gale_shapley_men_opt_next1(int *matching){
 	int nprops=0;
 	ofstream mydbg;
-	mydbg.open("softgs.txt");
+	//mydbg.open("softgs.txt");
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
 	for(int i=0;i<num_individuals;i++){
 		matching[i]=-1;
@@ -142,13 +141,13 @@ int SoftGS::gale_shapley_men_opt_next1(int *matching){
 					proposeto=womencont->find_female_with_instance(curinstance);//find_female_with_instance(curinstance);
 				}
 				//#ifdef GS_DBG
-				mydbg << "m"<<i<<" ? s"<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
+				//mydbg << "m"<<i<<" ? s"<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
 				//#endif
 
 				nprops++;
 				if(femalematching[proposeto]==-1){	//free girl
 //#ifdef GS_DBG
-					mydbg <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+				//	mydbg <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
 //#endif
 					matching[i]=proposeto;
 					femalematching[proposeto]=i;
@@ -158,7 +157,7 @@ int SoftGS::gale_shapley_men_opt_next1(int *matching){
 					int ispreferred=curwoman->compare(curman,men[femalematching[proposeto]]);
 					if(ispreferred>0){
 //#ifdef GS_DBG
-						mydbg <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+					//	mydbg <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 //#endif
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
@@ -176,7 +175,8 @@ int SoftGS::gale_shapley_men_opt_next1(int *matching){
 			curman->reset_zeroed_prectuples();
 		}
 	}
-	mydbg.close();
+	//mydbg.close();
+	free(femalematching);
 	return nprops;
 }
 

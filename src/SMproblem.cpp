@@ -58,6 +58,11 @@ SM_problem::~SM_problem() {
 		delete men[i];
 		delete women[i];
 	}
+	free(men);
+	free(women);
+	for(int i=0;i<NUMVARS;i++)
+		free(varDomains[i]);
+	free(varDomains);
 }
 
 //funzione che costruisce i domini delle variabili a caso
@@ -127,9 +132,9 @@ int SM_problem::solve_with_classicGS(){
 
 int SM_problem::solve_with_softGS(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
-	if(!softgs.test_soft_next())
+	/*if(!softgs.test_soft_next())
 		cout<<"TEST FAILED\n";
-
+*/
 	int nprops=softgs.gale_shapley_men_opt_next1(this->men_matches);
 	//cout << "SOFT Gale shapley match: ";
 	//print_arr(this->men_matches,NUM_INDIVIDUALS);

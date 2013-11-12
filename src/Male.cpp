@@ -29,6 +29,13 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 
 }
 
+Male::~Male() {
+	delete this->prefTree;
+	free(this->myInstance);
+	free(this->myOptInstance);
+	free(this->zeroed_tuples_backup);
+	//TODO
+}
 
 //generazione albero preferenze uomini
 void Male::buildTree(float tightness,int numvars,char **varDomains){
@@ -311,7 +318,7 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 		}
 
 	}
-	cout<< "CSPNEXT not returning solution \n";
+	//cout<< "CSPNEXT not returning solution \n";
 	return false;
 }
 

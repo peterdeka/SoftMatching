@@ -58,6 +58,7 @@ public:
 	int numvars;
 	int n_zeroed_tuples;
 	Male(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
+	virtual ~Male();
 	//int opt(Female **women,int n_women);
 	void DOT_representation(string *res);
 	bool SOFT_next(Female *curfemale,int *nextinstance);

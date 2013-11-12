@@ -61,6 +61,16 @@ ClassicGSNext::ClassicGSNext(int num_males, Male** menarray, Female** womenarray
 	cout<<"Classic GS with next lists: preference lists generated.\n";
 }
 
+ClassicGSNext::~ClassicGSNext() {
+	delete womencont;
+	for(int i=0;i<num_individuals;i++){
+		free(menprefs[i]);
+		free(womenprefs[i]);
+	}
+	free(menprefs);
+	free(womenprefs);
+	//TODO
+}
 
 int ClassicGSNext::gale_shapley_men_opt(int *matching){
 	int numprops=0;
@@ -116,6 +126,7 @@ int ClassicGSNext::gale_shapley_men_opt(int *matching){
 		}
 	}
 	//mydbg.close();
+	free(femalematching);
 	return numprops;
 }
 
@@ -139,9 +150,3 @@ int ClassicGSNext::find_female_with_instance(int *instance){
 	//print_arr(instance,f->numvars);
 	return -1;
 }
-
-
-ClassicGSNext::~ClassicGSNext() {
-	// TODO Auto-generated destructor stub
-}
-

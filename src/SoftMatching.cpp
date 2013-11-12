@@ -28,14 +28,14 @@ int main() {
 
 	SM_problem *p= new SM_problem();
 	Profiler *prof=new Profiler();
-	cout<<"problem generated\n";
+	cout<<"problem generated "<<p->numvars<<" vars "<<"with "<<p->domsz<<" domain\n";
 	char fname[255];
 	sprintf(fname,"output_dsz%d_nvars%d",p->domsz,p->numvars);
 	ofstream myfile;
 	myfile.open (fname);
 	myfile<<"t_Soft, t_classic_next, props_Soft, props_classic_next\n";
 	timespec tm0,tm1;
-	//for(int j=0;j<10;j++){
+	for(int j=0;j<10;j++){
 		delete p;
 		p= new SM_problem();
 		cout<<"problem generated\n";
@@ -74,7 +74,7 @@ int main() {
 		myfile << tm0.tv_sec+tm0.tv_nsec/1000000000.0<< ", "<<tm1.tv_sec+tm1.tv_nsec/1000000000.0<< ", "<<npropsS<<", "<<npropsCN<<"\n";
 		cout << "classicwithnext: "<<tm1.tv_sec+tm1.tv_nsec/1000000000.0<<"sec "<<npropsS<<" proposals\n";
 
-	//}
+	}
 	myfile.close();
 	return 0;
 }

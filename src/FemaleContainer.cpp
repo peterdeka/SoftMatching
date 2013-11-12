@@ -8,7 +8,7 @@
 #include "FemaleContainer.h"
 
 FemaleContainer::FemaleContainer(Female **females, int nfemales) {
-	cout<<"initializing hashtable\n";
+	//cout<<"initializing hashtable\n";
 	nvars=females[0]->numvars;
 	this->nfemales=nfemales;
 	char tmp[nvars+3];
@@ -18,7 +18,7 @@ FemaleContainer::FemaleContainer(Female **females, int nfemales) {
 		hashtable[inststr]=i;
 
 	}
-	cout<<"Container initialized\n";
+	//cout<<"Container initialized\n";
 }
 
 FemaleContainer::~FemaleContainer() {
