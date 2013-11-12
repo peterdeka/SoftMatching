@@ -33,17 +33,16 @@ int main() {
 	sprintf(fname,"output_dsz%d_nvars%d",p->domsz,p->numvars);
 	ofstream myfile;
 	myfile.open (fname);
-	myfile<<"t_Soft t_classic_next props_Soft props_classic_next\n";
-	timespec tm;
-	for(int j=0;j<10;j++){
+	myfile<<"t_Soft, t_classic_next, props_Soft, props_classic_next\n";
+	timespec tm0,tm1;
+	//for(int j=0;j<10;j++){
 		delete p;
 		p= new SM_problem();
 		cout<<"problem generated\n";
 		prof->start();
 		bool stable=true;
 		int npropsS=p->solve_with_softGS();
-		double softtime;
-		prof->stop(&tm);
+		prof->stop(&tm0);
 		if(p->verify_is_weakstable())
 			cout<< "SOFTGS Verified weak stable OK\n";
 		else
@@ -51,12 +50,12 @@ int main() {
 			stable=false;
 			cout<< "SOFTGS Sorry solution not weak stable\n";
 		}
-		cout << "soft: "<<tm.tv_sec<<"s "<<tm.tv_nsec<<"nsec "<<npropsS<<" proposals\n";
+		cout << "soft: "<<tm0.tv_sec<<"s "<<tm0.tv_nsec<<"nsec "<<npropsS<<" proposals\n";
 		//p->debugTrees("be");
 		prof->start();
 		int npropsCN=p->solve_with_classicGSNext();
 		//p->debugTrees("me");
-		prof->stop(&tm);
+		prof->stop(&tm1);
 		if(p->verify_is_weakstable())
 			cout<< "GSNEXT Verified weak stable OK\n";
 		else
@@ -72,10 +71,10 @@ int main() {
 			exit(1);
 		}
 		//cout << "(soft: "<<softtime<<"s "<<npropsS<<" proposals; classicNext: "<<classicnexttime<<"s "<<npropsCN<<" proposals)\n";
-		//myfile << softtime<< " "<<classicnexttime<< " "<<npropsS<<" "<<npropsCN<<"\n";
-		cout << "classicwithnext: "<<tm.tv_sec<<"s "<<tm.tv_nsec<<"nsec "<<npropsS<<" proposals\n";
+		myfile << tm0.tv_sec+tm0.tv_nsec/1000000000.0<< ", "<<tm1.tv_sec+tm1.tv_nsec/1000000000.0<< ", "<<npropsS<<", "<<npropsCN<<"\n";
+		cout << "classicwithnext: "<<tm1.tv_sec+tm1.tv_nsec/1000000000.0<<"sec "<<npropsS<<" proposals\n";
 
-	}
+	//}
 	myfile.close();
 	return 0;
 }

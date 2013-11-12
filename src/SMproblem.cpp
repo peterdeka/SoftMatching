@@ -30,7 +30,8 @@ SM_problem::SM_problem() {
 
 	//GENERAZIONE NON RANDOM DELLE DONNE (TUTTE), BISOGNA ADEGUARE NUM_INDIVIDUALS PERCHE COSI NON E PIU UN PARAMETRO
 	int instvals[NUMVARS];
-	fill(instvals, instvals + NUMVARS, 0);
+	for(int i=0;i<NUMVARS;i++)
+		instvals[i]=0;
 	instvals[NUMVARS-1]=-1;
 	for(int i=0;i<NUM_INDIVIDUALS;i++){
 		for(int j=NUMVARS-1;j>-1;j--){
@@ -126,10 +127,10 @@ int SM_problem::solve_with_classicGS(){
 
 int SM_problem::solve_with_softGS(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
-	/*if(!softgs.test_soft_next())
+	if(!softgs.test_soft_next())
 		cout<<"TEST FAILED\n";
-*/
-	int nprops=softgs.gale_shapley_men_opt(this->men_matches);
+
+	int nprops=softgs.gale_shapley_men_opt_next1(this->men_matches);
 	//cout << "SOFT Gale shapley match: ";
 	//print_arr(this->men_matches,NUM_INDIVIDUALS);
 	return nprops;

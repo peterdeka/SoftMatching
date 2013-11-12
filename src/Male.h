@@ -12,6 +12,8 @@
 #include <fstream>
 #include <cstdlib>
 #include<cstring>
+#define NEXT2 0;
+#define NEXT3 1;
 class Female;
 class Male{
 	struct Tuple {
@@ -63,6 +65,7 @@ public:
 	void debugTree(char* fname);
 	int compare(Female *f1, Female *f2);
 	void reset_zeroed_prectuples();
+	void kCheapest(int dist,int k, int **solutions,int *nsolutions);
 };
 
 #endif /* MALE_H_ */

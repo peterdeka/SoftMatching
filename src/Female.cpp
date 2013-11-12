@@ -103,13 +103,13 @@ void Female::buildGraph(int numvars,float connectedness,char **varDomains){ //TO
 			}
 		}
 	}
-cout<<"W tree gen, going for binarygen\n";
+//cout<<"W tree gen, going for binarygen\n";
 	//ora che ho messo tutti i legami, genero i binary constraint
 	for(int i=0;i<tree->n_nodes;i++){
 		CTreeNode *node=tree->linearizedTree[i];
 		node->genBinaryConstraints(domains_size);
 	}
-	cout<<"Binary generated\n";
+	//cout<<"Binary generated\n";
 	//std::cout << "Women graph built\n";
 }
 

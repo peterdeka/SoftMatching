@@ -15,6 +15,7 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	this->numvars=numvars;
 	this->myOpt=-1.0f;
 	this->myOptInstance=(int*)malloc(numvars*sizeof(int));
+	this->n_zeroed_tuples=0;
 	for(int i=0;i<numvars;i++)
 		this->myOptInstance[i]=-1;
 	memcpy(this->myInstance,instance,numvars*sizeof(int));
@@ -92,7 +93,7 @@ void Male::adjustTightness(float tightness){
 		chosen_child=rand() % n->child_n;
 		int x=rand() % domains_size;
 		int y=rand() % domains_size;
-		//verifico non sia già nullo
+		//verifico non sia giÔøΩ nullo
 		if(n->childConstraints[chosen_child][x][y]==0){
 			i--;
 			continue;
@@ -105,7 +106,7 @@ void Male::adjustTightness(float tightness){
 					zerocount++;
 			}
 		}
-		if(zerocount>=domains_sz2-1){	//skippo perchè generei tavola di tutti zeri
+		if(zerocount>=domains_sz2-1){	//skippo perchÔøΩ generei tavola di tutti zeri
 			i--;
 			continue;
 		}
@@ -144,7 +145,7 @@ void Male::DAC_first_pass(CTreeNode *node){
 }
 
 
-//per encapsulation devi passare opt_instance già allocato
+//per encapsulation devi passare opt_instance giÔøΩ allocato
 float Male::DAC_opt(int *opt_instance){
 	int curidx=0;
 	//prendo il max dei miei unary
@@ -240,16 +241,26 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 	//cout<<"CSPNEXT cutting at "<<cutval<<"\n";
 	//lintree is breadth first->ordering is ok
 	//ora procedo con l'operazione risalendo l'albero
+	bool found=true;
 	for(int i=prefTree->n_nodes-1;i>-1;i--){
-		//resetto istanziazione corrente perchè nell'operazione di ricerca la modifico
-		for(int ii=0;ii<prefTree->n_nodes;ii++){		//istanzio la soluzione passata
+
+		if(found){
+			//resetto istanziazione corrente perchÔøΩ nell'operazione di ricerca la modifico
+			for(int ii=0;ii<prefTree->n_nodes;ii++){		//istanzio la soluzione passata
 				prefTree->linearizedTree[ii]->value=instance[ii];
-				nextinstance[ii]=instance[ii];
-		}
+			}}
 		CTreeNode *curnode=prefTree->linearizedTree[i];
-		bool found=false;
+
+		int startk=curnode->value+1;
 		//cerco prossimo valore valido in ordinamento del dominio
-		for(int k=curnode->value+1;k<domains_size;k++){
+		for(int k=startk;k<domains_size;k++){
+
+			if(found){
+				//resetto istanziazione corrente perchÔøΩ nell'operazione di ricerca la modifico
+				for(int ii=0;ii<prefTree->n_nodes;ii++)		//istanzio la soluzione passata
+					prefTree->linearizedTree[ii]->value=instance[ii];
+			}
+			found=false;
 			//cout << "CSPNEXT moving node "<<i <<" to "<<curnode->domain[k]<<"\n";
 			//verifico cutvalue
 			if(curnode==prefTree->root){
@@ -257,7 +268,7 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 					//nextinstance[i]=k;
 					curnode->value=k;
 					found=true;
-					break;
+
 				}
 			}
 			else{
@@ -265,40 +276,42 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 					//nextinstance[i]=k;
 					curnode->value=k;
 					found=true;
-					break;
+
 				}
 			}
-		}
 
-		//reset-succ, "riazzera contatore" di tutti i nodi successori
-		if(found){
+			if(!found)
+				continue;
+
+			//reset-succ, "riazzera contatore" di tutti i nodi successori
 			//cout<<"CSPNEXT found candidate "<<curnode->domain[curnode->value]<<"\n";
 			bool foundconsistent=true;
-			// è l'ultimo nodo quindi non ho successivi da azzerare, ho finito
-			if(i==prefTree->n_nodes-1){
-				foundconsistent=true;
-				//cout<< "CSPNEXT found candidate node is last, ok "<<i<<"\n";
-			}
+			// ÔøΩ l'ultimo nodo quindi non ho successivi da azzerare, ho finito
+			//			if(i==prefTree->n_nodes-1){
+			//				foundconsistent=true;
+			//				//cout<< "CSPNEXT found candidate node is last, ok "<<i<<"\n";
+			//			}
 			for(int j=i+1;j<prefTree->n_nodes;j++){
 				CTreeNode *nd=prefTree->linearizedTree[j];
 				//cout<< "CSPNEXT consisting node "<<j<<" and everything under it \n";
-				if(CSP_solve_arc_consist(nd,cutval)==false){
-						foundconsistent=false;
-						break;
+				if(!CSP_solve_arc_consist(nd,cutval)){
+					foundconsistent=false;
+					break;
 				}
 			}
 			if(foundconsistent)
-				{
+			{
 				//cout<<"CSPNEXT returning solution\n";
 				for(int x=0;x<prefTree->n_nodes;x++)
 					nextinstance[x]=prefTree->linearizedTree[x]->value;
 				return true;				//trovato next, esco
-				}
+			}
+
 
 		}
 
 	}
-	//cout<< "CSPNEXT not returning solution \n";
+	cout<< "CSPNEXT not returning solution \n";
 	return false;
 }
 
@@ -604,8 +617,8 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 		unfix(tfound);
 		if(candpref==tmppref)
 		{
-			if(prefTree->linearizedTree[tfound->var_idx]->children[tfound->child_idx]->value!=tfound->idx_in_bintbl[1] && prefTree->linearizedTree[tfound->var_idx]->value!=tfound->idx_in_bintbl[0])
-				cout << "****NOT NICE, solution doesnt come from correct tuple\n";
+			//if(prefTree->linearizedTree[tfound->var_idx]->children[tfound->child_idx]->value!=tfound->idx_in_bintbl[1] && prefTree->linearizedTree[tfound->var_idx]->value!=tfound->idx_in_bintbl[0])
+				//cout << "****NOT NICE, solution doesnt come from correct tuple\n";
 			//reset_zeroed_prectuples();
 			return true;
 		}
@@ -620,6 +633,57 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 		tfound=tmp;
 	}
 	return false; //never hit
+}
+
+//ritorna le k soluzioni, solutions preallocato
+void Male::kCheapest(int dist,int k, int **solutions,int *nsolutions){
+	*nsolutions=0;
+	float p_star=this->myOpt;
+	Tuple *t_star=new Tuple();
+	//cerco soluzioni ottime
+
+	memcpy(this->myOptInstance,solutions[*nsolutions++],this->numvars*sizeof(int));
+	if(!find_first_tuple_with_pref(this->myOptInstance,p_star,t_star)){
+		cout<<"kcheapest error\n";
+		exit(1);
+	}
+	fix(t_star);
+	while(CSP_next(this->myOptInstance,p_star,solutions[*nsolutions]) && *nsolutions<=k){
+		*nsolutions+=1;
+	}
+	unfix(t_star);
+	if(*nsolutions>=k)
+		return;
+	//non bastano, cerco prossima tupla ottima
+	zeroout_prectuples_with_pref(t_star, p_star);
+	Tuple *tfound=new Tuple();
+	while(next_tuple_with_pref(*t_star,tfound,p_star) && *nsolutions<=k){
+		fix(tfound);
+		float candpref=CSP_solve(p_star, solutions[*nsolutions]);
+		if(candpref==p_star){
+			*nsolutions+=1;
+			if(*nsolutions>=k){
+				unfix(tfound);
+				break;
+			}
+			while(CSP_next(solutions[*nsolutions-1],p_star,solutions[*nsolutions]) && *nsolutions<=k)
+				*nsolutions+=1;
+		}
+		unfix(tfound);
+		zeroout_tuple(tfound);
+		Tuple *tmp=t_star;
+		t_star=tfound;
+		tfound=t_star;
+	}
+	reset_zeroed_prectuples();
+	if(*nsolutions>=k)
+		return;
+	//fine fase ottima,cerco a livello inferiore
+	float cpref=p_star;
+	float tmppref=find_next_pref_level(cpref);
+	while(*nsolutions<=k){
+		//find_first_tuple()
+	}
 }
 
 //assegna un'istanziazione all'albero
