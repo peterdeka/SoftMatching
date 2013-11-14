@@ -14,8 +14,8 @@
 #include "SoftGS.h"
 #include "ClassicGSNext.h"
 
-#define NUM_INDIVIDUALS  64
-#define NUMVARS 6 //numero variabili (quindi nodi dell'albero)
+#define NUM_INDIVIDUALS  32
+#define NUMVARS 5 //numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 #define WOMEN_CONNECTEDNESS 0.5
 #define MALE_TIGHTNESS 0.1	//percentuale di binary constraint NON nulli

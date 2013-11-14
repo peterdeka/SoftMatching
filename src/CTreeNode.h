@@ -22,6 +22,7 @@ public:
 	CTree *tree;
 	int varId;	//nome della variabile
 	char* domain;
+	int domains_sz;
 	float *unaryConstraints;	//constraint unari
 	float *dacUnaryConstraints;
 	CTreeNode *father;	//pointer al nodo padre
@@ -34,7 +35,8 @@ public:
 	int prefValue;	//per l'algoritmo alfacut
 
     	//void addChild (CTreeNode,CBinConstrTable);
-    	void genUnaryConstraints(int domains_size);
+    	virtual ~CTreeNode();
+		void genUnaryConstraints(int domains_size);
     	int genBinaryConstraints(int domains_size);
     	void genChildren(int *curVarId);
     	void JSONSubtree(string *res );

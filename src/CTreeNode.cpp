@@ -12,6 +12,7 @@ CTreeNode::CTreeNode(int avarId,char *vardomain) //constructor
     	tree=NULL;
     	varId=avarId;
     	domain=vardomain;
+    	domains_sz=0;
     	unaryConstraints=NULL;
     	dacUnaryConstraints=NULL;
     	father=NULL;
@@ -23,17 +24,25 @@ CTreeNode::CTreeNode(int avarId,char *vardomain) //constructor
     	prefValue=-1;
     }
 
-/*CTreeNode::~CTreeNode() //destructor
-    {
+CTreeNode::~CTreeNode() //destructor
+   {
     	free(this->unaryConstraints);
     	free(this->dacUnaryConstraints);
     	free(this->children);
+    	for(int i=0;i<child_n;i++){
+    		for(int j=0;j<domains_sz;j++){
 
-    }*/
+    			free(childConstraints[i][j]);
+    		}
+    		free(childConstraints[i]);
+    	}
+    	free(this->childConstraints);
+    }
 
 
 //genera vincoli unari dato il dominio della variabile
 void CTreeNode::genUnaryConstraints(int domains_size){
+	domains_sz=domains_size;
 	this->unaryConstraints=(float*)malloc(domains_size*sizeof(float));
 	this->dacUnaryConstraints=(float*)malloc(domains_size*sizeof(float));
 	for(int i=0;i<domains_size;i++){	//assegno valori di preferenza random
@@ -53,7 +62,7 @@ int CTreeNode::genBinaryConstraints(int domains_size){
 	this->childConstraints=(float***)malloc(this->child_n*sizeof(float**));
 	int n_gen_constraints=0;
 	for(int u=0;u<this->child_n;u++){	//per ogni figlio
-		float** tp=(float**)malloc(domains_size*domains_size*sizeof(float*));
+		float** tp=(float**)malloc(domains_size*sizeof(float*));
 		for(int i=0;i<domains_size;i++){	//assegno valori di preferenza random come prodotto cartesiano
 			tp[i]=(float*)malloc(domains_size*sizeof(float));
 			for(int z=0;z<domains_size;z++){

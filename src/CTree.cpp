@@ -36,10 +36,14 @@ void CTree::addNode(CTreeNode *node){
 		domains_size=domainssize;
 	}
 
-	/*CTree::~CTree() //destructor
+	CTree::~CTree() //destructor
 	{
-	    	free(this->linearizedTree);
-	}*/
+	    for(int i=0;i<n_nodes;i++){
+	    	delete this->linearizedTree[i];
+
+	    }
+		free(this->linearizedTree);
+	}
 
 //genera i figli di un nodo (breadth first) l'ordinamento originale delle variabili
 void CTree::genChildren( CTreeNode *curNode,int child_limit, char **varDomains,int numvars){

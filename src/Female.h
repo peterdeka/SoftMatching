@@ -21,7 +21,7 @@ class Female{
 public:
 	int *myInstance;
 	int numvars;
-	Female();
+	Female(int *instance,int numvars);
 	Female(int numvars,float connectedness,int domains_sz,char **varDomains,int *instance);
 	virtual ~Female();
 	void DOT_representation(string *res);

@@ -32,6 +32,7 @@ public:
 
 	CTree();
 	CTree(int nodes_num,int domainssize);
+	virtual ~CTree();
 	void addNode(CTreeNode *node);
 	void setRoot(CTreeNode *node);
 	void genChildren( CTreeNode *curNode,int child_limit,char **varDomains,int numvars);

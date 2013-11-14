@@ -34,6 +34,10 @@ Male::~Male() {
 	free(this->myInstance);
 	free(this->myOptInstance);
 	free(this->zeroed_tuples_backup);
+	for(int i=0;i<domains_size;i++){
+		free(this->fixed_tuple_childconstr[i]);
+	}
+	free(this->fixed_tuple_childconstr);
 	//TODO
 }
 
@@ -327,6 +331,7 @@ bool Male::CSP_next(int *instance, float cutval, int *nextinstance){
 
 float Male::CSP_solve(float cutval, int *solution){
 	bool solfound=false;
+	float spref;
 	for(int i=0;i<domains_size;i++){
 		if(prefTree->root->dacUnaryConstraints[i]>=cutval){
 			prefTree->root->value=i;
@@ -350,12 +355,13 @@ float Male::CSP_solve(float cutval, int *solution){
 	for(int i=0;i<numvars;i++){
 		solution[i]=prefTree->linearizedTree[i]->value;
 	}
-	Female tmpf;
-	tmpf.myInstance=solution;
+	Female *tmpf=new Female(solution,numvars);
+
 	//cout <<"CSPSOLVE FOUND cutval:"<<cutval<<"\n";
 	//print_arr(solution,numvars);
-
-	return pref(&tmpf);
+	spref= pref(tmpf);
+	delete tmpf;
+	return spref;
 }
 
 
@@ -592,6 +598,7 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	fix(t_star);
 	if(CSP_next(curfemale->myInstance,p_star,nextsol)){
 		unfix(t_star);
+		delete t_star;
 		return true;
 	}
 
@@ -612,6 +619,8 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 			//cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
 			if(tmppref<=0){
 				reset_zeroed_prectuples();
+				delete tfound;
+				delete t_star;
 				return false;		//non si scende piu di preferenza, finite le soluzioni
 			}
 			// reset previuosly set to 0
@@ -627,6 +636,8 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 			//if(prefTree->linearizedTree[tfound->var_idx]->children[tfound->child_idx]->value!=tfound->idx_in_bintbl[1] && prefTree->linearizedTree[tfound->var_idx]->value!=tfound->idx_in_bintbl[0])
 				//cout << "****NOT NICE, solution doesnt come from correct tuple\n";
 			//reset_zeroed_prectuples();
+			delete tfound;
+			delete t_star;
 			return true;
 		}
 		//cout<<"**TUPLE at pref "<<tmppref<<" does not solve\n";
@@ -639,6 +650,8 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 		t_star=tfound;
 		tfound=tmp;
 	}
+	delete tfound;
+	delete t_star;
 	return false; //never hit
 }
 

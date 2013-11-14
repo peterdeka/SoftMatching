@@ -16,11 +16,16 @@ Female::Female(int numvars,float connectedness,int domains_sz,char **varDomains,
 		buildGraph(numvars,connectedness,varDomains);
 }
 
-Female::Female(){};
+Female::Female(int *instance,int numvars){
+	this->prefGraph=NULL;
+	this->myInstance=(int*)malloc(numvars*sizeof(int));
+	memcpy(this->myInstance,instance,numvars*sizeof(int));
+};
 
 Female::~Female() {
-	//delete this->prefGraph;
-	//free(this->myInstance);
+	if(this->prefGraph)
+		delete this->prefGraph;
+	free(this->myInstance);
 
 }
 
