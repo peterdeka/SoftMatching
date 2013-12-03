@@ -76,7 +76,7 @@ int ClassicGSNext::gale_shapley_men_opt(int *matching){
 	int numprops=0;
 	int *lastproposed=(int*)malloc(num_individuals*sizeof(int));
 	ofstream mydbg;
-	//mydbg.open("classicNEXT.txt");
+	mydbg.open("classicNEXT.txt");
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
 	for(int i=0;i<num_individuals;i++){
 		matching[i]=-1;
@@ -97,10 +97,10 @@ int ClassicGSNext::gale_shapley_men_opt(int *matching){
 					cout<<"*********WARNING PROBLEM BECAME SMTI************\n";
 					exit(1);
 				}
-		//		mydbg << "m"<<i<<" ? m"<<proposeto<<" with pref "<<men[i]->pref(women[proposeto])<<"\n";
+				mydbg << "m"<<i<<" ? w"<<proposeto<<" with pref "<<men[i]->pref(women[proposeto])<<"\n";
 				numprops++;
 				if(femalematching[proposeto]==-1){	//free girl
-			//		mydbg <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+					mydbg <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
 					matching[i]=proposeto;
 					femalematching[proposeto]=i;
 				}
@@ -108,7 +108,7 @@ int ClassicGSNext::gale_shapley_men_opt(int *matching){
 					int preferred=women[proposeto]->compare(men[i],men[femalematching[proposeto]]);
 					//if(womenprefs[proposeto][i] > womenprefs[proposeto][femalematching[proposeto]] ){
 					if(preferred>0){
-				//		mydbg <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+						mydbg <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
 						matching[i]=proposeto;
@@ -126,7 +126,7 @@ int ClassicGSNext::gale_shapley_men_opt(int *matching){
 
 		}
 	}
-	//mydbg.close();
+	mydbg.close();
 	free(femalematching);
 	free(lastproposed);
 	return numprops;

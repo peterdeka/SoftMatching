@@ -35,9 +35,9 @@ int main() {
 	myfile.open (fname);
 	myfile<<"t_Soft, t_classic_next, props_Soft, props_classic_next\n";
 	timespec tm0,tm1;
-	//for(int j=0;j<10;j++){
-		//delete p;
-		//p= new SM_problem();
+	for(int j=0;j<5;j++){
+		delete p;
+		p= new SM_problem();
 		cout<<"problem generated\n";
 		prof->start();
 		bool stable=true;
@@ -72,9 +72,9 @@ int main() {
 		}
 		//cout << "(soft: "<<softtime<<"s "<<npropsS<<" proposals; classicNext: "<<classicnexttime<<"s "<<npropsCN<<" proposals)\n";
 		myfile << tm0.tv_sec+tm0.tv_nsec/1000000000.0<< ", "<<tm1.tv_sec+tm1.tv_nsec/1000000000.0<< ", "<<npropsS<<", "<<npropsCN<<"\n";
-		cout << "classicwithnext: "<<tm1.tv_sec+tm1.tv_nsec/1000000000.0<<"sec "<<npropsS<<" proposals\n";
+		cout << "classicwithnext: "<<tm1.tv_sec+tm1.tv_nsec/1000000000.0<<"sec "<<npropsCN<<" proposals\n";
 
-	//}
+	}
 	delete p;
 	delete prof;
 	myfile.close();

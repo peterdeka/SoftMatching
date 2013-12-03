@@ -6,6 +6,7 @@
  */
 
 #include "SMproblem.h"
+
 //#include <fstream>
 
 SM_problem::SM_problem() {
@@ -54,12 +55,12 @@ SM_problem::SM_problem() {
 }
 
 SM_problem::~SM_problem() {
-	for(int i=0;i<NUM_INDIVIDUALS;i++){
+	/*for(int i=0;i<NUM_INDIVIDUALS;i++){
 		delete men[i];
 		delete women[i];
 	}
 	free(men);
-	free(women);
+	free(women);*/
 	for(int i=0;i<NUMVARS;i++)
 		free(varDomains[i]);
 	free(varDomains);
@@ -87,6 +88,7 @@ void SM_problem::gen_random_instance(int *instance){
 // a partire da men_matchings veriifca weak stability //TODO verify unmatched criteria
 bool SM_problem::verify_is_weakstable(){
 	cout<<"Verifying stability...\n";
+	bool result=true;
 	int women_matches[NUM_INDIVIDUALS];	//struttra simmetrica di male_match che mi da i matching dal punto di vista delle donne
 	for(int i=0;i<NUM_INDIVIDUALS;i++)
 		women_matches[i]=-1;
@@ -94,7 +96,7 @@ bool SM_problem::verify_is_weakstable(){
 		if(men_matches[i]>-1)
 			women_matches[men_matches[i]]=i;
 	}
-
+	#pragma omp parallel for
 	for(int i=0;i< NUM_INDIVIDUALS;i++){
 		if(men_matches[i]==-1)//TODO single unmatched?????
 			continue;
@@ -111,15 +113,19 @@ bool SM_problem::verify_is_weakstable(){
 				if(curfemale->instance_pref(curmale->myInstance) > wcurpref){
 					cout<<"|*|*|*BLOCKING PAIR*|*\n m:"<<curmale->pref(curfemale)<<">"<< mcurpref<< " f:"<<curfemale->instance_pref(curmale->myInstance)<< ">"<< wcurpref
 <<"\n";
-					curmale->debugTree("blm.gv");
+					//curmale->debugTree("blm.gv");
 
-					return false;
+				#pragma omp critical
+				{
+						result= false;
+				}
+
 				}
 
 			}
 		}
 	}
-	return true;
+	return result;
 }
 
 int SM_problem::solve_with_classicGS(){

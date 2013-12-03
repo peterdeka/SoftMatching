@@ -655,56 +655,95 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	return false; //never hit
 }
 
-//ritorna le k soluzioni, solutions preallocato
-void Male::kCheapest(int dist,int k, int **solutions,int *nsolutions){
-	*nsolutions=0;
-	float p_star=this->myOpt;
-	Tuple *t_star=new Tuple();
-	//cerco soluzioni ottime
-
-	memcpy(this->myOptInstance,solutions[*nsolutions++],this->numvars*sizeof(int));
-	if(!find_first_tuple_with_pref(this->myOptInstance,p_star,t_star)){
-		cout<<"kcheapest error\n";
-		exit(1);
-	}
-	fix(t_star);
-	while(CSP_next(this->myOptInstance,p_star,solutions[*nsolutions]) && *nsolutions<=k){
-		*nsolutions+=1;
-	}
-	unfix(t_star);
-	if(*nsolutions>=k)
-		return;
-	//non bastano, cerco prossima tupla ottima
-	zeroout_prectuples_with_pref(t_star, p_star);
-	Tuple *tfound=new Tuple();
-	while(next_tuple_with_pref(*t_star,tfound,p_star) && *nsolutions<=k){
-		fix(tfound);
-		float candpref=CSP_solve(p_star, solutions[*nsolutions]);
-		if(candpref==p_star){
-			*nsolutions+=1;
-			if(*nsolutions>=k){
-				unfix(tfound);
-				break;
-			}
-			while(CSP_next(solutions[*nsolutions-1],p_star,solutions[*nsolutions]) && *nsolutions<=k)
-				*nsolutions+=1;
+void Male::elim_m_opt(int m, int **solutions ){
+	CTreeNode * n;
+	//inizializza i bucket
+	for(int i=0;i<prefTree->n_nodes;i++){
+		n=prefTree->linearizedTree[i];
+		n->n_in_bucket=1;
+		for(int j=0;j<domains_size;j++){
+			n->unaryBucket[j]=(float*)malloc(m*sizeof(float));
+			n->unaryBucket[j][0]=0.0f;
 		}
-		unfix(tfound);
-		zeroout_tuple(tfound);
-		Tuple *tmp=t_star;
-		t_star=tfound;
-		tfound=t_star;
+		/*for(int j=0;j<domains_size;j++){
+			for(int k=0;k<domains_size;k++){
+						n->binBucket[j][k]=(float*)malloc(m*sizeof(float));
+					}
+		}*/
 	}
-	reset_zeroed_prectuples();
-	if(*nsolutions>=k)
-		return;
-	//fine fase ottima,cerco a livello inferiore
-	float cpref=p_star;
-	float tmppref=find_next_pref_level(cpref);
-	while(*nsolutions<=k){
-		//find_first_tuple()
-	}
+	elim_m_opt_rec(prefTree->root,m);
+	//TODO discende alla ricerca delle m soluzioni migliori
+
+	//dealloca i bucket
+	for(int i=0;i<prefTree->n_nodes;i++){
+			n=prefTree->linearizedTree[i];
+			for(int j=0;j<domains_size;j++)
+				free(n->unaryBucket[j]);
+		/*	for(int j=0;j<domains_size;j++){
+				for(int k=0;k<domains_size;k++){
+							free(n->binBucket[j][k]);
+						}
+			}*/
+		}
+
+	//TODO ritorna le soluzioni
 }
+
+
+//assume tutti i vincoli unari siano a zero, TODO optimize by sorting buckets and using modified combination operator
+void Male::elim_m_opt_rec(CTreeNode *node,int m){
+	if(node->child_n<1)
+		return;
+
+	//eseguo su ogni figlio
+	for(int i=0;i<node->child_n;i++){
+		elim_m_opt_rec(node->children[i],m);
+	}
+
+	//combination and marginalization
+	CTreeNode *nd;
+	for (int c = 0; c < node->child_n; c++) {	//per ogni figlio
+		nd=node->children[c];
+
+		for(int i=0;i<domains_size;i++){	//dominio padre
+			//array che contiene temporaneamente tutti i valori per una variabile padre,di cui prenderemo poi gli m minimi
+			float *tmp=(float*)malloc(domains_size*node->n_in_bucket*nd->n_in_bucket*sizeof(float));
+			int tidx=0;
+
+			for (int b = 0; b < node->n_in_bucket; b++) {
+				for(int j=0;j<domains_size;j++){	//dominio figlio
+
+					for(int t=0;t<nd->n_in_bucket;t++){	//per tutti i valori nel bucket del figlio per la variabile j
+						tmp[tidx++]=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
+					}
+				}
+			}
+			//MARGINALIZATION prendo da tmp gli m min per j
+			if(tidx<=m){
+				for(int k=0;k<tidx;k++)
+					node->unaryBucket[i][k]=tmp[k];
+				node->n_in_bucket=tidx;
+			}
+			else{
+
+				for(int p=0;p<m;p++){
+					int minidx=0;
+					for(int k=0;k<tidx;k++){
+						if(tmp[k]<tmp[minidx])
+							minidx=k;
+					}
+					node->unaryBucket[i][p]=tmp[minidx];
+					tmp[minidx]=1000;
+				}
+				node->n_in_bucket=m;
+
+			}
+			free(tmp);
+		}
+	}
+
+}
+
 
 //assegna un'istanziazione all'albero
 void Male::set_solution(int *instance){

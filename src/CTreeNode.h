@@ -33,7 +33,12 @@ public:
 	//strutture operative temporanee
 	int value;	//quando si vuole assegnare un valore per istanziare
 	int prefValue;	//per l'algoritmo alfacut
-
+   	// float *weightedUnaryConstr; //ok unary are considered 0 cost
+    float ***weightedChildConstr;
+    float **weightedFatherConstr;
+    float **unaryBucket;
+   // float ****binBucket;
+    int n_in_bucket;
     	//void addChild (CTreeNode,CBinConstrTable);
     	virtual ~CTreeNode();
 		void genUnaryConstraints(int domains_size);

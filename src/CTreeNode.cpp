@@ -22,6 +22,9 @@ CTreeNode::CTreeNode(int avarId,char *vardomain) //constructor
     	fatherConstraints=NULL;
     	value=-1;
     	prefValue=-1;
+    	weightedUnaryConstr=NULL;
+    	weightedChildConstr=NULL;
+    	weightedFatherConstr=NULL;
     }
 
 CTreeNode::~CTreeNode() //destructor

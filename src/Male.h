@@ -31,6 +31,7 @@ class Male{
 	float **fixedtuple_backup;			//solo puntatore di backup per ripristinare fixed tuple
 	Tuple *zeroed_tuples_backup;		//tengo traccia delle tuple azzerate
 	float zeroed_pref;
+
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);
 	void make_DAC();
@@ -49,6 +50,11 @@ class Male{
 	void zeroout_tuple(Tuple *t);
 	void set_solution(int *instance);
 	void print_arr(int *inst,int length);
+	void elim_m_opt(int m, int **solutions ); //dechter m bucket elimination to get m opt from WCSP, assumes all unary are 0
+	void elim_m_opt_rec(CTreeNode *node,int m);
+	void fuzzy_to_weighted(int linearization);	//inserisce le informazioni per operare come WCSP
+	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
+
 
 public:
 	CTree *prefTree;
