@@ -661,15 +661,18 @@ void Male::elim_m_opt(int m, int **solutions ){
 	for(int i=0;i<prefTree->n_nodes;i++){
 		n=prefTree->linearizedTree[i];
 		n->n_in_bucket=1;
+		n->messages=(int***)malloc(domains_size*sizeof(int**));
 		for(int j=0;j<domains_size;j++){
 			n->unaryBucket[j]=(float*)malloc(m*sizeof(float));
 			n->unaryBucket[j][0]=0.0f;
+			//inizializza i bucket per i messaggi con le soluzioni parziali
+			n->messages[j]=(int**)malloc(n->n_in_bucket*sizeof(int*));
+			for(int k;k<n->n_in_bucket;k++){
+				n->messages[j][k]=(int*)malloc(this->numvars*sizeof(int));
+				for(int p=0;p<this->numvars;p++)
+					n->messages[j][k][p]=-1;
+			}
 		}
-		/*for(int j=0;j<domains_size;j++){
-			for(int k=0;k<domains_size;k++){
-						n->binBucket[j][k]=(float*)malloc(m*sizeof(float));
-					}
-		}*/
 	}
 	elim_m_opt_rec(prefTree->root,m);
 	//TODO discende alla ricerca delle m soluzioni migliori
@@ -677,14 +680,14 @@ void Male::elim_m_opt(int m, int **solutions ){
 	//dealloca i bucket
 	for(int i=0;i<prefTree->n_nodes;i++){
 			n=prefTree->linearizedTree[i];
-			for(int j=0;j<domains_size;j++)
+			for(int j=0;j<domains_size;j++){
 				free(n->unaryBucket[j]);
-		/*	for(int j=0;j<domains_size;j++){
-				for(int k=0;k<domains_size;k++){
-							free(n->binBucket[j][k]);
-						}
-			}*/
-		}
+				for(int k;k<n->n_in_bucket;k++)
+					free(n->messages[j][k]);
+				free(n->messages[j]);
+			}
+			free(n->messages);
+	}
 
 	//TODO ritorna le soluzioni
 }
@@ -718,7 +721,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 					}
 				}
 			}
-			//MARGINALIZATION prendo da tmp gli m min per j
+			//MARGINALIZATION prendo da tmp gli m min per j e i loro messages
 			if(tidx<=m){
 				for(int k=0;k<tidx;k++)
 					node->unaryBucket[i][k]=tmp[k];
@@ -744,6 +747,17 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 
 }
 
+//fonde i due messaggi, fonde in m1 (si presume m1 sia il messaggio del padre)
+void Male::merge_messages(int *m1, int *m2){
+	for(int i=0;i<numvars;i++){
+		if(m1[i]>-1 && m2[i]>-1){
+			cout<< "Error merging messages, two assignments for same var\n";
+			exit(1);
+		}
+		if(m2[i]>-1)
+			m1[i]=m2[i];
+	}
+}
 
 //assegna un'istanziazione all'albero
 void Male::set_solution(int *instance){

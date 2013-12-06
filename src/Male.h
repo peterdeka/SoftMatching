@@ -54,7 +54,7 @@ class Male{
 	void elim_m_opt_rec(CTreeNode *node,int m);
 	void fuzzy_to_weighted(int linearization);	//inserisce le informazioni per operare come WCSP
 	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
-
+	void merge_messages(int *m1, int *m2);
 
 public:
 	CTree *prefTree;
