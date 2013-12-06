@@ -666,7 +666,7 @@ void Male::elim_m_opt(int m, int **solutions ){
 			n->unaryBucket[j]=(float*)malloc(m*sizeof(float));
 			n->unaryBucket[j][0]=0.0f;
 			//inizializza i bucket per i messaggi con le soluzioni parziali
-			n->messages[j]=(int**)malloc(n->n_in_bucket*sizeof(int*));
+			n->messages[j]=(int**)malloc(m*sizeof(int*));
 			for(int k;k<n->n_in_bucket;k++){
 				n->messages[j][k]=(int*)malloc(this->numvars*sizeof(int));
 				for(int p=0;p<this->numvars;p++)
@@ -723,8 +723,17 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			}
 			//MARGINALIZATION prendo da tmp gli m min per j e i loro messages
 			if(tidx<=m){
-				for(int k=0;k<tidx;k++)
+				for(int k=0;k<tidx;k++){
 					node->unaryBucket[i][k]=tmp[k];
+					//messaggi
+					int fbuck_pos=floor((float)k/((float)nd->n_in_bucket*(float)nd->domains_sz));	//posizione nel bucket i del padre
+					int cdom_pos=floor((float)(k%(nd->n_in_bucket*nd->domains_sz))/(float)nd->n_in_bucket);
+					int cbuck_pos=k%nd->n_in_bucket;
+					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos]);//fbuckpos o k?
+					//TODO tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
+					//quello del nodo altrimenti perdi in corsa i valori
+					//TODO aggiunta variabile proiettata al messaggio
+				}
 				node->n_in_bucket=tidx;
 			}
 			else{
@@ -736,6 +745,11 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 							minidx=k;
 					}
 					node->unaryBucket[i][p]=tmp[minidx];
+					//messaggi
+					int fbuck_pos=floor((float)minidx/((float)nd->n_in_bucket*(float)nd->domains_sz));	//posizione nel bucket i del padre
+					int cdom_pos=floor((float)(minidx%(nd->n_in_bucket*nd->domains_sz))/(float)nd->n_in_bucket);
+					int cbuck_pos=minidx%nd->n_in_bucket;
+					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos]);	//come sopra
 					tmp[minidx]=1000;
 				}
 				node->n_in_bucket=m;

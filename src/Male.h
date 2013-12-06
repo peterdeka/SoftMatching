@@ -12,6 +12,7 @@
 #include <fstream>
 #include <cstdlib>
 #include<cstring>
+#include<cmath>
 #define NEXT2 0;
 #define NEXT3 1;
 class Female;

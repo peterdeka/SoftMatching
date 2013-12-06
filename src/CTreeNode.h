@@ -37,7 +37,7 @@ public:
     float ***weightedChildConstr;
     float **weightedFatherConstr;
     float **unaryBucket;
-    float ***messages;	//constiene stringhe parziale con soluzione per i costi dell'unary bucket
+    int ***messages;	//constiene stringhe parziale con soluzione per i costi dell'unary bucket
    // float ****binBucket;
     int n_in_bucket;
     	//void addChild (CTreeNode,CBinConstrTable);
