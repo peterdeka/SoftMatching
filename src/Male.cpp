@@ -655,7 +655,61 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	return false; //never hit
 }
 
-void Male::elim_m_opt(int m, int **solutions ){
+
+
+int Male::k_cheapest(int k, int linearization, int **solutions){
+	float p_star=this->myOpt;
+	Tuple *t_star=new Tuple();
+	Tuple *tfound=new Tuple();
+	int *nextsol=(int*)malloc(numvars*sizeof(int));
+	if(!find_first_tuple_with_pref(NULL,p_star,t_star))
+	{
+		cout<<"***SORRY***";
+		exit(-1);
+	}
+	fix(t_star);
+	fuzzy_to_weighted(linearization,this->myOpt,this->myOpt);
+	int n= elim_m_opt(k,solutions,0);
+	float cpref=p_star;
+	float tmppref=p_star;
+	while(n<k){
+		if(!next_tuple_with_pref(*t_star, tfound, cpref)){		//finite tuple con preferenza cpref, scendo
+			//cout<<"*NO MORE tuples with pref "<<cpref<<"\n";
+			tmppref=find_next_pref_level(cpref);
+			//cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
+			if(tmppref<=0){
+				reset_zeroed_prectuples();
+				delete tfound;
+				delete t_star;
+				return false;		//non si scende piu di preferenza, finite le soluzioni
+			}
+			// reset previuosly set to 0
+			find_first_tuple_with_pref(NULL,tmppref,tfound);
+			reset_zeroed_prectuples();
+		}
+		fix(tfound);
+		float candpref=CSP_solve(tmppref, nextsol);
+		if(candpref==tmppref){
+			fuzzy_to_weighted(linearization,this->myOpt,tmppref);
+			n+=elim_m_opt(k-n,solutions,n);
+		}
+		unfix(tfound);
+		if(n<k){	//se continuo a girare
+			cpref=tmppref;
+			zeroout_tuple(tfound);
+			Tuple *tmp=t_star;
+			t_star=tfound;
+			tfound=tmp;
+		}
+		else{	//so che terminero
+			reset_zeroed_prectuples();
+		}
+	}
+	return n;
+}
+
+
+int Male::elim_m_opt(int m, int **solutions,int widx ){
 	CTreeNode * n;
 	//inizializza i bucket
 	for(int i=0;i<prefTree->n_nodes;i++){
@@ -675,7 +729,26 @@ void Male::elim_m_opt(int m, int **solutions ){
 		}
 	}
 	elim_m_opt_rec(prefTree->root,m);
-	//TODO discende alla ricerca delle m soluzioni migliori
+
+	//estrazione soluzioni migliori
+	float lastmincost=-1.0f;
+	int minidx=0;
+	int mindomain=0;
+	CTreeNode *rn=prefTree->root;
+	int nsols=min(m,domains_size*rn->n_in_bucket);
+	for(int mi=0;mi<nsols;mi++){
+		for(int y=0;y<domains_size;y++){
+			for(int z=0;z<rn->n_in_bucket;z++){
+				if(rn->unaryBucket[y][z]<rn->unaryBucket[mindomain][minidx] && rn->unaryBucket[y][z]>=lastmincost){
+					minidx=z;
+					mindomain=y;
+				}
+			}
+		}
+		lastmincost=rn->unaryBucket[mindomain][minidx];
+		cout << "Solution with cost %d :" << rn->unaryBucket[mindomain][minidx];
+		print_arr(rn->messages[mindomain][minidx],numvars);
+	}
 
 	//dealloca i bucket
 	for(int i=0;i<prefTree->n_nodes;i++){
@@ -689,7 +762,8 @@ void Male::elim_m_opt(int m, int **solutions ){
 			free(n->messages);
 	}
 
-	//TODO ritorna le soluzioni
+	//TODO ritorna le soluzioni, scrivendo in solutions a partire da widx
+	return nsols;
 }
 
 
@@ -705,6 +779,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 
 	//combination and marginalization
 	CTreeNode *nd;
+
 	for (int c = 0; c < node->child_n; c++) {	//per ogni figlio
 		nd=node->children[c];
 
@@ -712,6 +787,11 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			//array che contiene temporaneamente tutti i valori per una variabile padre,di cui prenderemo poi gli m minimi
 			float *tmp=(float*)malloc(domains_size*node->n_in_bucket*nd->n_in_bucket*sizeof(float));
 			int tidx=0;
+			//array che contiene il messaggio fuso temporaneo
+			int **tmpmessage=(int**)malloc(m*sizeof(int**));
+				for(int i=0;i<m;i++){
+					tmpmessage[i]=(int*)malloc(numvars*sizeof(int));
+			}
 
 			for (int b = 0; b < node->n_in_bucket; b++) {
 				for(int j=0;j<domains_size;j++){	//dominio figlio
@@ -729,10 +809,11 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 					int fbuck_pos=floor((float)k/((float)nd->n_in_bucket*(float)nd->domains_sz));	//posizione nel bucket i del padre
 					int cdom_pos=floor((float)(k%(nd->n_in_bucket*nd->domains_sz))/(float)nd->n_in_bucket);
 					int cbuck_pos=k%nd->n_in_bucket;
-					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos]);//fbuckpos o k?
-					//TODO tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
+					// tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
 					//quello del nodo altrimenti perdi in corsa i valori
-					//TODO aggiunta variabile proiettata al messaggio
+					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],tmpmessage[k]);//fbuckpos o k?
+					// aggiunta valore variabile proiettata al messaggio
+					tmpmessage[k][nd->varId]=cdom_pos;
 				}
 				node->n_in_bucket=tidx;
 			}
@@ -749,12 +830,18 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 					int fbuck_pos=floor((float)minidx/((float)nd->n_in_bucket*(float)nd->domains_sz));	//posizione nel bucket i del padre
 					int cdom_pos=floor((float)(minidx%(nd->n_in_bucket*nd->domains_sz))/(float)nd->n_in_bucket);
 					int cbuck_pos=minidx%nd->n_in_bucket;
-					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos]);	//come sopra
+					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],tmpmessage[p]);	//come sopra
+					tmpmessage[p][nd->varId]=cdom_pos;
 					tmp[minidx]=1000;
 				}
 				node->n_in_bucket=m;
 
 			}
+			//vado ora a sostituire l'array di messaggi per il valore di dominio i
+			for(int b=0;b<m;b++){
+				free(node->messages[i][b]);
+			}
+			node->messages[i]=tmpmessage;
 			free(tmp);
 		}
 	}
@@ -762,14 +849,42 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 }
 
 //fonde i due messaggi, fonde in m1 (si presume m1 sia il messaggio del padre)
-void Male::merge_messages(int *m1, int *m2){
+void Male::merge_messages(int *m1, int *m2,int *dst){
 	for(int i=0;i<numvars;i++){
 		if(m1[i]>-1 && m2[i]>-1){
 			cout<< "Error merging messages, two assignments for same var\n";
 			exit(1);
 		}
 		if(m2[i]>-1)
-			m1[i]=m2[i];
+			dst[i]=m2[i];
+		else if(m1[i]>-1)
+			dst[i]=m1[i];
+		else
+			dst[i]=-1;
+	}
+}
+
+
+void Male::fuzzy_to_weighted(int linearization, float opt,float pl){
+	for(int i=0;i<prefTree->n_nodes;i++){
+		CTreeNode *n=prefTree->linearizedTree[i];
+		for(int j=0;j<n->child_n;j++){
+			for(int h=0;h<domains_size;h++){
+				for(int g=0;g<domains_size;g++){
+					float cp=n->childConstraints[j][h][g];
+					if(cp>=opt)
+						n->weightedChildConstr[j][h][g]=0.0f;
+					else if(cp<pl)
+						n->weightedChildConstr[j][h][g]=1000.0f;
+					else{
+						if(linearization==2)
+							n->weightedChildConstr[j][h][g]=1.0f;
+						else
+							n->weightedChildConstr[j][h][g]=cp-opt;
+					}
+				}
+			}
+		}
 	}
 }
 

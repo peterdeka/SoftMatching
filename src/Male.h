@@ -51,11 +51,11 @@ class Male{
 	void zeroout_tuple(Tuple *t);
 	void set_solution(int *instance);
 	void print_arr(int *inst,int length);
-	void elim_m_opt(int m, int **solutions ); //dechter m bucket elimination to get m opt from WCSP, assumes all unary are 0
+	int elim_m_opt(int m, int **solutions, int widx ); //dechter m bucket elimination to get m opt from WCSP, assumes all unary are 0
 	void elim_m_opt_rec(CTreeNode *node,int m);
-	void fuzzy_to_weighted(int linearization);	//inserisce le informazioni per operare come WCSP
+	void fuzzy_to_weighted(int linearization,float opt, float pl);	//inserisce le informazioni per operare come WCSP
 	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
-	void merge_messages(int *m1, int *m2);
+	void merge_messages(int *m1, int *m2, int* dst);
 
 public:
 	CTree *prefTree;
