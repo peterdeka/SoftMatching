@@ -16,6 +16,8 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	this->myOpt=-1.0f;
 	this->myOptInstance=(int*)malloc(numvars*sizeof(int));
 	this->n_zeroed_tuples=0;
+	this->n23_last_returned_idx=-1;
+	this->n23_sols_num=0;
 	for(int i=0;i<numvars;i++)
 		this->myOptInstance[i]=-1;
 	memcpy(this->myInstance,instance,numvars*sizeof(int));
@@ -28,6 +30,19 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 		this->myOpt=this->DAC_opt(this->myOptInstance);
 
 }
+
+
+void Male::init_next23_list(int linearization, int cachedproposals){
+	cached_solutions=(int**)malloc(cachedproposals*sizeof(int*));
+	this->n23_sols_num=this->k_cheapest(cachedproposals,linearization,cached_solutions);
+	if(this->n23_sols_num<1){
+		cout << "Error building next23_list - no solutions returned by kcheapest\n";
+		free(cached_solutions);
+		exit(1);
+	}
+	this->n23_last_returned_idx=0;
+}
+
 
 Male::~Male() {
 	delete this->prefTree;
@@ -583,7 +598,7 @@ void Male::debugTree(char* fname){
 }
 
 //salvagnini - rossi
-bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
+bool Male::SOFT_next(Female *curfemale,int *nextsol){
 	float p_star=pref(curfemale);
 	Tuple *t_star=new Tuple();
 	//cout<<"CALLED NEXT\n*******************\n";
@@ -655,6 +670,24 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){	//TODO work in progress
 	return false; //never hit
 }
 
+
+
+bool Male::SOFT_next23(int linearization, int *nextinstance){
+	//finite le soluzioni?
+	if(this->n23_last_returned_idx+1<this->n23_sols_num){
+		memcpy(cached_solutions[this->n23_last_returned_idx++],nextinstance,numvars*sizeof(int));
+		return true;
+	}
+	for(int i=0;i<this->n23_sols_num;i++)
+		free(cached_solutions[i]);
+	free(cached_solutions);
+	cached_solutions=(int**)malloc(this->n23_sols_num*2*sizeof(int*));
+	int r_sols=k_cheapest(2*this->n23_sols_num,linearization,cached_solutions);
+	if(r_sols>this->n23_sols_num)
+		return true;
+	else
+		return false;
+}
 
 
 int Male::k_cheapest(int k, int linearization, int **solutions){
@@ -762,7 +795,7 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 			free(n->messages);
 	}
 
-	//TODO ritorna le soluzioni, scrivendo in solutions a partire da widx
+	//TODO ritorna le soluzioni, scrivendo in solutions a partire da widx, alloca ogni volta array grande numvars
 	return nsols;
 }
 

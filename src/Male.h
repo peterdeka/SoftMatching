@@ -32,7 +32,9 @@ class Male{
 	float **fixedtuple_backup;			//solo puntatore di backup per ripristinare fixed tuple
 	Tuple *zeroed_tuples_backup;		//tengo traccia delle tuple azzerate
 	float zeroed_pref;
-
+	int n23_last_returned_idx;
+	int n23_sols_num;
+	int **cached_solutions;
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);
 	void make_DAC();
@@ -57,6 +59,7 @@ class Male{
 	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
 	void merge_messages(int *m1, int *m2, int* dst);
 
+
 public:
 	CTree *prefTree;
 	int *myInstance;
@@ -73,7 +76,9 @@ public:
 	void debugTree(char* fname);
 	int compare(Female *f1, Female *f2);
 	void reset_zeroed_prectuples();
-	void kCheapest(int dist,int k, int **solutions,int *nsolutions);
+
+	bool SOFT_next23(int linearization, int *nextinstance);	//ritorna true se ha trovato altre soluzioni, false altrimenti (lista finita)
+	void init_next23_list(int linearization, int cachedproposals);	//chiamare prima di usare next23
 };
 
 #endif /* MALE_H_ */
