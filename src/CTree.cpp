@@ -36,6 +36,13 @@ void CTree::addNode(CTreeNode *node){
 		domains_size=domainssize;
 	}
 
+	void CTree::alloc_weighted_tables(){
+		for(int i=0;i<this->n_nodes;i++){
+			CTreeNode *n=linearizedTree[i];
+			n->alloc_weighted_tables();
+		}
+	}
+
 	CTree::~CTree() //destructor
 	{
 	    for(int i=0;i<n_nodes;i++){

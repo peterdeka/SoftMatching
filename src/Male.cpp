@@ -18,6 +18,7 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	this->n_zeroed_tuples=0;
 	this->n23_last_returned_idx=-1;
 	this->n23_sols_num=0;
+	this->cached_solutions=NULL;
 	for(int i=0;i<numvars;i++)
 		this->myOptInstance[i]=-1;
 	memcpy(this->myInstance,instance,numvars*sizeof(int));
@@ -33,6 +34,7 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 
 
 void Male::init_next23_list(int linearization, int cachedproposals){
+	prefTree->alloc_weighted_tables();
 	cached_solutions=(int**)malloc(cachedproposals*sizeof(int*));
 	this->n23_sols_num=this->k_cheapest(cachedproposals,linearization,cached_solutions);
 	if(this->n23_sols_num<1){
@@ -41,6 +43,7 @@ void Male::init_next23_list(int linearization, int cachedproposals){
 		exit(1);
 	}
 	this->n23_last_returned_idx=0;
+
 }
 
 
@@ -53,6 +56,11 @@ Male::~Male() {
 		free(this->fixed_tuple_childconstr[i]);
 	}
 	free(this->fixed_tuple_childconstr);
+	if(cached_solutions!=NULL){
+		for(int i=0;i<this->n23_sols_num;i++)
+			free(cached_solutions[i]);
+		free(cached_solutions);
+	}
 	//TODO
 }
 
@@ -749,12 +757,13 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 		n=prefTree->linearizedTree[i];
 		n->n_in_bucket=1;
 		n->messages=(int***)malloc(domains_size*sizeof(int**));
+		n->unaryBucket=(float**)malloc(m*sizeof(float*));
 		for(int j=0;j<domains_size;j++){
 			n->unaryBucket[j]=(float*)malloc(m*sizeof(float));
 			n->unaryBucket[j][0]=0.0f;
 			//inizializza i bucket per i messaggi con le soluzioni parziali
 			n->messages[j]=(int**)malloc(m*sizeof(int*));
-			for(int k;k<n->n_in_bucket;k++){
+			for(int k=0;k<n->n_in_bucket;k++){
 				n->messages[j][k]=(int*)malloc(this->numvars*sizeof(int));
 				for(int p=0;p<this->numvars;p++)
 					n->messages[j][k][p]=-1;
@@ -793,6 +802,7 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 				free(n->messages[j]);
 			}
 			free(n->messages);
+			free(n->unaryBucket);
 	}
 
 	//TODO ritorna le soluzioni, scrivendo in solutions a partire da widx, alloca ogni volta array grande numvars
@@ -821,9 +831,9 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			float *tmp=(float*)malloc(domains_size*node->n_in_bucket*nd->n_in_bucket*sizeof(float));
 			int tidx=0;
 			//array che contiene il messaggio fuso temporaneo
-			int **tmpmessage=(int**)malloc(m*sizeof(int**));
-				for(int i=0;i<m;i++){
-					tmpmessage[i]=(int*)malloc(numvars*sizeof(int));
+			int **tmpmessage=(int**)malloc(m*sizeof(int*));
+				for(int ii=0;ii<m;ii++){
+					tmpmessage[ii]=(int*)malloc(numvars*sizeof(int));
 			}
 
 			for (int b = 0; b < node->n_in_bucket; b++) {

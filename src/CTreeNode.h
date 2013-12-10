@@ -35,7 +35,7 @@ public:
 	int prefValue;	//per l'algoritmo alfacut
    	// float *weightedUnaryConstr; //ok unary are considered 0 cost
     float ***weightedChildConstr;
-    float **weightedFatherConstr;
+   // float **weightedFatherConstr;
     float **unaryBucket;
     int ***messages;	//constiene stringhe parziale con soluzione per i costi dell'unary bucket
    // float ****binBucket;
@@ -48,6 +48,7 @@ public:
     	void JSONSubtree(string *res );
     	void DOTSubtree(string *res,char* rootcall,int domains_size );
     	CTreeNode(int avarId,char *vardomain);
+    	void alloc_weighted_tables();
 
 };
 

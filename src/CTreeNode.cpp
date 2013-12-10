@@ -24,8 +24,20 @@ CTreeNode::CTreeNode(int avarId,char *vardomain) //constructor
     	prefValue=-1;
     	//weightedUnaryConstr=NULL;
     	weightedChildConstr=NULL;
-    	weightedFatherConstr=NULL;
     }
+
+
+void CTreeNode::alloc_weighted_tables(){
+	weightedChildConstr=(float***)malloc(child_n*sizeof(int**));
+	for(int c=0;c<child_n;c++){
+		weightedChildConstr[c]=(float**)malloc(domains_sz*sizeof(float*));
+		for(int j=0;j<domains_sz;j++){
+			weightedChildConstr[c][j]=(float*)malloc(domains_sz*sizeof(float));
+		}
+	}
+
+}
+
 
 CTreeNode::~CTreeNode() //destructor
    {
@@ -34,12 +46,17 @@ CTreeNode::~CTreeNode() //destructor
     	free(this->children);
     	for(int i=0;i<child_n;i++){
     		for(int j=0;j<domains_sz;j++){
-
     			free(childConstraints[i][j]);
+    			if(weightedChildConstr!=NULL)
+    				free(weightedChildConstr[i][j]);
     		}
     		free(childConstraints[i]);
+    		if(weightedChildConstr!=NULL)
+    			free(weightedChildConstr[i]);
     	}
     	free(this->childConstraints);
+    	if(weightedChildConstr!=NULL)
+    	    			free(weightedChildConstr);
     }
 
 

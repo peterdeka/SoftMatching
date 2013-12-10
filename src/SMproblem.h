@@ -41,6 +41,7 @@ public:
 	int solve_with_softGS();
 	int solve_with_classicGSNext();
 	void debugTrees(char *filename);
+	int solve_with_next23();
 };
 
 #endif /* SMPROBLEM_H_ */

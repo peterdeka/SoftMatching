@@ -56,7 +56,7 @@ class Male{
 	int elim_m_opt(int m, int **solutions, int widx ); //dechter m bucket elimination to get m opt from WCSP, assumes all unary are 0
 	void elim_m_opt_rec(CTreeNode *node,int m);
 	void fuzzy_to_weighted(int linearization,float opt, float pl);	//inserisce le informazioni per operare come WCSP
-	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
+
 	void merge_messages(int *m1, int *m2, int* dst);
 
 
@@ -76,7 +76,7 @@ public:
 	void debugTree(char* fname);
 	int compare(Female *f1, Female *f2);
 	void reset_zeroed_prectuples();
-
+	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
 	bool SOFT_next23(int linearization, int *nextinstance);	//ritorna true se ha trovato altre soluzioni, false altrimenti (lista finita)
 	void init_next23_list(int linearization, int cachedproposals);	//chiamare prima di usare next23
 };

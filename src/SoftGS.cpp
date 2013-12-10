@@ -18,6 +18,17 @@ SoftGS::~SoftGS() {
 	delete this->womencont;
 }
 
+
+int SoftGS::test23(){
+	int maxprops=ceil((float)num_individuals*0.2f);
+	men[0]->init_next23_list(2,maxprops);
+	int i=men[0]->k_cheapest(maxprops,2,NULL);
+	if (i<1){
+		cout<<"*****NOT ENOUGH SOLUTIONS \n";
+					men[i]->debugTree("error23.gv");
+	}
+}
+
 bool SoftGS::test_soft_next(){
 	for(int i=0;i<num_individuals;i++){
 		cout<<"NEWINDIVIDUAL opt:"<<men[i]->myOpt<<"\n";

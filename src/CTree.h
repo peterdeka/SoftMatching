@@ -37,7 +37,7 @@ public:
 	void setRoot(CTreeNode *node);
 	void genChildren( CTreeNode *curNode,int child_limit,char **varDomains,int numvars);
 	void DOTgraph(string *res);
-
+	void alloc_weighted_tables();
 };
 
 

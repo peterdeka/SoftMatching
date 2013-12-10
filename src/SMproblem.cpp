@@ -157,6 +157,12 @@ int SM_problem::solve_with_classicGSNext(){
 	return nprops;
 }
 
+int SM_problem::solve_with_next23(){
+	SoftGS softgs(NUM_INDIVIDUALS,men,women);
+	softgs.test23();
+
+}
+
 void SM_problem::print_arr(int *inst,int length){
 	for (int i=0;i<length;i++)
 			cout << inst[i]<<"-";
