@@ -786,7 +786,8 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 	int minidx=0;
 	int mindomain=0;
 	CTreeNode *rn=prefTree->root;
-	int nsols=min(m,domains_size*rn->n_in_bucket);
+	int bucksz=rn->unaryBucket[0].size();
+	int nsols=min(m,domains_size*bucksz);
 	for(int mi=0;mi<nsols;mi++){
 		for(int y=0;y<domains_size;y++){
 			for(int z=0;z<rn->n_in_bucket;z++){
@@ -844,14 +845,14 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 
 		for(int i=0;i<domains_size;i++){	//dominio padre
 			//array che contiene temporaneamente tutti i valori per una variabile padre,di cui prenderemo poi gli m minimi
-			float *tmp=(float*)malloc(domains_size*node->unaryBucket.size()*nd->unaryBucket.size()*sizeof(float));
+			float *tmp=(float*)malloc(domains_size*node->unaryBucket[i].size()*nd->unaryBucket[0].size()*sizeof(float));
 			int tidx=0;
 			//array che contiene il messaggio fuso temporaneo per questo valore del dominio
 			vector<int*> tmpmessage;
-			for (unsigned b = 0; b < node->unaryBucket.size(); b++) {
+			for (unsigned b = 0; b < node->unaryBucket[i].size(); b++) {
 				for(int j=0;j<domains_size;j++){	//dominio figlio
 
-					for(unsigned t=0;t<nd->unaryBucket.size();t++){	//per tutti i valori nel bucket del figlio per la variabile j
+					for(unsigned t=0;t<nd->unaryBucket[j].size();t++){	//per tutti i valori nel bucket del figlio per la variabile j
 						tmp[tidx++]=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
 						cout<<node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b] <<" \n";
 					}
@@ -969,7 +970,7 @@ void Male::set_solution(int *instance){
 
 void Male::print_arr(int *inst,int length){
 	for (int i=0;i<length;i++)
-			cout << inst[i]<<"-";
+			cout << inst[i]<<" ";
 	cout << " \n ";
 
 }
