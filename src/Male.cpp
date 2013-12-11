@@ -715,9 +715,9 @@ int Male::k_cheapest(int k, int linearization, int **solutions){
 	float tmppref=p_star;
 	while(n<k){
 		if(!next_tuple_with_pref(*t_star, tfound, cpref)){		//finite tuple con preferenza cpref, scendo
-			//cout<<"*NO MORE tuples with pref "<<cpref<<"\n";
+			cout<<"*NO MORE tuples with pref "<<cpref<<"\n";
 			tmppref=find_next_pref_level(cpref);
-			//cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
+			cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
 			if(tmppref<=0){
 				reset_zeroed_prectuples();
 				delete tfound;
@@ -813,8 +813,8 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 //			free(n->messages);
 //			free(n->unaryBucket);
 			n->unaryBucket.clear();
-			for(int j=0;j<n->messages.size();j++){
-				for(int k=0;k<n->messages[j].size();k++){
+			for(unsigned j=0;j<n->messages.size();j++){
+				for(unsigned k=0;k<n->messages[j].size();k++){
 					free(n->messages[j][k]);
 				}
 			}
@@ -844,13 +844,9 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 
 		for(int i=0;i<domains_size;i++){	//dominio padre
 			//array che contiene temporaneamente tutti i valori per una variabile padre,di cui prenderemo poi gli m minimi
-			float *tmp=(float*)malloc(domains_size*node->n_in_bucket*nd->n_in_bucket*sizeof(float));
+			float *tmp=(float*)malloc(domains_size*node->unaryBucket.size()*nd->unaryBucket.size()*sizeof(float));
 			int tidx=0;
 			//array che contiene il messaggio fuso temporaneo per questo valore del dominio
-			/*int **tmpmessage=(int**)malloc(m*sizeof(int*));
-				for(int ii=0;ii<m;ii++){
-					tmpmessage[ii]=(int*)malloc(numvars*sizeof(int));
-			}*/
 			vector<int*> tmpmessage;
 			for (unsigned b = 0; b < node->unaryBucket.size(); b++) {
 				for(int j=0;j<domains_size;j++){	//dominio figlio
@@ -861,7 +857,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 					}
 				}
 			}
-			int nbuck=node->unaryBucket[i].size();
+			//int nbuck=node->unaryBucket[i].size();
 			node->unaryBucket[i].clear();
 			//MARGINALIZATION prendo da tmp gli m min per j e i loro messages
 			if(tidx<=m){
@@ -869,11 +865,13 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 					int *dstm=(int*)malloc(numvars*sizeof(int));
 					node->unaryBucket[i].push_back(tmp[k]);
 					//messaggi
-					int fbuck_pos=floor((float)k/((float)nd->unaryBucket.size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
-					int cdom_pos=floor((float)(k%(nd->unaryBucket.size()*nd->domains_sz))/(float)nd->unaryBucket.size());
-					int cbuck_pos=k%nd->unaryBucket.size();
+
+					int cdom_pos=floor((float)(k%(nd->unaryBucket[0].size()*nd->domains_sz))/(float)nd->unaryBucket[0].size());
+					int fbuck_pos=floor((float)k/((float)nd->unaryBucket[cdom_pos].size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
+					int cbuck_pos=k%nd->unaryBucket[cdom_pos].size();
 					// tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
 					//quello del nodo altrimenti perdi in corsa i valori
+					cout << fbuck_pos<< " < " <<node->messages[i].size()<<"\n";
 					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],dstm);//fbuckpos o k?
 					// aggiunta valore variabile proiettata al messaggio
 					dstm[nd->varId]=cdom_pos;
@@ -894,9 +892,10 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 					int *dstm=(int*)malloc(numvars*sizeof(int));
 					node->unaryBucket[i].push_back(tmp[minidx]);
 					//messaggi
-					int fbuck_pos=floor((float)minidx/((float)nd->unaryBucket.size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
-					int cdom_pos=floor((float)(minidx%(nd->unaryBucket.size()*nd->domains_sz))/(float)nd->unaryBucket.size());
-					int cbuck_pos=minidx%nd->unaryBucket.size();
+
+					int cdom_pos=floor((float)(minidx%(nd->unaryBucket[0].size()*nd->domains_sz))/(float)nd->unaryBucket[0].size());
+					int fbuck_pos=floor((float)minidx/((float)nd->unaryBucket[cdom_pos].size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
+					int cbuck_pos=minidx%nd->unaryBucket[cdom_pos].size();
 					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],dstm);	//come sopra
 					dstm[nd->varId]=cdom_pos;
 					tmpmessage.push_back(dstm);
@@ -955,6 +954,7 @@ void Male::fuzzy_to_weighted(int linearization, float opt,float pl){
 						else
 							n->weightedChildConstr[j][h][g]=cp-opt;
 					}
+					cout << "W "<<n->weightedChildConstr[j][h][g]<<"\n";
 				}
 			}
 		}
