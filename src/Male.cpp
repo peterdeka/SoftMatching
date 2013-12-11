@@ -756,18 +756,27 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 	for(int i=0;i<prefTree->n_nodes;i++){
 		n=prefTree->linearizedTree[i];
 		n->n_in_bucket=1;
-		n->messages=(int***)malloc(domains_size*sizeof(int**));
-		n->unaryBucket=(float**)malloc(m*sizeof(float*));
+		//n->messages=(int***)malloc(domains_size*sizeof(int**));
+		//n->unaryBucket=(float**)malloc(m*sizeof(float*));
 		for(int j=0;j<domains_size;j++){
-			n->unaryBucket[j]=(float*)malloc(m*sizeof(float));
-			n->unaryBucket[j][0]=0.0f;
+			//n->unaryBucket[j]=(float*)malloc(m*sizeof(float));
+			//n->unaryBucket[j][0]=0.0f;
+
+			n->unaryBucket.push_back( vector<float>());
+			n->unaryBucket.back().push_back(0.0f);
 			//inizializza i bucket per i messaggi con le soluzioni parziali
-			n->messages[j]=(int**)malloc(m*sizeof(int*));
-			for(int k=0;k<n->n_in_bucket;k++){
-				n->messages[j][k]=(int*)malloc(this->numvars*sizeof(int));
-				for(int p=0;p<this->numvars;p++)
-					n->messages[j][k][p]=-1;
-			}
+			//n->messages[j]=(int**)malloc(m*sizeof(int*));
+
+			//for(int k=0;k<n->n_in_bucket;k++){
+				//n->messages[j][k]=(int*)malloc(this->numvars*sizeof(int));
+			int* msg=(int*)malloc(this->numvars*sizeof(int));
+			for(int p=0;p<this->numvars;p++)
+					//n->messages[j][k][p]=-1;
+				msg[p]=-1;
+			//}
+
+			n->messages.push_back(vector<int*>());
+			n->messages.back().push_back(msg);
 		}
 	}
 	elim_m_opt_rec(prefTree->root,m);
@@ -795,14 +804,21 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 	//dealloca i bucket
 	for(int i=0;i<prefTree->n_nodes;i++){
 			n=prefTree->linearizedTree[i];
-			for(int j=0;j<domains_size;j++){
-				free(n->unaryBucket[j]);
-				for(int k;k<n->n_in_bucket;k++)
+//			for(int j=0;j<domains_size;j++){
+//				free(n->unaryBucket[j]);
+//				for(int k;k<n->n_in_bucket;k++)
+//					free(n->messages[j][k]);
+//				free(n->messages[j]);
+//			}
+//			free(n->messages);
+//			free(n->unaryBucket);
+			n->unaryBucket.clear();
+			for(int j=0;j<n->messages.size();j++){
+				for(int k=0;k<n->messages[j].size();k++){
 					free(n->messages[j][k]);
-				free(n->messages[j]);
+				}
 			}
-			free(n->messages);
-			free(n->unaryBucket);
+			n->messages.clear();
 	}
 
 	//TODO ritorna le soluzioni, scrivendo in solutions a partire da widx, alloca ogni volta array grande numvars
@@ -830,35 +846,42 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			//array che contiene temporaneamente tutti i valori per una variabile padre,di cui prenderemo poi gli m minimi
 			float *tmp=(float*)malloc(domains_size*node->n_in_bucket*nd->n_in_bucket*sizeof(float));
 			int tidx=0;
-			//array che contiene il messaggio fuso temporaneo
-			int **tmpmessage=(int**)malloc(m*sizeof(int*));
+			//array che contiene il messaggio fuso temporaneo per questo valore del dominio
+			/*int **tmpmessage=(int**)malloc(m*sizeof(int*));
 				for(int ii=0;ii<m;ii++){
 					tmpmessage[ii]=(int*)malloc(numvars*sizeof(int));
-			}
-
-			for (int b = 0; b < node->n_in_bucket; b++) {
+			}*/
+			vector<int*> tmpmessage;
+			for (unsigned b = 0; b < node->unaryBucket.size(); b++) {
 				for(int j=0;j<domains_size;j++){	//dominio figlio
 
-					for(int t=0;t<nd->n_in_bucket;t++){	//per tutti i valori nel bucket del figlio per la variabile j
+					for(unsigned t=0;t<nd->unaryBucket.size();t++){	//per tutti i valori nel bucket del figlio per la variabile j
 						tmp[tidx++]=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
+						cout<<node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b] <<" \n";
 					}
 				}
 			}
+			int nbuck=node->unaryBucket[i].size();
+			node->unaryBucket[i].clear();
 			//MARGINALIZATION prendo da tmp gli m min per j e i loro messages
 			if(tidx<=m){
 				for(int k=0;k<tidx;k++){
-					node->unaryBucket[i][k]=tmp[k];
+					int *dstm=(int*)malloc(numvars*sizeof(int));
+					node->unaryBucket[i].push_back(tmp[k]);
 					//messaggi
-					int fbuck_pos=floor((float)k/((float)nd->n_in_bucket*(float)nd->domains_sz));	//posizione nel bucket i del padre
-					int cdom_pos=floor((float)(k%(nd->n_in_bucket*nd->domains_sz))/(float)nd->n_in_bucket);
-					int cbuck_pos=k%nd->n_in_bucket;
+					int fbuck_pos=floor((float)k/((float)nd->unaryBucket.size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
+					int cdom_pos=floor((float)(k%(nd->unaryBucket.size()*nd->domains_sz))/(float)nd->unaryBucket.size());
+					int cbuck_pos=k%nd->unaryBucket.size();
 					// tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
 					//quello del nodo altrimenti perdi in corsa i valori
-					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],tmpmessage[k]);//fbuckpos o k?
+					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],dstm);//fbuckpos o k?
 					// aggiunta valore variabile proiettata al messaggio
-					tmpmessage[k][nd->varId]=cdom_pos;
+					dstm[nd->varId]=cdom_pos;
+					tmpmessage.push_back(dstm);
+					//print_arr(tmpmessage[k],numvars);
 				}
-				node->n_in_bucket=tidx;
+
+				//node->n_in_bucket=tidx;
 			}
 			else{
 
@@ -868,30 +891,35 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 						if(tmp[k]<tmp[minidx])
 							minidx=k;
 					}
-					node->unaryBucket[i][p]=tmp[minidx];
+					int *dstm=(int*)malloc(numvars*sizeof(int));
+					node->unaryBucket[i].push_back(tmp[minidx]);
 					//messaggi
-					int fbuck_pos=floor((float)minidx/((float)nd->n_in_bucket*(float)nd->domains_sz));	//posizione nel bucket i del padre
-					int cdom_pos=floor((float)(minidx%(nd->n_in_bucket*nd->domains_sz))/(float)nd->n_in_bucket);
-					int cbuck_pos=minidx%nd->n_in_bucket;
-					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],tmpmessage[p]);	//come sopra
-					tmpmessage[p][nd->varId]=cdom_pos;
+					int fbuck_pos=floor((float)minidx/((float)nd->unaryBucket.size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
+					int cdom_pos=floor((float)(minidx%(nd->unaryBucket.size()*nd->domains_sz))/(float)nd->unaryBucket.size());
+					int cbuck_pos=minidx%nd->unaryBucket.size();
+					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],dstm);	//come sopra
+					dstm[nd->varId]=cdom_pos;
+					tmpmessage.push_back(dstm);
 					tmp[minidx]=1000;
 				}
-				node->n_in_bucket=m;
+				//node->n_in_bucket=m;
 
 			}
 			//vado ora a sostituire l'array di messaggi per il valore di dominio i
-			for(int b=0;b<m;b++){
+			for(unsigned b=0;b<node->messages[i].size();b++){
 				free(node->messages[i][b]);
 			}
-			node->messages[i]=tmpmessage;
+			//free(node->messages[i]);
+			node->messages[i].swap(tmpmessage);
+			//delete(node->messages[i]);
+			//node->messages[i]=*tmpmessage;
 			free(tmp);
 		}
 	}
 
 }
 
-//fonde i due messaggi, fonde in m1 (si presume m1 sia il messaggio del padre)
+//fonde i due messaggi, (m1 messaggio del padre)
 void Male::merge_messages(int *m1, int *m2,int *dst){
 	for(int i=0;i<numvars;i++){
 		if(m1[i]>-1 && m2[i]>-1){
@@ -904,7 +932,9 @@ void Male::merge_messages(int *m1, int *m2,int *dst){
 			dst[i]=m1[i];
 		else
 			dst[i]=-1;
+		cout <<dst[i];
 	}
+	cout << "\n";
 }
 
 

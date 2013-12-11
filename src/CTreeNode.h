@@ -9,6 +9,7 @@
 #define CTREENODE_H_
 
 #include <string>
+#include <vector>
 #include "CTree.h"
 #define DOT_TABLE_BEG "<<FONT POINT-SIZE=\"10\"><TABLE CELLBORDER=\"0\" CELLPADDING=\"1\" CELLSPACING=\"0\">"
 #define DOT_TABLE_END "</TABLE></FONT>>];\n"
@@ -36,8 +37,10 @@ public:
    	// float *weightedUnaryConstr; //ok unary are considered 0 cost
     float ***weightedChildConstr;
    // float **weightedFatherConstr;
-    float **unaryBucket;
-    int ***messages;	//constiene stringhe parziale con soluzione per i costi dell'unary bucket
+    //float **unaryBucket;
+    //int ***messages;	//constiene stringhe parziale con soluzione per i costi dell'unary bucket
+    vector <vector<int*> > messages;
+    vector <vector<float> > unaryBucket;
    // float ****binBucket;
     int n_in_bucket;
     	//void addChild (CTreeNode,CBinConstrTable);
