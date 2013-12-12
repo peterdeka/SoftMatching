@@ -711,6 +711,9 @@ int Male::k_cheapest(int k, int linearization, int **solutions){
 	fix(t_star);
 	fuzzy_to_weighted(linearization,this->myOpt,this->myOpt);
 	int n= elim_m_opt(k,solutions,0);
+	unfix(t_star);
+	zeroout_prectuples_with_pref(t_star, p_star);
+
 	float cpref=p_star;
 	float tmppref=p_star;
 	while(n<k){
@@ -755,25 +758,20 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 	//inizializza i bucket
 	for(int i=0;i<prefTree->n_nodes;i++){
 		n=prefTree->linearizedTree[i];
-		n->n_in_bucket=1;
-		//n->messages=(int***)malloc(domains_size*sizeof(int**));
-		//n->unaryBucket=(float**)malloc(m*sizeof(float*));
+
 		for(int j=0;j<domains_size;j++){
-			//n->unaryBucket[j]=(float*)malloc(m*sizeof(float));
-			//n->unaryBucket[j][0]=0.0f;
 
 			n->unaryBucket.push_back( vector<float>());
 			n->unaryBucket.back().push_back(0.0f);
 			//inizializza i bucket per i messaggi con le soluzioni parziali
-			//n->messages[j]=(int**)malloc(m*sizeof(int*));
-
-			//for(int k=0;k<n->n_in_bucket;k++){
-				//n->messages[j][k]=(int*)malloc(this->numvars*sizeof(int));
 			int* msg=(int*)malloc(this->numvars*sizeof(int));
-			for(int p=0;p<this->numvars;p++)
+			for(int p=0;p<this->numvars;p++){
 					//n->messages[j][k][p]=-1;
-				msg[p]=-1;
-			//}
+				if(p==i)
+					msg[p]=j;
+				else
+					msg[p]=-1;
+			}
 
 			n->messages.push_back(vector<int*>());
 			n->messages.back().push_back(msg);
@@ -788,6 +786,7 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 	CTreeNode *rn=prefTree->root;
 	int bucksz=rn->unaryBucket[0].size();
 	int nsols=min(m,domains_size*bucksz);
+	int goodsols=0;
 	for(int mi=0;mi<nsols;mi++){
 		for(int y=0;y<domains_size;y++){
 			for(int z=0;z<rn->n_in_bucket;z++){
@@ -798,7 +797,12 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 			}
 		}
 		lastmincost=rn->unaryBucket[mindomain][minidx];
-		cout << "Solution with cost %d :" << rn->unaryBucket[mindomain][minidx];
+		if(lastmincost>=1000){
+			cout << "Cost is over 1000. Go on. \n";
+			break;
+		}
+		goodsols++;
+		cout << "Solution with cost " << rn->unaryBucket[mindomain][minidx]<<" : ";
 		print_arr(rn->messages[mindomain][minidx],numvars);
 	}
 
@@ -823,7 +827,7 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 	}
 
 	//TODO ritorna le soluzioni, scrivendo in solutions a partire da widx, alloca ogni volta array grande numvars
-	return nsols;
+	return goodsols;
 }
 
 
@@ -854,7 +858,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 
 					for(unsigned t=0;t<nd->unaryBucket[j].size();t++){	//per tutti i valori nel bucket del figlio per la variabile j
 						tmp[tidx++]=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
-						cout<<node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b] <<" \n";
+						//cout<<node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b] <<" \n";
 					}
 				}
 			}
@@ -872,7 +876,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 					int cbuck_pos=k%nd->unaryBucket[cdom_pos].size();
 					// tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
 					//quello del nodo altrimenti perdi in corsa i valori
-					cout << fbuck_pos<< " < " <<node->messages[i].size()<<"\n";
+					//cout << fbuck_pos<< " < " <<node->messages[i].size()<<"\n";
 					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],dstm);//fbuckpos o k?
 					// aggiunta valore variabile proiettata al messaggio
 					dstm[nd->varId]=cdom_pos;
@@ -910,11 +914,13 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 				free(node->messages[i][b]);
 			}
 			//free(node->messages[i]);
+
 			node->messages[i].swap(tmpmessage);
 			//delete(node->messages[i]);
 			//node->messages[i]=*tmpmessage;
 			free(tmp);
 		}
+
 	}
 
 }
@@ -932,9 +938,9 @@ void Male::merge_messages(int *m1, int *m2,int *dst){
 			dst[i]=m1[i];
 		else
 			dst[i]=-1;
-		cout <<dst[i];
+		//cout <<dst[i];
 	}
-	cout << "\n";
+	//cout << "\n";
 }
 
 
