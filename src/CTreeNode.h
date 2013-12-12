@@ -42,7 +42,7 @@ public:
     vector <vector<int*> > messages;
     vector <vector<float> > unaryBucket;
    // float ****binBucket;
-    int n_in_bucket;
+   // int n_in_bucket;
     	//void addChild (CTreeNode,CBinConstrTable);
     	virtual ~CTreeNode();
 		void genUnaryConstraints(int domains_size);

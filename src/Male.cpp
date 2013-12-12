@@ -702,6 +702,7 @@ int Male::k_cheapest(int k, int linearization, int **solutions){
 	float p_star=this->myOpt;
 	Tuple *t_star=new Tuple();
 	Tuple *tfound=new Tuple();
+	int n=0;
 	int *nextsol=(int*)malloc(numvars*sizeof(int));
 	if(!find_first_tuple_with_pref(NULL,p_star,t_star))
 	{
@@ -709,8 +710,11 @@ int Male::k_cheapest(int k, int linearization, int **solutions){
 		exit(-1);
 	}
 	fix(t_star);
-	fuzzy_to_weighted(linearization,this->myOpt,this->myOpt);
-	int n= elim_m_opt(k,solutions,0);
+	float candpref=CSP_solve(p_star, nextsol);
+	if(candpref==p_star){
+		fuzzy_to_weighted(linearization,p_star,p_star);
+		n= elim_m_opt(k,solutions,0);
+	}
 	unfix(t_star);
 	zeroout_prectuples_with_pref(t_star, p_star);
 
@@ -781,28 +785,32 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 
 	//estrazione soluzioni migliori
 	float lastmincost=-1.0f;
-	int minidx=0;
-	int mindomain=0;
+
 	CTreeNode *rn=prefTree->root;
 	int bucksz=rn->unaryBucket[0].size();
 	int nsols=min(m,domains_size*bucksz);
 	int goodsols=0;
 	for(int mi=0;mi<nsols;mi++){
+		float mincost=1000;
+		int minidx=0;
+		int mindomain=0;
 		for(int y=0;y<domains_size;y++){
-			for(int z=0;z<rn->n_in_bucket;z++){
-				if(rn->unaryBucket[y][z]<rn->unaryBucket[mindomain][minidx] && rn->unaryBucket[y][z]>=lastmincost){
+			for(unsigned z=0;z<rn->unaryBucket[y].size();z++){
+				if(rn->unaryBucket[y][z]<mincost && rn->unaryBucket[y][z]>=lastmincost){
 					minidx=z;
 					mindomain=y;
+					mincost=rn->unaryBucket[y][z];
 				}
 			}
 		}
 		lastmincost=rn->unaryBucket[mindomain][minidx];
+		rn->unaryBucket[mindomain][minidx]=3000;//non lo pesco piu
 		if(lastmincost>=1000){
 			cout << "Cost is over 1000. Go on. \n";
 			break;
 		}
 		goodsols++;
-		cout << "Solution with cost " << rn->unaryBucket[mindomain][minidx]<<" : ";
+		cout << "Solution with cost " << lastmincost<<" : ";
 		print_arr(rn->messages[mindomain][minidx],numvars);
 	}
 
@@ -961,7 +969,7 @@ void Male::fuzzy_to_weighted(int linearization, float opt,float pl){
 						else
 							n->weightedChildConstr[j][h][g]=cp-opt;
 					}
-					cout << "W "<<n->weightedChildConstr[j][h][g]<<"\n";
+					//cout << "W "<<n->weightedChildConstr[j][h][g]<<"\n";
 				}
 			}
 		}
