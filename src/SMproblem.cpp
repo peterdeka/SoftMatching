@@ -159,8 +159,10 @@ int SM_problem::solve_with_classicGSNext(){
 
 int SM_problem::solve_with_next23(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
-	softgs.test23();
-
+	softgs.init_n23_solver(2);
+	int nprops=softgs.gale_shapley_men_opt_next23(this->men_matches,2);
+	//TODO softgs.dealloc_n23_solver
+	return nprops;
 }
 
 void SM_problem::print_arr(int *inst,int length){
