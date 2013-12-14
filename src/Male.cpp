@@ -36,6 +36,8 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 void Male::init_next23_list(int linearization, int cachedproposals){
 	prefTree->alloc_weighted_tables();
 	cached_solutions=(int**)malloc(cachedproposals*sizeof(int*));
+	for(int i=0;i<cachedproposals;i++)
+		cached_solutions[i]=(int*)malloc(numvars*sizeof(int));
 	this->n23_sols_num=this->k_cheapest(cachedproposals,linearization,cached_solutions);
 	if(this->n23_sols_num<1){
 		cout << "Error building next23_list - no solutions returned by kcheapest\n";
@@ -679,22 +681,41 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){
 }
 
 
+bool Male::check_cost(int *solution, float cost){
+	this->set_solution(solution);
+	float ccost=0;
+	for(int i=0;i<prefTree->n_nodes;i++){
+		CTreeNode *n=prefTree->linearizedTree[i];
+		for(int j=0;j<n->child_n;j++)
+			ccost+=n->weightedChildConstr[j][n->value][n->children[j]->value];
+	}
+	if(ccost==cost)
+		return true;
+	return false;
+}
+
 
 bool Male::SOFT_next23(int linearization, int *nextinstance){
 	//finite le soluzioni?
-	if(this->n23_last_returned_idx+1<this->n23_sols_num){
-		memcpy(cached_solutions[this->n23_last_returned_idx++],nextinstance,numvars*sizeof(int));
-		return true;
+	if(this->n23_last_returned_idx>=this->n23_sols_num){
+		cout << "not enough solutions, KCHEAP increasing to "<<this->n23_sols_num*2<<"\n";
+		if(cached_solutions!=NULL){
+			for(int i=0;i<this->n23_sols_num;i++)
+				free(cached_solutions[i]);
+			free(cached_solutions);
+		}
+		this->n23_last_returned_idx=0;
+		cached_solutions=(int**)malloc(this->n23_sols_num*2*sizeof(int*));
+		for(int i=0;i<this->n23_sols_num;i++)
+				cached_solutions[i]=(int*)malloc(numvars*sizeof(int));
+		int r_sols=k_cheapest(2*this->n23_sols_num,linearization,cached_solutions);
+
+		if(r_sols<=this->n23_sols_num)
+			return false;
 	}
-	for(int i=0;i<this->n23_sols_num;i++)
-		free(cached_solutions[i]);
-	free(cached_solutions);
-	cached_solutions=(int**)malloc(this->n23_sols_num*2*sizeof(int*));
-	int r_sols=k_cheapest(2*this->n23_sols_num,linearization,cached_solutions);
-	if(r_sols>this->n23_sols_num)
-		return true;
-	else
-		return false;
+
+	memcpy(nextinstance,cached_solutions[this->n23_last_returned_idx++],numvars*sizeof(int));
+	return true;
 }
 
 
@@ -726,10 +747,7 @@ int Male::k_cheapest(int k, int linearization, int **solutions){
 			tmppref=find_next_pref_level(cpref);
 			cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
 			if(tmppref<=0){
-				reset_zeroed_prectuples();
-				delete tfound;
-				delete t_star;
-				return false;		//non si scende piu di preferenza, finite le soluzioni
+				break;		//non si scende piu di preferenza, finite le soluzioni
 			}
 			// reset previuosly set to 0
 			find_first_tuple_with_pref(NULL,tmppref,tfound);
@@ -742,17 +760,17 @@ int Male::k_cheapest(int k, int linearization, int **solutions){
 			n+=elim_m_opt(k-n,solutions,n);
 		}
 		unfix(tfound);
-		if(n<k){	//se continuo a girare
-			cpref=tmppref;
-			zeroout_tuple(tfound);
-			Tuple *tmp=t_star;
-			t_star=tfound;
-			tfound=tmp;
-		}
-		else{	//so che terminero
-			reset_zeroed_prectuples();
-		}
+		cpref=tmppref;
+		zeroout_tuple(tfound);
+		Tuple *tmp=t_star;
+		t_star=tfound;
+		tfound=tmp;
 	}
+
+	cout << "kcheap returning " << n<<" out of "<<k<<" requested sols \n";
+	reset_zeroed_prectuples();
+	delete tfound;
+	delete t_star;
 	return n;
 }
 
@@ -812,6 +830,12 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 		goodsols++;
 		cout << "Solution with cost " << lastmincost<<" : ";
 		print_arr(rn->messages[mindomain][minidx],numvars);
+		if(check_cost(rn->messages[mindomain][minidx],lastmincost))
+			cout<< "checked cost ok \n";
+		else
+			cout<< "COST ERROR \n";
+		memcpy(solutions[widx++],rn->messages[mindomain][minidx],numvars*sizeof(int));
+
 	}
 
 	//dealloca i bucket
@@ -834,7 +858,6 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 			n->messages.clear();
 	}
 
-	//TODO ritorna le soluzioni, scrivendo in solutions a partire da widx, alloca ogni volta array grande numvars
 	return goodsols;
 }
 

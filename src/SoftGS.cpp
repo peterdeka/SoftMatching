@@ -22,11 +22,6 @@ SoftGS::~SoftGS() {
 int SoftGS::test23(){
 	int maxprops=ceil((float)num_individuals*0.02f);
 	men[0]->init_next23_list(2,maxprops);
-	int i=men[0]->k_cheapest(maxprops,2,NULL);
-	if (i<1){
-		cout<<"*****NOT ENOUGH SOLUTIONS \n";
-					men[i]->debugTree("error23.gv");
-	}
 }
 
 bool SoftGS::test_soft_next(){

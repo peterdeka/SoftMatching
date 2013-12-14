@@ -58,8 +58,8 @@ class Male{
 	void fuzzy_to_weighted(int linearization,float opt, float pl);	//inserisce le informazioni per operare come WCSP
 
 	void merge_messages(int *m1, int *m2, int* dst);
-
-
+	bool check_cost(int *solution, float cost);		//testa che il costo calcolato da elim-m-opt sia corretto
+	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
 public:
 	CTree *prefTree;
 	int *myInstance;
@@ -76,7 +76,7 @@ public:
 	void debugTree(char* fname);
 	int compare(Female *f1, Female *f2);
 	void reset_zeroed_prectuples();
-	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
+
 	bool SOFT_next23(int linearization, int *nextinstance);	//ritorna true se ha trovato altre soluzioni, false altrimenti (lista finita)
 	void init_next23_list(int linearization, int cachedproposals);	//chiamare prima di usare next23
 };
