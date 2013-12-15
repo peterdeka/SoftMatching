@@ -706,12 +706,13 @@ bool Male::SOFT_next23(int linearization, int *nextinstance){
 		}
 		this->n23_last_returned_idx=0;
 		cached_solutions=(int**)malloc(this->n23_sols_num*2*sizeof(int*));
-		for(int i=0;i<this->n23_sols_num;i++)
+		for(int i=0;i<this->n23_sols_num*2;i++)
 				cached_solutions[i]=(int*)malloc(numvars*sizeof(int));
 		int r_sols=k_cheapest(2*this->n23_sols_num,linearization,cached_solutions);
 
 		if(r_sols<=this->n23_sols_num)
 			return false;
+		this->n23_sols_num=r_sols;
 	}
 
 	memcpy(nextinstance,cached_solutions[this->n23_last_returned_idx++],numvars*sizeof(int));
