@@ -59,9 +59,7 @@ class Male{
 
 	void merge_messages(int *m1, int *m2, int* dst);
 	bool check_cost(int *solution, float cost);		//testa che il costo calcolato da elim-m-opt sia corretto
-	int k_cheapest(int *lastsol,int k, int linearization, int **solutions);	//rossi-pini-venable
-	float instance_pref(int *inst);
-
+	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
 public:
 	CTree *prefTree;
 	int *myInstance;
@@ -79,8 +77,8 @@ public:
 	int compare(Female *f1, Female *f2);
 	void reset_zeroed_prectuples();
 
-	bool SOFT_next23(Female *lastf,int linearization, int *nextinstance,int nsols);	//ritorna true se ha trovato altre soluzioni, false altrimenti (lista finita)
-	void init_next23_list(int linearization);	//chiamare prima di usare next23
+	bool SOFT_next23(int linearization, int *nextinstance);	//ritorna true se ha trovato altre soluzioni, false altrimenti (lista finita)
+	void init_next23_list(int linearization, int cachedproposals);	//chiamare prima di usare next23
 };
 
 #endif /* MALE_H_ */

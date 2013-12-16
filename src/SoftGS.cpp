@@ -20,14 +20,16 @@ SoftGS::~SoftGS() {
 
 
 int SoftGS::test23(){
-
-	men[0]->init_next23_list(2);
+	int maxprops=ceil((float)num_individuals*0.02f);
+	men[0]->init_next23_list(2,maxprops);
 }
 
 void SoftGS::init_n23_solver(int linearization){
-
+	int maxprops=ceil((float)num_individuals*0.02f);
+	if(maxprops<10)
+		maxprops=10;
 	for(int i=0;i<num_individuals;i++)
-		men[i]->init_next23_list(linearization);
+		men[i]->init_next23_list(linearization,maxprops);
 }
 
 bool SoftGS::test_soft_next(){
@@ -114,10 +116,9 @@ bool SoftGS::test_soft_next(){
 
 
 
-int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization,int n_sols){
+int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization){
 	int nprops=0;
 	ofstream mydbg;
-
 	int *lastproposed=(int*)malloc(num_individuals*sizeof(int));	//tiene traccia dell'ultima donna a cui l'i-esimo uomo ha proposto
 	mydbg.open("softgs.txt");
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
@@ -141,7 +142,7 @@ int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization,int n_so
 				if(lastproposed[i]==-1)
 					proposeto=womencont->find_female_with_instance(curman->myOptInstance);
 				else{
-					if(!curman->SOFT_next23(women[lastproposed[i]],linearization,curinstance,n_sols))
+					if(!curman->SOFT_next23(linearization,curinstance))
 					{
 						cout<<"*********WARNING PROBLEM BECAME SMTI************\n";
 						exit(1);
