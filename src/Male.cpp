@@ -714,7 +714,11 @@ bool Male::SOFT_next23(Female * lastf,int linearization, int *nextinstance,int n
 		cached_solutions=(int**)malloc(nsols*sizeof(int*));
 		for(int i=0;i<nsols;i++)
 				cached_solutions[i]=(int*)malloc(numvars*sizeof(int));
-		int r_sols=k_cheapest(lastf->myInstance,nsols,linearization,cached_solutions);
+		int r_sols;
+		if(lastf==NULL)
+			r_sols=k_cheapest(NULL,nsols,linearization,cached_solutions);
+		else
+			r_sols=k_cheapest(lastf->myInstance,nsols,linearization,cached_solutions);
 
 		if(r_sols<1)
 			return false;
@@ -728,7 +732,11 @@ bool Male::SOFT_next23(Female * lastf,int linearization, int *nextinstance,int n
 
 //parte dalla tupla che genera l-utlima soluzione provata e cerca le soluzioni successive, elimina quelle fino all'ultima passata
 int Male::k_cheapest(int *lastsol,int k, int linearization, int **solutions){
-	float p_star=instance_pref(lastsol);//this->myOpt;
+	float p_star;
+	if(lastsol==NULL)
+		p_star=this->myOpt;
+	else
+		p_star=instance_pref(lastsol);//this->myOpt;
 	Tuple *t_star=new Tuple();
 	Tuple *tfound=new Tuple();
 	int n=0;
@@ -748,10 +756,14 @@ int Male::k_cheapest(int *lastsol,int k, int linearization, int **solutions){
 	zeroout_prectuples_with_pref(t_star, p_star);
 	//elimino soluzioni generate da questa tupla fino a lastsol (le avevo gia ritornate)
 	//lo faccio qui e non in elim-m-opt cosi riduco complessita
+	if(n==k)
+		cout<<"WARINIIIIIIIING!!!!\n";
+	if(lastsol!=NULL){
 	if(n<1){
 		cout<<"***********ERRORO i didnt find the sol!!";
 		exit(1);
 	}
+
 	for(int i=0;i<n;i++){
 		bool found=true;
 		for(int j=0;j<numvars;j++){
@@ -763,12 +775,14 @@ int Male::k_cheapest(int *lastsol,int k, int linearization, int **solutions){
 		if(found){
 			//sposto le successive e aggiorno conteggio
 			int nn=0;
-			for(int k=i+1;k<n;k++){
+			for(int k=i;k<n;k++){		//i+1
 				memcpy(solutions[nn++],solutions[k],numvars*sizeof(int));
 			}
+			cout<<"----"<<n-nn<<" sols deleted for i="<<i<<"\n";
 			n=nn;
 			break; //fine esco
 		}
+	}
 	}
 
 	float cpref=p_star;
@@ -856,16 +870,16 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 		lastmincost=rn->unaryBucket[mindomain][minidx];
 		rn->unaryBucket[mindomain][minidx]=3000;//non lo pesco piu
 		if(lastmincost>=1000){
-			cout << "Cost is over 1000. Go on. \n";
+		//	cout << "Cost is over 1000. Go on. \n";
 			break;
 		}
 		goodsols++;
-		cout << "Solution with cost " << lastmincost<<" : ";
-		print_arr(rn->messages[mindomain][minidx],numvars);
-		if(check_cost(rn->messages[mindomain][minidx],lastmincost))
+	//	cout << "Solution with cost " << lastmincost<<" : ";
+		//print_arr(rn->messages[mindomain][minidx],numvars);
+	/*	if(check_cost(rn->messages[mindomain][minidx],lastmincost))
 			cout<< "checked cost ok \n";
 		else
-			cout<< "COST ERROR \n";
+			cout<< "COST ERROR \n";*/
 		memcpy(solutions[widx++],rn->messages[mindomain][minidx],numvars*sizeof(int));
 
 	}
