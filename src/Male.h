@@ -12,6 +12,7 @@
 #include <fstream>
 #include <cstdlib>
 #include<cstring>
+#include <vector>
 #include<cmath>
 #define NEXT2 0;
 #define NEXT3 1;
@@ -33,8 +34,9 @@ class Male{
 	Tuple *zeroed_tuples_backup;		//tengo traccia delle tuple azzerate
 	float zeroed_pref;
 	int n23_last_returned_idx;
-	int n23_sols_num;
-	int **cached_solutions;
+	//int n23_sols_num;
+	//int **cached_solutions;
+	vector<int*> cached_solutions;
 	void buildTree(float tightness,int numvars,char **varDomains);
 	void adjustTightness(float tightness);
 	void make_DAC();
@@ -53,13 +55,13 @@ class Male{
 	void zeroout_tuple(Tuple *t);
 	void set_solution(int *instance);
 	void print_arr(int *inst,int length);
-	int elim_m_opt(int m, int **solutions, int widx ); //dechter m bucket elimination to get m opt from WCSP, assumes all unary are 0
+	int elim_m_opt(int m, vector<int*>* solutions, int widx ); //dechter m bucket elimination to get m opt from WCSP, assumes all unary are 0
 	void elim_m_opt_rec(CTreeNode *node,int m);
 	void fuzzy_to_weighted(int linearization,float opt, float pl);	//inserisce le informazioni per operare come WCSP
 
 	void merge_messages(int *m1, int *m2, int* dst);
 	bool check_cost(int *solution, float cost);		//testa che il costo calcolato da elim-m-opt sia corretto
-	int k_cheapest(int *lastsol,int k, int linearization, int **solutions);	//rossi-pini-venable
+	int k_cheapest(int *lastsol,int k, int linearization, vector<int*>* solutions);	//rossi-pini-venable
 	float instance_pref(int *inst);
 
 public:

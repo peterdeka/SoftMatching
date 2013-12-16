@@ -119,7 +119,7 @@ int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization,int n_so
 	ofstream mydbg;
 	Female *lastf;
 	int *lastproposed=(int*)malloc(num_individuals*sizeof(int));	//tiene traccia dell'ultima donna a cui l'i-esimo uomo ha proposto
-	mydbg.open("softgs23.txt");
+	//mydbg.open("softgs23.txt");
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
 	for(int i=0;i<num_individuals;i++){
 		matching[i]=-1;
@@ -153,13 +153,13 @@ int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization,int n_so
 					proposeto=womencont->find_female_with_instance(curinstance);//find_female_with_instance(curinstance);
 				//}
 				//#ifdef GS_DBG
-				mydbg << "m"<<i<<" ? w"<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
+			//	mydbg << "m"<<i<<" ? w"<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
 				//#endif
 				lastproposed[i]=proposeto;
 				nprops++;
 				if(femalematching[proposeto]==-1){	//free girl
 //#ifdef GS_DBG
-				mydbg <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
+				//mydbg <<"free girl: men " <<i<<" <- women "<<proposeto<<" \n";
 //#endif
 					matching[i]=proposeto;
 					femalematching[proposeto]=i;
@@ -169,7 +169,7 @@ int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization,int n_so
 					int ispreferred=curwoman->compare(curman,men[femalematching[proposeto]]);
 					if(ispreferred>0){
 //#ifdef GS_DBG
-						mydbg <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
+					//	mydbg <<"girl " <<proposeto<<" says goodbye to men "<<femalematching[proposeto]<<" for men "<< i<<" \n";
 //#endif
 						matching[femalematching[proposeto]]=-1;
 						femalematching[proposeto]=i;
@@ -187,7 +187,7 @@ int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization,int n_so
 			curman->reset_zeroed_prectuples();
 		}
 	}
-	mydbg.close();
+	//mydbg.close();
 	free(femalematching);
 	free(lastproposed);
 	return nprops;

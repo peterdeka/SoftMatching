@@ -17,8 +17,8 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	this->myOptInstance=(int*)malloc(numvars*sizeof(int));
 	this->n_zeroed_tuples=0;
 	this->n23_last_returned_idx=-1;
-	this->n23_sols_num=0;
-	this->cached_solutions=NULL;
+	//this->n23_sols_num=0;
+	//this->cached_solutions=NULL;
 	for(int i=0;i<numvars;i++)
 		this->myOptInstance[i]=-1;
 	memcpy(this->myInstance,instance,numvars*sizeof(int));
@@ -45,7 +45,7 @@ void Male::init_next23_list(int linearization){
 //		exit(1);
 //	}
 
-	this->n23_sols_num=0;
+	//this->n23_sols_num=0;
 	this->n23_last_returned_idx=0;
 
 }
@@ -63,11 +63,12 @@ Male::~Male() {
 		free(this->fixed_tuple_childconstr[i]);
 	}
 	free(this->fixed_tuple_childconstr);
-	if(cached_solutions!=NULL){
-		for(int i=0;i<this->n23_sols_num;i++)
+	//if(cached_solutions!=NULL){
+		for(int i=0;i<cached_solutions.size();i++)
 			free(cached_solutions[i]);
-		free(cached_solutions);
-	}
+		//free(cached_solutions);
+		cached_solutions.clear();
+	//}
 	//TODO
 }
 
@@ -703,26 +704,27 @@ bool Male::check_cost(int *solution, float cost){
 
 bool Male::SOFT_next23(Female * lastf,int linearization, int *nextinstance,int nsols){
 	//finite le soluzioni?
-	if(this->n23_last_returned_idx>=this->n23_sols_num){
-		cout << "not enough solutions, KCHEAP moving to next block of "<<nsols<<"sols \n";
-		if(cached_solutions!=NULL){
-			for(int i=0;i<this->n23_sols_num;i++)
-				free(cached_solutions[i]);
-			free(cached_solutions);
-		}
+	if(this->n23_last_returned_idx>=cached_solutions.size()){
+		//cout << "not enough solutions, KCHEAP moving to next block of "<<nsols<<"sols \n";
+		//if(cached_solutions!=NULL){
+		for(int i=0;i<cached_solutions.size();i++)
+			free(cached_solutions[i]);
+		//free(cached_solutions);
+		cached_solutions.clear();
+		//}
 		this->n23_last_returned_idx=0;
-		cached_solutions=(int**)malloc(nsols*sizeof(int*));
-		for(int i=0;i<nsols;i++)
-				cached_solutions[i]=(int*)malloc(numvars*sizeof(int));
+		//cached_solutions=(int**)malloc(nsols*sizeof(int*));
+		//for(int i=0;i<nsols;i++)
+		//	cached_solutions[i]=(int*)malloc(numvars*sizeof(int));
 		int r_sols;
 		if(lastf==NULL)
-			r_sols=k_cheapest(NULL,nsols,linearization,cached_solutions);
+			r_sols=k_cheapest(NULL,nsols,linearization,&cached_solutions);
 		else
-			r_sols=k_cheapest(lastf->myInstance,nsols,linearization,cached_solutions);
+			r_sols=k_cheapest(lastf->myInstance,nsols,linearization,&cached_solutions);
 
 		if(r_sols<1)
 			return false;
-		this->n23_sols_num=r_sols;	//kcheap potrebbe ritornare + o - soluzioni
+		//this->n23_sols_num=r_sols;	//kcheap potrebbe ritornare + o - soluzioni
 	}
 
 	memcpy(nextinstance,cached_solutions[this->n23_last_returned_idx++],numvars*sizeof(int));
@@ -730,18 +732,19 @@ bool Male::SOFT_next23(Female * lastf,int linearization, int *nextinstance,int n
 }
 
 
-//parte dalla tupla che genera l-utlima soluzione provata e cerca le soluzioni successive, elimina quelle fino all'ultima passata
-int Male::k_cheapest(int *lastsol,int k, int linearization, int **solutions){
-	float p_star;
-	if(lastsol==NULL)
-		p_star=this->myOpt;
-	else
-		p_star=instance_pref(lastsol);//this->myOpt;
+//parte dalla tupla che genera l-ultima soluzione provata e cerca le soluzioni successive (generate da tupla successiva)
+//elim-m-opt ritornera sempre tuttle le soluzioni generate dalla tupla(e) anche se sono di piu di k
+int Male::k_cheapest(int *lastsol,int k, int linearization, vector<int*>* solutions){
 	Tuple *t_star=new Tuple();
 	Tuple *tfound=new Tuple();
-	int n=0;
+	float p_star;
 	int *nextsol=(int*)malloc(numvars*sizeof(int));
-	if(!find_first_tuple_with_pref(lastsol,p_star,t_star))
+	int n=0;
+	if(lastsol==NULL){		//prima chiamata, gestisce ricerca delle soluzioni ottime
+		p_star=this->myOpt;
+	//else
+		//p_star=instance_pref(lastsol);//this->myOpt;
+	if(!find_first_tuple_with_pref(NULL,p_star,t_star))
 	{
 		cout<<"***SORRY***";
 		exit(-1);
@@ -754,44 +757,23 @@ int Male::k_cheapest(int *lastsol,int k, int linearization, int **solutions){
 	}
 	unfix(t_star);
 	zeroout_prectuples_with_pref(t_star, p_star);
-	//elimino soluzioni generate da questa tupla fino a lastsol (le avevo gia ritornate)
-	//lo faccio qui e non in elim-m-opt cosi riduco complessita
-	if(n==k)
-		cout<<"WARINIIIIIIIING!!!!\n";
-	if(lastsol!=NULL){
-	if(n<1){
-		cout<<"***********ERRORO i didnt find the sol!!";
-		exit(1);
 	}
-
-	for(int i=0;i<n;i++){
-		bool found=true;
-		for(int j=0;j<numvars;j++){
-			if(solutions[i][j]!=lastsol[j]){
-				found=false;
-				break;
-			}
+	else{		//caso generico non opt
+		p_star=instance_pref(lastsol);
+		if(!find_first_tuple_with_pref(lastsol,p_star,t_star)){
+			cout<<"***SORRY***";
+			exit(-1);
 		}
-		if(found){
-			//sposto le successive e aggiorno conteggio
-			int nn=0;
-			for(int k=i;k<n;k++){		//i+1
-				memcpy(solutions[nn++],solutions[k],numvars*sizeof(int));
-			}
-			cout<<"----"<<n-nn<<" sols deleted for i="<<i<<"\n";
-			n=nn;
-			break; //fine esco
-		}
-	}
+		zeroout_prectuples_with_pref(t_star, p_star);
 	}
 
 	float cpref=p_star;
 	float tmppref=p_star;
 	while(n<k){
 		if(!next_tuple_with_pref(*t_star, tfound, cpref)){		//finite tuple con preferenza cpref, scendo
-			cout<<"*NO MORE tuples with pref "<<cpref<<"\n";
+			//cout<<"*NO MORE tuples with pref "<<cpref<<"\n";
 			tmppref=find_next_pref_level(cpref);
-			cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
+			//cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
 			if(tmppref<=0){
 				break;		//non si scende piu di preferenza, finite le soluzioni
 			}
@@ -813,15 +795,15 @@ int Male::k_cheapest(int *lastsol,int k, int linearization, int **solutions){
 		tfound=tmp;
 	}
 
-	cout << "kcheap returning " << n<<" out of "<<k<<" requested sols \n";
+	//cout << "kcheap returning " << solutions->size()<<" out of "<<k<<" requested sols \n";
 	reset_zeroed_prectuples();
 	delete tfound;
 	delete t_star;
 	return n;
 }
 
-
-int Male::elim_m_opt(int m, int **solutions,int widx ){
+//m non importa, ritorna tutte le soluzioni generate dalla tupla fissata in questo momento
+int Male::elim_m_opt(int m, vector<int*>* solutions,int widx ){
 	CTreeNode * n;
 	//inizializza i bucket
 	for(int i=0;i<prefTree->n_nodes;i++){
@@ -852,7 +834,8 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 
 	CTreeNode *rn=prefTree->root;
 	int bucksz=rn->unaryBucket[0].size();
-	int nsols=min(m,domains_size*bucksz);
+	//int nsols=min(m,domains_size*bucksz);
+	int nsols=domains_size*bucksz;
 	int goodsols=0;
 	for(int mi=0;mi<nsols;mi++){
 		float mincost=1000;
@@ -880,7 +863,9 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 			cout<< "checked cost ok \n";
 		else
 			cout<< "COST ERROR \n";*/
-		memcpy(solutions[widx++],rn->messages[mindomain][minidx],numvars*sizeof(int));
+		int *t=(int*)malloc(numvars*sizeof(int));
+		memcpy(t,rn->messages[mindomain][minidx],numvars*sizeof(int));
+		solutions->push_back(t);
 
 	}
 
@@ -909,6 +894,7 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 
 
 //assume tutti i vincoli unari siano a zero, TODO optimize by sorting buckets and using modified combination operator
+//ignora m, ritorna tutte le soluzioni generate da questa tupla
 void Male::elim_m_opt_rec(CTreeNode *node,int m){
 	if(node->child_n<1)
 		return;
@@ -942,7 +928,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			//int nbuck=node->unaryBucket[i].size();
 			node->unaryBucket[i].clear();
 			//MARGINALIZATION prendo da tmp gli m min per j e i loro messages
-			if(tidx<=m){
+			//if(tidx<=m){
 				for(int k=0;k<tidx;k++){
 					int *dstm=(int*)malloc(numvars*sizeof(int));
 					node->unaryBucket[i].push_back(tmp[k]);
@@ -962,8 +948,8 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 				}
 
 				//node->n_in_bucket=tidx;
-			}
-			else{
+			//}
+	/*		else{
 
 				for(int p=0;p<m;p++){
 					int minidx=0;
@@ -985,7 +971,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 				}
 				//node->n_in_bucket=m;
 
-			}
+			}*/
 			//vado ora a sostituire l'array di messaggi per il valore di dominio i
 			for(unsigned b=0;b<node->messages[i].size();b++){
 				free(node->messages[i][b]);
