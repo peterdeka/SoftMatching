@@ -30,13 +30,16 @@ int main() {
 	Profiler *prof=new Profiler();
 	cout<<"problem generated "<<p->numvars<<" vars "<<"with "<<p->domsz<<" domain\n";
 	char fname[255];
-	sprintf(fname,"output_dsz%d_nvars%d",p->domsz,p->numvars);
+	sprintf(fname,"output_dsz%d_nvars%d_23",p->domsz,p->numvars);
 	ofstream myfile;
 	myfile.open (fname);
-	myfile<<"t_Soft, t_classic_next, props_Soft, props_classic_next\n";
+	//myfile<<"t_Soft, t_classic_next, props_Soft, props_classic_next\n";
+	myfile<<"t_Soft23, props_Soft23\n";
 	timespec tm0,tm1;
 
 	for(int j=0;j<5;j++){
+		delete p;
+				p= new SM_problem();
 	prof->start();
 	bool stable=true;
 	int nprops23=p->solve_with_next23();
@@ -48,6 +51,7 @@ int main() {
 				cout<< "SOFTGS_n32 Sorry solution not weak stable\n";
 			}
 	cout << "soft: "<<tm0.tv_sec<<"s "<<tm0.tv_nsec<<"nsec "<<nprops23<<" proposals\n";
+	myfile << tm0.tv_sec+tm0.tv_nsec/1000000000.0<< ", "<<nprops23<<"\n";
 	}
 	/*for(int j=0;j<5;j++){
 		delete p;

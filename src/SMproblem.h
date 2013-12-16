@@ -15,8 +15,8 @@
 #include "ClassicGSNext.h"
 
 
-#define NUM_INDIVIDUALS  1024
-#define NUMVARS 10//numero variabili (quindi nodi dell'albero)
+#define NUM_INDIVIDUALS  8192
+#define NUMVARS 13//numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 #define WOMEN_CONNECTEDNESS 0.5
 #define MALE_TIGHTNESS 0.1	//percentuale di binary constraint NON nulli

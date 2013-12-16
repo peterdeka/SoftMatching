@@ -698,7 +698,7 @@ bool Male::check_cost(int *solution, float cost){
 bool Male::SOFT_next23(int linearization, int *nextinstance){
 	//finite le soluzioni?
 	if(this->n23_last_returned_idx>=this->n23_sols_num){
-		cout << "not enough solutions, KCHEAP increasing to "<<this->n23_sols_num*2<<"\n";
+		//cout << "not enough solutions, KCHEAP increasing to "<<this->n23_sols_num*2<<"\n";
 		if(cached_solutions!=NULL){
 			for(int i=0;i<this->n23_sols_num;i++)
 				free(cached_solutions[i]);
@@ -744,9 +744,9 @@ int Male::k_cheapest(int k, int linearization, int **solutions){
 	float tmppref=p_star;
 	while(n<k){
 		if(!next_tuple_with_pref(*t_star, tfound, cpref)){		//finite tuple con preferenza cpref, scendo
-			cout<<"*NO MORE tuples with pref "<<cpref<<"\n";
+	//		cout<<"*NO MORE tuples with pref "<<cpref<<"\n";
 			tmppref=find_next_pref_level(cpref);
-			cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
+		//	cout << "NEXT PREF LEVEL:"<<tmppref<<"\n";
 			if(tmppref<=0){
 				break;		//non si scende piu di preferenza, finite le soluzioni
 			}
@@ -768,7 +768,7 @@ int Male::k_cheapest(int k, int linearization, int **solutions){
 		tfound=tmp;
 	}
 
-	cout << "kcheap returning " << n<<" out of "<<k<<" requested sols \n";
+//	cout << "kcheap returning " << n<<" out of "<<k<<" requested sols \n";
 	reset_zeroed_prectuples();
 	delete tfound;
 	delete t_star;
@@ -825,16 +825,16 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 		lastmincost=rn->unaryBucket[mindomain][minidx];
 		rn->unaryBucket[mindomain][minidx]=3000;//non lo pesco piu
 		if(lastmincost>=1000){
-			cout << "Cost is over 1000. Go on. \n";
+	//		cout << "Cost is over 1000. Go on. \n";
 			break;
 		}
 		goodsols++;
-		cout << "Solution with cost " << lastmincost<<" : ";
-		print_arr(rn->messages[mindomain][minidx],numvars);
-		if(check_cost(rn->messages[mindomain][minidx],lastmincost))
+		//cout << "Solution with cost " << lastmincost<<" : ";
+		//print_arr(rn->messages[mindomain][minidx],numvars);
+		/*if(check_cost(rn->messages[mindomain][minidx],lastmincost))
 			cout<< "checked cost ok \n";
 		else
-			cout<< "COST ERROR \n";
+			cout<< "COST ERROR \n";*/
 		memcpy(solutions[widx++],rn->messages[mindomain][minidx],numvars*sizeof(int));
 
 	}
