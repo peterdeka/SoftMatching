@@ -117,9 +117,9 @@ bool SoftGS::test_soft_next(){
 int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization,int n_sols){
 	int nprops=0;
 	ofstream mydbg;
-	Female *lastf;
+
 	int *lastproposed=(int*)malloc(num_individuals*sizeof(int));	//tiene traccia dell'ultima donna a cui l'i-esimo uomo ha proposto
-	mydbg.open("softgs23.txt");
+	mydbg.open("softgs.txt");
 	int *femalematching=(int*)malloc(num_individuals*sizeof(int)); //temp per gestire velocemente
 	for(int i=0;i<num_individuals;i++){
 		matching[i]=-1;
@@ -139,19 +139,16 @@ int SoftGS::gale_shapley_men_opt_next23(int *matching,int linearization,int n_so
 			while(matching[i]==-1){	//se free
 				singles=true;
 				if(lastproposed[i]==-1)
-					//proposeto=womencont->find_female_with_instance(curman->myOptInstance);
-					lastf=NULL;
-				else
-					lastf=women[lastproposed[i]];
-				//else{
-					if(!curman->SOFT_next23(lastf,linearization,curinstance,n_sols))
+					proposeto=womencont->find_female_with_instance(curman->myOptInstance);
+				else{
+					if(!curman->SOFT_next23(women[lastproposed[i]],linearization,curinstance,n_sols))
 					{
 						cout<<"*********WARNING PROBLEM BECAME SMTI************\n";
 						exit(1);
 					}
 					//cout<<"NEXT\n";
 					proposeto=womencont->find_female_with_instance(curinstance);//find_female_with_instance(curinstance);
-				//}
+				}
 				//#ifdef GS_DBG
 				mydbg << "m"<<i<<" ? w"<<proposeto<<" with pref "<<curman->pref(women[proposeto])<<"\n";
 				//#endif
