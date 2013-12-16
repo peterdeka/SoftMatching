@@ -25,11 +25,12 @@ int SoftGS::test23(){
 }
 
 void SoftGS::init_n23_solver(int linearization){
-	int maxprops=ceil((float)num_individuals*0.02f);
+	int maxprops=ceil((float)num_individuals*0.06f);
 	if(maxprops<10)
 		maxprops=10;
 	for(int i=0;i<num_individuals;i++)
 		men[i]->init_next23_list(linearization,maxprops);
+	cout <<"23 lists built \n";
 }
 
 bool SoftGS::test_soft_next(){
@@ -112,7 +113,6 @@ bool SoftGS::test_soft_next(){
 	}
 	return true;
 }
-
 
 
 

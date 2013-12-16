@@ -991,7 +991,7 @@ void Male::fuzzy_to_weighted(int linearization, float opt,float pl){
 						if(linearization==2)
 							n->weightedChildConstr[j][h][g]=1.0f;
 						else
-							n->weightedChildConstr[j][h][g]=cp-opt;
+							n->weightedChildConstr[j][h][g]=opt-cp;
 					}
 					//cout << "W "<<n->weightedChildConstr[j][h][g]<<"\n";
 				}
