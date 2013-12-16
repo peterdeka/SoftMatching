@@ -160,7 +160,10 @@ int SM_problem::solve_with_classicGSNext(){
 int SM_problem::solve_with_next23(){
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
 	softgs.init_n23_solver(2);
-	int nprops=softgs.gale_shapley_men_opt_next23(this->men_matches,2);
+	int maxprops=ceil((float)NUM_INDIVIDUALS*0.02f);
+		if(maxprops<10)
+			maxprops=NUM_INDIVIDUALS;
+	int nprops=softgs.gale_shapley_men_opt_next23(this->men_matches,2,maxprops);
 	//TODO softgs.dealloc_n23_solver
 	return nprops;
 }
