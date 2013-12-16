@@ -36,7 +36,7 @@ int main() {
 	myfile<<"t_Soft, t_classic_next, props_Soft, props_classic_next\n";
 	timespec tm0,tm1;
 
-//	for(int j=0;j<5;j++){
+	for(int j=0;j<5;j++){
 	prof->start();
 	bool stable=true;
 	int nprops23=p->solve_with_next23();
@@ -48,7 +48,7 @@ int main() {
 				cout<< "SOFTGS_n32 Sorry solution not weak stable\n";
 			}
 	cout << "soft: "<<tm0.tv_sec<<"s "<<tm0.tv_nsec<<"nsec "<<nprops23<<" proposals\n";
-	//}
+	}
 	/*for(int j=0;j<5;j++){
 		delete p;
 		p= new SM_problem();
