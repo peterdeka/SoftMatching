@@ -23,6 +23,13 @@ class Male{
 		        int child_idx;
 		        int idx_in_bintbl[2];
 		    };
+	//struttura di servizio per elim-m-opt
+	struct BuckPos {
+	        unsigned cdom_pos;	//position in child domain
+	        unsigned cbuck_pos;	//position in child bucket
+	        unsigned fbuck_pos;	//position in father bucket
+
+	    };
 
 
 	int domains_size;

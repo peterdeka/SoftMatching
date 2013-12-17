@@ -27,23 +27,23 @@ Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *
 	for(int i=0;i<domains_size;i++)
 		this->fixed_tuple_childconstr[i]=(float*)malloc(sizeof(float)*domains_size);
 	buildTree(tightness,numvars,varDomains);
-		this->make_DAC();
-		this->myOpt=this->DAC_opt(this->myOptInstance);
+	this->make_DAC();
+	this->myOpt=this->DAC_opt(this->myOptInstance);
 
 }
 
 
 void Male::init_next23_list(int linearization){
 	prefTree->alloc_weighted_tables();
-//	cached_solutions=(int**)malloc(cachedproposals*sizeof(int*));
-//	for(int i=0;i<cachedproposals;i++)
-//		cached_solutions[i]=(int*)malloc(numvars*sizeof(int));
+	//	cached_solutions=(int**)malloc(cachedproposals*sizeof(int*));
+	//	for(int i=0;i<cachedproposals;i++)
+	//		cached_solutions[i]=(int*)malloc(numvars*sizeof(int));
 	//this->n23_sols_num=this->k_cheapest(cachedproposals,linearization,cached_solutions);
-//	if(this->n23_sols_num<1){
-//		cout << "Error building next23_list - no solutions returned by kcheapest\n";
-//		free(cached_solutions);
-//		exit(1);
-//	}
+	//	if(this->n23_sols_num<1){
+	//		cout << "Error building next23_list - no solutions returned by kcheapest\n";
+	//		free(cached_solutions);
+	//		exit(1);
+	//	}
 
 	//this->n23_sols_num=0;
 	this->n23_last_returned_idx=0;
@@ -64,10 +64,10 @@ Male::~Male() {
 	}
 	free(this->fixed_tuple_childconstr);
 	//if(cached_solutions!=NULL){
-		for(int i=0;i<cached_solutions.size();i++)
-			free(cached_solutions[i]);
-		//free(cached_solutions);
-		cached_solutions.clear();
+	for(int i=0;i<cached_solutions.size();i++)
+		free(cached_solutions[i]);
+	//free(cached_solutions);
+	cached_solutions.clear();
 	//}
 	//TODO
 }
@@ -217,9 +217,9 @@ float Male::DAC_opt(int *opt_instance){
 		unfix(newt);
 		//cout<<"TOPT "<<prefTree->linearizedTree[newt->var_idx]->childConstraints[newt->child_idx][newt->idx_in_bintbl[0]][newt->idx_in_bintbl[1]]<<"\n";
 		if(!optfound){
-		Tuple *t=newt;
-		newt=oldt;
-		oldt=t;
+			Tuple *t=newt;
+			newt=oldt;
+			oldt=t;
 		}
 
 	}while(!optfound && next_tuple_with_pref(*oldt,newt,maxPref));
@@ -239,37 +239,37 @@ float Male::pref(Female *f){
 float Male::instance_pref(int *inst){
 	float pref=10.0f;
 	set_solution(inst);
-		for(int i=0;i<prefTree->n_nodes;i++){
-			CTreeNode *curnode=prefTree->linearizedTree[i];
-			pref=min(pref,curnode->dacUnaryConstraints[curnode->value]);
-			for(int k=0;k<curnode->child_n;k++){
-				CTreeNode* curchild=curnode->children[k];
-				pref=min(pref,curnode->childConstraints[k][curnode->value][curchild->value]);
+	for(int i=0;i<prefTree->n_nodes;i++){
+		CTreeNode *curnode=prefTree->linearizedTree[i];
+		pref=min(pref,curnode->dacUnaryConstraints[curnode->value]);
+		for(int k=0;k<curnode->child_n;k++){
+			CTreeNode* curchild=curnode->children[k];
+			pref=min(pref,curnode->childConstraints[k][curnode->value][curchild->value]);
 			//	cout<<"CHECK "<<curnode->childConstraints[k][curnode->value][curchild->value]<<"\n";
-			}
 		}
+	}
 	//	cout<<"***END PREF****\n";
-		return pref;
+	return pref;
 }
 
 void Male::fix(Tuple *fixtuple){
 
-		if(fixtuple!=NULL){
-			//salvo puntatore a tavola originale non fixata
-			fixedtuple_backup=prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx];
-			//fixo tavola di servizio di quest'uomo
-			for(int i=0;i<domains_size;i++){
-				for(int k=0;k<domains_size;k++){
-					if(fixtuple->idx_in_bintbl[0]==i && fixtuple->idx_in_bintbl[1]==k)
-						this->fixed_tuple_childconstr[i][k]=prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx][fixtuple->idx_in_bintbl[0]][fixtuple->idx_in_bintbl[1]];
-					else
-						this->fixed_tuple_childconstr[i][k]=0;
-				}
+	if(fixtuple!=NULL){
+		//salvo puntatore a tavola originale non fixata
+		fixedtuple_backup=prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx];
+		//fixo tavola di servizio di quest'uomo
+		for(int i=0;i<domains_size;i++){
+			for(int k=0;k<domains_size;k++){
+				if(fixtuple->idx_in_bintbl[0]==i && fixtuple->idx_in_bintbl[1]==k)
+					this->fixed_tuple_childconstr[i][k]=prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx][fixtuple->idx_in_bintbl[0]][fixtuple->idx_in_bintbl[1]];
+				else
+					this->fixed_tuple_childconstr[i][k]=0;
 			}
-			//swappo i puntatori
-			this->prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx]=this->fixed_tuple_childconstr;
-			this->prefTree->linearizedTree[fixtuple->var_idx]->children[fixtuple->child_idx]->fatherConstraints=this->fixed_tuple_childconstr;
 		}
+		//swappo i puntatori
+		this->prefTree->linearizedTree[fixtuple->var_idx]->childConstraints[fixtuple->child_idx]=this->fixed_tuple_childconstr;
+		this->prefTree->linearizedTree[fixtuple->var_idx]->children[fixtuple->child_idx]->fatherConstraints=this->fixed_tuple_childconstr;
+	}
 }
 
 
@@ -404,7 +404,7 @@ bool Male::CSP_solve_arc_consist(CTreeNode *node, float cutval){
 	for(int i=0;i<domains_size;i++){
 		//trovo un valore che va bene con mio padre
 		if(node->dacUnaryConstraints[i]>=cutval && node->fatherConstraints[fatherval][i]>=cutval){
-		//	cout<< "CSPNEXT-arcconsist found consistent value "<<node->domain[i]<<" for node "<<node->varId<<"\n";
+			//	cout<< "CSPNEXT-arcconsist found consistent value "<<node->domain[i]<<" for node "<<node->varId<<"\n";
 			node->value=i;
 			//propago nei figli
 			bool found=true;
@@ -567,27 +567,27 @@ void Male::zeroout_prectuples_with_pref(Tuple *t_star,float pref){
 	for(int i=t_star->var_idx ;i>-1;i--){
 		CTreeNode *curnode=prefTree->linearizedTree[i];
 		if(i<t_star->var_idx){
-				ji=curnode->child_n-1;
-				ki=domains_size-1;
-				hi=domains_size-1;
-			}
-			for(int j=ji;j>-1;j--){
-				for(int k=ki;k>-1;k--){
-					for(int h=hi;h>-1;h--){
-						if(curnode->childConstraints[j][k][h]==pref){
-							zeroed_tuples_backup[n_zeroed_tuples].var_idx=i;
-							zeroed_tuples_backup[n_zeroed_tuples].child_idx=j;
-							zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[0]=k;
-							zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[1]=h;
-							n_zeroed_tuples++;
-							curnode->childConstraints[j][k][h]=0;
-							curnode->children[j]->fatherConstraints[k][h]=0;
-							//cout<<"zeroed "<<i<<"."<<j<<"."<<k<<"\n";
-						}
+			ji=curnode->child_n-1;
+			ki=domains_size-1;
+			hi=domains_size-1;
+		}
+		for(int j=ji;j>-1;j--){
+			for(int k=ki;k>-1;k--){
+				for(int h=hi;h>-1;h--){
+					if(curnode->childConstraints[j][k][h]==pref){
+						zeroed_tuples_backup[n_zeroed_tuples].var_idx=i;
+						zeroed_tuples_backup[n_zeroed_tuples].child_idx=j;
+						zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[0]=k;
+						zeroed_tuples_backup[n_zeroed_tuples].idx_in_bintbl[1]=h;
+						n_zeroed_tuples++;
+						curnode->childConstraints[j][k][h]=0;
+						curnode->children[j]->fatherConstraints[k][h]=0;
+						//cout<<"zeroed "<<i<<"."<<j<<"."<<k<<"\n";
 					}
 				}
 			}
 		}
+	}
 }
 
 void Male::reset_zeroed_prectuples(){
@@ -606,12 +606,12 @@ void Male::reset_zeroed_prectuples(){
 
 void Male::debugTree(char* fname){
 	string st;
-		char rootcall=1;
-				prefTree->root->DOTSubtree(&st,&rootcall,domains_size);
-				ofstream myfile;
-			myfile.open (fname);
-			myfile << st;
-			myfile.close();
+	char rootcall=1;
+	prefTree->root->DOTSubtree(&st,&rootcall,domains_size);
+	ofstream myfile;
+	myfile.open (fname);
+	myfile << st;
+	myfile.close();
 }
 
 //salvagnini - rossi
@@ -666,7 +666,7 @@ bool Male::SOFT_next(Female *curfemale,int *nextsol){
 		if(candpref==tmppref)
 		{
 			//if(prefTree->linearizedTree[tfound->var_idx]->children[tfound->child_idx]->value!=tfound->idx_in_bintbl[1] && prefTree->linearizedTree[tfound->var_idx]->value!=tfound->idx_in_bintbl[0])
-				//cout << "****NOT NICE, solution doesnt come from correct tuple\n";
+			//cout << "****NOT NICE, solution doesnt come from correct tuple\n";
 			//reset_zeroed_prectuples();
 			delete tfound;
 			delete t_star;
@@ -742,21 +742,20 @@ int Male::k_cheapest(int *lastsol,int k, int linearization, vector<int*>* soluti
 	int n=0;
 	if(lastsol==NULL){		//prima chiamata, gestisce ricerca delle soluzioni ottime
 		p_star=this->myOpt;
-	//else
-		//p_star=instance_pref(lastsol);//this->myOpt;
-	if(!find_first_tuple_with_pref(NULL,p_star,t_star))
-	{
-		cout<<"***SORRY***";
-		exit(-1);
-	}
-	fix(t_star);
-	float candpref=CSP_solve(p_star, nextsol);
-	if(candpref==p_star){
-		fuzzy_to_weighted(linearization,p_star,p_star);
-		n= elim_m_opt(k,solutions,0);
-	}
-	unfix(t_star);
-	zeroout_prectuples_with_pref(t_star, p_star);
+
+		if(!find_first_tuple_with_pref(NULL,p_star,t_star))
+		{
+			cout<<"***SORRY***";
+			exit(-1);
+		}
+		fix(t_star);
+		float candpref=CSP_solve(p_star, nextsol);
+		if(candpref==p_star){
+			fuzzy_to_weighted(linearization,p_star,p_star);
+			n= elim_m_opt(k,solutions,0);
+		}
+		unfix(t_star);
+		zeroout_prectuples_with_pref(t_star, p_star);
 	}
 	else{		//caso generico non opt
 		p_star=instance_pref(lastsol);
@@ -816,7 +815,7 @@ int Male::elim_m_opt(int m, vector<int*>* solutions,int widx ){
 			//inizializza i bucket per i messaggi con le soluzioni parziali
 			int* msg=(int*)malloc(this->numvars*sizeof(int));
 			for(int p=0;p<this->numvars;p++){
-					//n->messages[j][k][p]=-1;
+				//n->messages[j][k][p]=-1;
 				if(p==i)
 					msg[p]=j;
 				else
@@ -853,13 +852,13 @@ int Male::elim_m_opt(int m, vector<int*>* solutions,int widx ){
 		lastmincost=rn->unaryBucket[mindomain][minidx];
 		rn->unaryBucket[mindomain][minidx]=3000;//non lo pesco piu
 		if(lastmincost>=1000){
-		//	cout << "Cost is over 1000. Go on. \n";
+			//	cout << "Cost is over 1000. Go on. \n";
 			break;
 		}
 		goodsols++;
-	//	cout << "Solution with cost " << lastmincost<<" : ";
+		//	cout << "Solution with cost " << lastmincost<<" : ";
 		//print_arr(rn->messages[mindomain][minidx],numvars);
-	/*	if(check_cost(rn->messages[mindomain][minidx],lastmincost))
+		/*	if(check_cost(rn->messages[mindomain][minidx],lastmincost))
 			cout<< "checked cost ok \n";
 		else
 			cout<< "COST ERROR \n";*/
@@ -871,22 +870,22 @@ int Male::elim_m_opt(int m, vector<int*>* solutions,int widx ){
 
 	//dealloca i bucket
 	for(int i=0;i<prefTree->n_nodes;i++){
-			n=prefTree->linearizedTree[i];
-//			for(int j=0;j<domains_size;j++){
-//				free(n->unaryBucket[j]);
-//				for(int k;k<n->n_in_bucket;k++)
-//					free(n->messages[j][k]);
-//				free(n->messages[j]);
-//			}
-//			free(n->messages);
-//			free(n->unaryBucket);
-			n->unaryBucket.clear();
-			for(unsigned j=0;j<n->messages.size();j++){
-				for(unsigned k=0;k<n->messages[j].size();k++){
-					free(n->messages[j][k]);
-				}
+		n=prefTree->linearizedTree[i];
+		//			for(int j=0;j<domains_size;j++){
+		//				free(n->unaryBucket[j]);
+		//				for(int k;k<n->n_in_bucket;k++)
+		//					free(n->messages[j][k]);
+		//				free(n->messages[j]);
+		//			}
+		//			free(n->messages);
+		//			free(n->unaryBucket);
+		n->unaryBucket.clear();
+		for(unsigned j=0;j<n->messages.size();j++){
+			for(unsigned k=0;k<n->messages[j].size();k++){
+				free(n->messages[j][k]);
 			}
-			n->messages.clear();
+		}
+		n->messages.clear();
 	}
 
 	return goodsols;
@@ -912,16 +911,28 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 
 		for(int i=0;i<domains_size;i++){	//dominio padre
 			//array che contiene temporaneamente tutti i valori per una variabile padre,di cui prenderemo poi gli m minimi
-			float *tmp=(float*)malloc(domains_size*node->unaryBucket[i].size()*nd->unaryBucket[0].size()*sizeof(float));
-			int tidx=0;
+			//float *tmp=(float*)malloc(domains_size*node->unaryBucket[i].size()*nd->unaryBucket[0].size()*sizeof(float));
+			vector<float> tmp;
+			vector<BuckPos*> tmppos;
+
 			//array che contiene il messaggio fuso temporaneo per questo valore del dominio
 			vector<int*> tmpmessage;
 			for (unsigned b = 0; b < node->unaryBucket[i].size(); b++) {
-				for(int j=0;j<domains_size;j++){	//dominio figlio
+				for(unsigned j=0;j<domains_size;j++){	//dominio figlio
 
 					for(unsigned t=0;t<nd->unaryBucket[j].size();t++){	//per tutti i valori nel bucket del figlio per la variabile j
-						tmp[tidx++]=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
-						//cout<<node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b] <<" \n";
+						//tmp[tidx++]=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
+						float v=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
+						if(v<1000.0f){	//skippo non fattibili
+							tmp.push_back(v);	//salvo costo
+							// salvo coordinate
+							BuckPos *bp=(BuckPos*)malloc(sizeof(BuckPos));
+							bp->cbuck_pos=t;
+							bp->cdom_pos=j;
+							bp->fbuck_pos=b;
+							tmppos.push_back(bp);
+						}
+
 					}
 				}
 			}
@@ -929,27 +940,26 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			node->unaryBucket[i].clear();
 			//MARGINALIZATION prendo da tmp gli m min per j e i loro messages
 			//if(tidx<=m){
-				for(int k=0;k<tidx;k++){
-					int *dstm=(int*)malloc(numvars*sizeof(int));
-					node->unaryBucket[i].push_back(tmp[k]);
-					//messaggi
+			for(unsigned k=0;k<tmp.size();k++){
+				int *dstm=(int*)malloc(numvars*sizeof(int));
+				float a =tmp[k];
+				node->unaryBucket[i].push_back(tmp[k]);
+				//messaggi
+				BuckPos *bp=tmppos[k];
 
-					int cdom_pos=floor((float)(k%(nd->unaryBucket[0].size()*nd->domains_sz))/(float)nd->unaryBucket[0].size());
-					int fbuck_pos=floor((float)k/((float)nd->unaryBucket[cdom_pos].size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
-					int cbuck_pos=k%nd->unaryBucket[cdom_pos].size();
-					// tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
-					//quello del nodo altrimenti perdi in corsa i valori
-					//cout << fbuck_pos<< " < " <<node->messages[i].size()<<"\n";
-					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],dstm);//fbuckpos o k?
-					// aggiunta valore variabile proiettata al messaggio
-					dstm[nd->varId]=cdom_pos;
-					tmpmessage.push_back(dstm);
-					//print_arr(tmpmessage[k],numvars);
-				}
+				// tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
+				//quello del nodo altrimenti perdi in corsa i valori
+				//cout << fbuck_pos<< " < " <<node->messages[i].size()<<"\n";
+				merge_messages(node->messages[i][bp->fbuck_pos],nd->messages[bp->cdom_pos][bp->cbuck_pos],dstm);//fbuckpos o k?
+				// aggiunta valore variabile proiettata al messaggio
+				dstm[nd->varId]=bp->cdom_pos;
+				tmpmessage.push_back(dstm);
+				//print_arr(tmpmessage[k],numvars);
+			}
 
-				//node->n_in_bucket=tidx;
+			//node->n_in_bucket=tidx;
 			//}
-	/*		else{
+			/*		else{
 
 				for(int p=0;p<m;p++){
 					int minidx=0;
@@ -981,7 +991,10 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			node->messages[i].swap(tmpmessage);
 			//delete(node->messages[i]);
 			//node->messages[i]=*tmpmessage;
-			free(tmp);
+			tmp.clear();
+			for(unsigned b=0;b<tmppos.size();b++)
+				free(tmppos[b]);
+			tmppos.clear();
 		}
 
 	}
@@ -1039,7 +1052,7 @@ void Male::set_solution(int *instance){
 
 void Male::print_arr(int *inst,int length){
 	for (int i=0;i<length;i++)
-			cout << inst[i]<<" ";
+		cout << inst[i]<<" ";
 	cout << " \n ";
 
 }
