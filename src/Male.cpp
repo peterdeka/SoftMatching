@@ -832,9 +832,12 @@ int Male::elim_m_opt(int m, vector<int*>* solutions,int widx ){
 	float lastmincost=-1.0f;
 
 	CTreeNode *rn=prefTree->root;
-	int bucksz=rn->unaryBucket[0].size();
+	//int bucksz=rn->unaryBucket[0].size();
 	//int nsols=min(m,domains_size*bucksz);
-	int nsols=domains_size*bucksz;
+	//int nsols=domains_size*bucksz;
+	int nsols=0;
+	for(int l=0;l<domains_size;l++)
+		nsols+=rn->unaryBucket[l].size();
 	int goodsols=0;
 	for(int mi=0;mi<nsols;mi++){
 		float mincost=1000;
@@ -918,7 +921,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			//array che contiene il messaggio fuso temporaneo per questo valore del dominio
 			vector<int*> tmpmessage;
 			for (unsigned b = 0; b < node->unaryBucket[i].size(); b++) {
-				for(unsigned j=0;j<domains_size;j++){	//dominio figlio
+				for(int j=0;j<domains_size;j++){	//dominio figlio
 
 					for(unsigned t=0;t<nd->unaryBucket[j].size();t++){	//per tutti i valori nel bucket del figlio per la variabile j
 						//tmp[tidx++]=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
@@ -943,7 +946,7 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			for(unsigned k=0;k<tmp.size();k++){
 				int *dstm=(int*)malloc(numvars*sizeof(int));
 				float a =tmp[k];
-				node->unaryBucket[i].push_back(tmp[k]);
+				node->unaryBucket[i].push_back(a);
 				//messaggi
 				BuckPos *bp=tmppos[k];
 
