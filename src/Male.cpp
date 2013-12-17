@@ -6,7 +6,7 @@
  */
 
 #include "Male.h"
-
+int Male::count_over2perc = 0;
 
 Male::Male(int numvars,int domains_size, float tightness,char **varDomains,int *instance){
 	this->domains_size=domains_size;
@@ -699,12 +699,13 @@ bool Male::SOFT_next23(int linearization, int *nextinstance){
 	//finite le soluzioni?
 	if(this->n23_last_returned_idx>=this->n23_sols_num){
 		//cout << "not enough solutions, KCHEAP increasing to "<<this->n23_sols_num*2<<"\n";
+		Male::count_over2perc++;
 		if(cached_solutions!=NULL){
 			for(int i=0;i<this->n23_sols_num;i++)
 				free(cached_solutions[i]);
 			free(cached_solutions);
 		}
-		this->n23_last_returned_idx=0;
+		//this->n23_last_returned_idx=0;
 		cached_solutions=(int**)malloc(this->n23_sols_num*2*sizeof(int*));
 		for(int i=0;i<this->n23_sols_num*2;i++)
 				cached_solutions[i]=(int*)malloc(numvars*sizeof(int));

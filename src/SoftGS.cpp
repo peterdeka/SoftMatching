@@ -25,6 +25,7 @@ int SoftGS::test23(){
 }
 
 void SoftGS::init_n23_solver(int linearization){
+	men[0]->count_over2perc=0;
 	int maxprops=ceil((float)num_individuals*0.06f);
 	if(maxprops<10)
 		maxprops=10;

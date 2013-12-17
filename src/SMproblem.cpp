@@ -158,11 +158,12 @@ int SM_problem::solve_with_classicGSNext(){
 }
 
 int SM_problem::solve_with_next23(){
-	int lineariz=3;
+	int lineariz=2;
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
 	softgs.init_n23_solver(lineariz);
 	int nprops=softgs.gale_shapley_men_opt_next23(this->men_matches,lineariz);
 	//TODO softgs.dealloc_n23_solver
+	cout<<"I went over 2% "<<men[0]->count_over2perc<<" times \n";
 	return nprops;
 }
 

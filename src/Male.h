@@ -61,6 +61,7 @@ class Male{
 	bool check_cost(int *solution, float cost);		//testa che il costo calcolato da elim-m-opt sia corretto
 	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
 public:
+	static int count_over2perc;
 	CTree *prefTree;
 	int *myInstance;
 	int *myOptInstance;
