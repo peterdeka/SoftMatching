@@ -807,8 +807,11 @@ int Male::elim_m_opt(int m, int **solutions,int widx ){
 	float lastmincost=-1.0f;
 
 	CTreeNode *rn=prefTree->root;
-	int bucksz=rn->unaryBucket[0].size();
-	int nsols=min(m,domains_size*bucksz);
+
+	int nsols=0;
+	for(int l=0;l<domains_size;l++)
+		nsols+=rn->unaryBucket[l].size();
+	nsols=min(m,nsols);
 	int goodsols=0;
 	for(int mi=0;mi<nsols;mi++){
 		float mincost=1000;
@@ -882,60 +885,63 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 
 		for(int i=0;i<domains_size;i++){	//dominio padre
 			//array che contiene temporaneamente tutti i valori per una variabile padre,di cui prenderemo poi gli m minimi
-			float *tmp=(float*)malloc(domains_size*node->unaryBucket[i].size()*nd->unaryBucket[0].size()*sizeof(float));
-			int tidx=0;
+			vector<float> tmp;
+			vector<BuckPos*> tmppos;
 			//array che contiene il messaggio fuso temporaneo per questo valore del dominio
 			vector<int*> tmpmessage;
 			for (unsigned b = 0; b < node->unaryBucket[i].size(); b++) {
 				for(int j=0;j<domains_size;j++){	//dominio figlio
 
 					for(unsigned t=0;t<nd->unaryBucket[j].size();t++){	//per tutti i valori nel bucket del figlio per la variabile j
-						tmp[tidx++]=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
-						//cout<<node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b] <<" \n";
+						float v=node->weightedChildConstr[c][i][j]+nd->unaryBucket[j][t]+node->unaryBucket[i][b];
+						if(v<1000.0f){  //skippo non fattibili
+							tmp.push_back(v);  //salvo costo
+							// salvo coordinate
+							BuckPos *bp=(BuckPos*)malloc(sizeof(BuckPos));
+							bp->cbuck_pos=t;
+							bp->cdom_pos=j;
+							bp->fbuck_pos=b;
+							tmppos.push_back(bp);
+						}
 					}
 				}
 			}
 			//int nbuck=node->unaryBucket[i].size();
 			node->unaryBucket[i].clear();
 			//MARGINALIZATION prendo da tmp gli m min per j e i loro messages
-			if(tidx<=m){
-				for(int k=0;k<tidx;k++){
+			if(tmp.size()<=m){
+				for(int k=0;k<tmp.size();k++){
 					int *dstm=(int*)malloc(numvars*sizeof(int));
 					node->unaryBucket[i].push_back(tmp[k]);
 					//messaggi
+					BuckPos *bp=tmppos[k];
 
-					int cdom_pos=floor((float)(k%(nd->unaryBucket[0].size()*nd->domains_sz))/(float)nd->unaryBucket[0].size());
-					int fbuck_pos=floor((float)k/((float)nd->unaryBucket[cdom_pos].size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
-					int cbuck_pos=k%nd->unaryBucket[cdom_pos].size();
 					// tutto il merge deve avvenire in un messaggio temporaneo e alla fine di questo domvalue deve andare a sostituire
 					//quello del nodo altrimenti perdi in corsa i valori
 					//cout << fbuck_pos<< " < " <<node->messages[i].size()<<"\n";
-					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],dstm);//fbuckpos o k?
+					merge_messages(node->messages[i][bp->fbuck_pos],nd->messages[bp->cdom_pos][bp->cbuck_pos],dstm);//fbuckpos o k?
 					// aggiunta valore variabile proiettata al messaggio
-					dstm[nd->varId]=cdom_pos;
+					dstm[nd->varId]=bp->cdom_pos;
 					tmpmessage.push_back(dstm);
 					//print_arr(tmpmessage[k],numvars);
 				}
 
-				//node->n_in_bucket=tidx;
 			}
 			else{
 
 				for(int p=0;p<m;p++){
 					int minidx=0;
-					for(int k=0;k<tidx;k++){
+					for(int k=0;k<tmp.size();k++){
 						if(tmp[k]<tmp[minidx])
 							minidx=k;
 					}
 					int *dstm=(int*)malloc(numvars*sizeof(int));
 					node->unaryBucket[i].push_back(tmp[minidx]);
 					//messaggi
+					BuckPos *bp=tmppos[minidx];
 
-					int cdom_pos=floor((float)(minidx%(nd->unaryBucket[0].size()*nd->domains_sz))/(float)nd->unaryBucket[0].size());
-					int fbuck_pos=floor((float)minidx/((float)nd->unaryBucket[cdom_pos].size()*(float)nd->domains_sz));	//posizione nel bucket i del padre
-					int cbuck_pos=minidx%nd->unaryBucket[cdom_pos].size();
-					merge_messages(node->messages[i][fbuck_pos],nd->messages[cdom_pos][cbuck_pos],dstm);	//come sopra
-					dstm[nd->varId]=cdom_pos;
+					merge_messages(node->messages[i][bp->fbuck_pos],nd->messages[bp->cdom_pos][bp->cbuck_pos],dstm);	//come sopra
+					dstm[nd->varId]=bp->cdom_pos;
 					tmpmessage.push_back(dstm);
 					tmp[minidx]=1000;
 				}
@@ -949,9 +955,10 @@ void Male::elim_m_opt_rec(CTreeNode *node,int m){
 			//free(node->messages[i]);
 
 			node->messages[i].swap(tmpmessage);
-			//delete(node->messages[i]);
-			//node->messages[i]=*tmpmessage;
-			free(tmp);
+			tmp.clear();
+			for(unsigned b=0;b<tmppos.size();b++)
+				free(tmppos[b]);
+			tmppos.clear();
 		}
 
 	}
