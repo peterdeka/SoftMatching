@@ -6,7 +6,7 @@
  */
 
 #include "GSLists.h"
-
+#include <stdexcept>
 GSLists::GSLists(int num_males, Male** menarray, Female** womenarray,int lineariz) {
 cout<<"READY LISTS\n";
 //TODO
@@ -27,36 +27,70 @@ int GSLists::solve_GS(int *matching){
 }
 
 void GSLists::gen_male_preflist(Male *m, int idx){
-	map<float,list<SolDesc*>> prefmap;
+	map<float,list<SolDesc*>*> prefmap;
 	int cursol[NUMVARS];
+	int nxsol[NUMVARS];
+	int *a,*b,*tmp;
 	for(int i=0;i<NUMVARS;i++)
 		cursol[i]=0;
 
 	add_to_map(prefmap,m,cursol);
-	while(m->CSP_next(cursol,0.0f,cursol)){
-		add_to_map(prefmap,m,cursol);
-	}
+/*	a=(int*)&cursol;
+	b=(int*)&nxsol;
+	while(m->CSP_next(a,0.0f,b)){
+		add_to_map(prefmap,m,b);
+
+		tmp=a;
+		a=b;
+		b=tmp;
+
+	}*/
+	int instvals[NUMVARS];
+		for(int i=0;i<NUMVARS;i++)
+			instvals[i]=0;
+		instvals[NUMVARS-1]=-1;
+		for(int i=0;i<NUM_INDIVIDUALS;i++){
+			for(int j=NUMVARS-1;j>-1;j--){
+				if(instvals[j]+1<DOMAINS_SIZE){
+					instvals[j]+=1;
+					break;
+				}
+				else
+					instvals[j]=0;
+			}
+			add_to_map(prefmap,m,instvals);
+		}
 	//linearizzo la mappa nella lista di preferenza
 	int index=0;
 	int *prefarr=(int*)malloc(sizeof(int)*num_individuals);
-	for (std::map<float,list<SolDesc*> >::iterator it=prefmap.begin(); it!=prefmap.end(); ++it){
+	for (std::map<float,list<SolDesc*> *>::iterator it=prefmap.begin(); it!=prefmap.end(); ++it){
 		cout<<"first: "<<it->first;
-		list<SolDesc*> l=it->second;
+		list<SolDesc*> l=(*it->second);
 	    for (list<SolDesc*>::iterator itl=l.begin(); itl != l.end(); ++itl){
+	    	//print_arr((*itl)->sol,NUMVARS);+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ERROROR
 	    	prefarr[index++]=womencont->find_female_with_instance((*itl)->sol);
 	    }
 	}
+	cout<<index<<" sols generated\n";
 	maleprefs[idx]=prefarr;
 
 }
 
-void GSLists::add_to_map(map<float,list< SolDesc*>> m,Male *mm,int *s){
+void GSLists::add_to_map(map<float,list< SolDesc*>*> &m,Male *mm,int *s){
 	float p=mm->instpref(s);
-	list<SolDesc*> l=m[p];
-	add_to_list(l,s,p,mm);
+	print_arr(s,NUMVARS);
+	list<SolDesc*>* l;
+	if(m.count(p)>0)
+		l=m[p];
+	else{
+		cout<<"creating entry for "<<p<<"\n";
+	   l=new list<SolDesc*>;
+	   m[p]=l;
+	}
+	add_to_list(*l,s,p,mm);
 }
 
-void GSLists::add_to_list(list< SolDesc*> l, int *s,float pref,Male *m){
+void GSLists::add_to_list(list< SolDesc*> &l, int *s,float pref,Male *m){
 	//vedo la tupla che genera la soluzione
 	Male::Tuple t;
 	if(!m->find_first_tuple_with_pref(s,pref,&t)){
@@ -212,3 +246,9 @@ GSLists::~GSLists() {
 	delete womencont;
 }
 
+void GSLists::print_arr(int *inst,int length){
+	for (int i=0;i<length;i++)
+			cout << inst[i]<<"-";
+	cout << " \n ";
+
+}
