@@ -26,11 +26,12 @@ using namespace std;
 
 int main() {
 
+	float sum=0;
 	SM_problem *p= new SM_problem();
 	Profiler *prof=new Profiler();
 	cout<<"problem generated "<<p->numvars<<" vars "<<"with "<<p->domsz<<" domain\n";
 	char fname[255];
-	sprintf(fname,"output_dsz%d_nvars%d_23",p->domsz,p->numvars);
+	sprintf(fname,"output_dsz%d_nvars%d_23.csv",p->domsz,p->numvars);
 	ofstream myfile;
 	myfile.open (fname);
 	//myfile<<"t_Soft, t_classic_next, props_Soft, props_classic_next\n";
@@ -44,15 +45,19 @@ int main() {
 	bool stable=true;
 	int nprops23=p->solve_with_next23();
 	prof->stop(&tm0);
-	if(p->verify_is_weakstable())
+/*	if(p->verify_is_weakstable())
 				cout<< "SOFTGS_n23 Verified weak stable OK\n";
 			else
 			{
 				cout<< "SOFTGS_n32 Sorry solution not weak stable\n";
-			}
-	cout << "soft: "<<tm0.tv_sec<<"s "<<tm0.tv_nsec<<"nsec "<<nprops23<<" proposals\n";
-	myfile << tm0.tv_sec+tm0.tv_nsec/1000000000.0<< ", "<<nprops23<<"\n";
+			}*/
+
+	float time=tm0.tv_sec+tm0.tv_nsec/1000000000.0;
+	cout << "soft: "<<time <<" nprops23 "<<" proposals\n";
+	myfile << time<< ", "<<nprops23<<"\n";
+	sum+=time;
 	}
+cout <<"END: "<<sum/5.0f<<"\n";
 	/*for(int j=0;j<5;j++){
 		delete p;
 		p= new SM_problem();

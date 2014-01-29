@@ -20,13 +20,13 @@ SoftGS::~SoftGS() {
 
 
 int SoftGS::test23(){
-	int maxprops=ceil((float)num_individuals*0.02f);
+	int maxprops=num_individuals;//ceil((float)num_individuals*0.02f);
 	men[0]->init_next23_list(2,maxprops);
 }
 
 void SoftGS::init_n23_solver(int linearization){
 	men[0]->count_over2perc=0;
-	int maxprops=ceil((float)num_individuals*0.06f);
+	int maxprops=num_individuals;//ceil((float)num_individuals*0.02f);
 	if(maxprops<10)
 		maxprops=10;
 	for(int i=0;i<num_individuals;i++)

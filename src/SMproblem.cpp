@@ -167,6 +167,13 @@ int SM_problem::solve_with_next23(){
 	return nprops;
 }
 
+int SM_problem::solve_with_GSLists(int linearization){
+	GSLists gsl(NUM_INDIVIDUALS,men,women,linearization);
+	int nprops=gsl.solve_GS(this->men_matches);
+
+	return nprops;
+}
+
 void SM_problem::print_arr(int *inst,int length){
 	for (int i=0;i<length;i++)
 			cout << inst[i]<<"-";

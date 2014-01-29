@@ -13,10 +13,10 @@
 #include "ClassicGS.h"
 #include "SoftGS.h"
 #include "ClassicGSNext.h"
+#include "GSLists.h"
 
-
-#define NUM_INDIVIDUALS  4096
-#define NUMVARS 12//numero variabili (quindi nodi dell'albero)
+#define NUM_INDIVIDUALS  16384
+#define NUMVARS 14//numero variabili (quindi nodi dell'albero)
 #define DOMAINS_SIZE 2	//dimensione dei domini delle variabili
 #define WOMEN_CONNECTEDNESS 0.5
 #define MALE_TIGHTNESS 0.1	//percentuale di binary constraint NON nulli
@@ -40,6 +40,7 @@ public:
 	int solve_with_classicGS();
 	int solve_with_softGS();
 	int solve_with_classicGSNext();
+	int solve_with_GSLists(int linearization);
 	void debugTrees(char *filename);
 	int solve_with_next23();
 };

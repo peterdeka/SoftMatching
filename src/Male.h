@@ -17,11 +17,9 @@
 #define NEXT3 1;
 class Female;
 class Male{
-	struct Tuple {
-		        int var_idx;
-		        int child_idx;
-		        int idx_in_bintbl[2];
-		    };
+public:
+	struct Tuple;
+private:
 	//struttura di servizio per elim-m-opt
 	struct BuckPos {
 		unsigned cdom_pos;  //position in child domain
@@ -45,8 +43,8 @@ class Male{
 	void make_DAC();
 	void DAC_first_pass(CTreeNode *node);
 	float DAC_opt(int *opt_instance);
-	bool CSP_next(int *instance, float cutval,int *nextinstance);	//risolve come un problema di HCSP applicando il cut a cutval
-	bool find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple);
+
+
 	void fix(Tuple *fixtuple);
 	void unfix(Tuple *fixtuple);
 	bool next_tuple_with_pref(Tuple tin, Tuple *tout, float pref);
@@ -56,7 +54,6 @@ class Male{
 	void zeroout_prectuples_with_pref(Tuple *t_star,float pref);
 
 	void zeroout_tuple(Tuple *t);
-	void set_solution(int *instance);
 	void print_arr(int *inst,int length);
 	int elim_m_opt(int m, int **solutions, int widx ); //dechter m bucket elimination to get m opt from WCSP, assumes all unary are 0
 	void elim_m_opt_rec(CTreeNode *node,int m);
@@ -66,6 +63,11 @@ class Male{
 	bool check_cost(int *solution, float cost);		//testa che il costo calcolato da elim-m-opt sia corretto
 	int k_cheapest(int k, int linearization, int **solutions);	//rossi-pini-venable
 public:
+	struct Tuple {
+			        int var_idx;
+			        int child_idx;
+			        int idx_in_bintbl[2];
+			    };
 	static int count_over2perc;
 	CTree *prefTree;
 	int *myInstance;
@@ -73,16 +75,21 @@ public:
 	float myOpt;
 	int numvars;
 	int n_zeroed_tuples;
+
 	Male(int numvars,int domains_size,float tightness,char ** varDomains, int *instance);
 	virtual ~Male();
 	//int opt(Female **women,int n_women);
+	bool CSP_next(int *instance, float cutval,int *nextinstance);	//risolve come un problema di HCSP applicando il cut a cutval
 	void DOT_representation(string *res);
 	bool SOFT_next(Female *curfemale,int *nextinstance);
 	float pref(Female *f);
+	float instpref(int *s);
 	void debugTree(char* fname);
 	int compare(Female *f1, Female *f2);
-	void reset_zeroed_prectuples();
+	void set_solution(int *instance);
 
+	void reset_zeroed_prectuples();
+	bool find_first_tuple_with_pref(int* instance, float pref, Tuple *tuple);
 	bool SOFT_next23(int linearization, int *nextinstance);	//ritorna true se ha trovato altre soluzioni, false altrimenti (lista finita)
 	void init_next23_list(int linearization, int cachedproposals);	//chiamare prima di usare next23
 };

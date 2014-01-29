@@ -228,8 +228,16 @@ float Male::DAC_opt(int *opt_instance){
 //calcola valore di preferenza di un'istanza
 float Male::pref(Female *f){
 	//cout<<"*****PREF****\n";
+
+	return instpref(f->myInstance);
+}
+
+
+//calcola valore di preferenza di un'istanza
+float Male::instpref(int *s){
+	//cout<<"*****PREF****\n";
 	float pref=10.0f;
-	set_solution(f->myInstance);
+	set_solution(s);
 	for(int i=0;i<prefTree->n_nodes;i++){
 		CTreeNode *curnode=prefTree->linearizedTree[i];
 		pref=min(pref,curnode->dacUnaryConstraints[curnode->value]);
@@ -242,7 +250,6 @@ float Male::pref(Female *f){
 //	cout<<"***END PREF****\n";
 	return pref;
 }
-
 
 
 void Male::fix(Tuple *fixtuple){
