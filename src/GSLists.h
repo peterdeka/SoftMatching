@@ -28,8 +28,8 @@ class GSLists {
 
 	void gen_male_preflist(Male *m, int idx);
 	void gen_female_preflist(Female *f, int idx);
-	void add_to_map(map<float,list< SolDesc>> m,Male *mm,int *s);
-	void add_to_list(list< SolDesc> l, int *s,float pref,Male *m);
+	void add_to_map(map<float,list< SolDesc*>> m,Male *mm,int *s);
+	void add_to_list(list< SolDesc*> l, int *s,float pref,Male *m);
 	int lex_precedes(int *a, int *b);
 	void count_tuples_change(Male *m,int *s,float pref,SolDesc *sd);
 	int gale_shapley_men_opt(int *matching);
