@@ -88,7 +88,7 @@ void SM_problem::gen_random_instance(int *instance){
 // a partire da men_matchings veriifca weak stability //TODO verify unmatched criteria
 bool SM_problem::verify_is_weakstable(){
 	cout<<"Verifying stability...\n";
-	print_arr(men_matches,NUM_INDIVIDUALS);
+
 	bool result=true;
 	int women_matches[NUM_INDIVIDUALS];	//struttra simmetrica di male_match che mi da i matching dal punto di vista delle donne
 	for(int i=0;i<NUM_INDIVIDUALS;i++)
@@ -145,6 +145,7 @@ int SM_problem::solve_with_softGS(){
 	int nprops=softgs.gale_shapley_men_opt_next1(this->men_matches);
 	//cout << "SOFT Gale shapley match: ";
 	//print_arr(this->men_matches,NUM_INDIVIDUALS);
+	print_arr(men_matches,NUM_INDIVIDUALS);
 	return nprops;
 }
 
@@ -165,13 +166,14 @@ int SM_problem::solve_with_next23(){
 	int nprops=softgs.gale_shapley_men_opt_next23(this->men_matches,lineariz);
 	//TODO softgs.dealloc_n23_solver
 	cout<<"I went over 2% "<<men[0]->count_over2perc<<" times \n";
+	print_arr(men_matches,NUM_INDIVIDUALS);
 	return nprops;
 }
 
 int SM_problem::solve_with_GSLists(int linearization){
 	GSLists gsl(NUM_INDIVIDUALS,men,women,linearization);
 	int nprops=gsl.solve_GS(this->men_matches);
-
+	print_arr(men_matches,NUM_INDIVIDUALS);
 	return nprops;
 }
 

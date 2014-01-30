@@ -121,14 +121,21 @@ void GSLists::add_to_list(list< SolDesc*> &l, int *s,float pref,Male *m){
 	bool inserted=false;
 	 for (list<SolDesc*>::iterator it=l.begin(); it != l.end(); ++it){
 	    //confronto tupla generatrice
-		 if(t.var_idx < (*it)->t_gen.var_idx || (t.var_idx==(*it)->t_gen.var_idx && t.child_idx< (*it)->t_gen.child_idx )){
+		 if(t.var_idx < (*it)->t_gen.var_idx || (t.var_idx==(*it)->t_gen.var_idx && t.child_idx < (*it)->t_gen.child_idx )){
 			 l.insert(it,sd);
 			 inserted=true;
 			 break;
 		 }
-		 else if(t.var_idx > (*it)->t_gen.var_idx || (t.var_idx==(*it)->t_gen.var_idx && t.child_idx> (*it)->t_gen.child_idx )){
+		 else if(t.var_idx > (*it)->t_gen.var_idx || (t.var_idx==(*it)->t_gen.var_idx && t.child_idx > (*it)->t_gen.child_idx )){
 			 continue;
 		 }
+		// else if((t.var_idx == (*it)->t_gen.var_idx && t.child_idx == (*it)->t_gen.child_idx )){
+			 if(t.idx_in_bintbl[0] < (*it)->t_gen.idx_in_bintbl[0] || (t.idx_in_bintbl[0] == (*it)->t_gen.idx_in_bintbl[0] && t.idx_in_bintbl[1] < (*it)->t_gen.idx_in_bintbl[1])){
+				 	 l.insert(it,sd);
+				 	 inserted=true;
+				 	 break;
+			 }
+		// }
 		 if(linearization>1){
 			 //numero tuple da cambiare
 			 if(sd->n_t_change < (*it)->n_t_change){
@@ -150,13 +157,13 @@ void GSLists::add_to_list(list< SolDesc*> &l, int *s,float pref,Male *m){
 					 continue;
 				 }
 			 }
-			 //ultima risorsa: lex
-			 if(lex_precedes(sd->sol,(*it)->sol)>0){
-				 l.insert(it,sd);
-				 inserted=true;
-				 break;
-			 }
 		 }
+		 //ultima risorsa: lex
+					 if(lex_precedes(sd->sol,(*it)->sol)>0){
+						 l.insert(it,sd);
+						 inserted=true;
+						 break;
+					 }
 	 }
 	 if(!inserted){
 		 l.push_back(sd);
@@ -166,10 +173,14 @@ void GSLists::add_to_list(list< SolDesc*> &l, int *s,float pref,Male *m){
 
 int GSLists::lex_precedes(int *a, int* b){
 	for(int i=0;i<NUMVARS;i++){
-		if(a[i]>b[i])
+		if(a[i]==b[i])
+			continue;
+		if(a[i]<b[i])
+			return 1;
+		else
 			return -1;
 	}
-	return 1;
+
 }
 
 void GSLists::count_tuples_change(Male *m,int *s,float pref,SolDesc * sd){
@@ -242,8 +253,8 @@ int GSLists::gale_shapley_men_opt(int *matching){
 		}
 	}
 	mydbg.close();
-	//free(femalematching);
-	//free(lastproposed);
+	free(femalematching);
+	free(lastproposed);
 	return numprops;
 }
 

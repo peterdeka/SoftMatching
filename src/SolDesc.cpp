@@ -14,6 +14,6 @@ SolDesc::SolDesc() {
 
 SolDesc::~SolDesc() {
 	// TODO Auto-generated destructor stub
-	free(sol);
+	//free(sol);
 }
 
