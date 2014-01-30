@@ -35,7 +35,7 @@ void GSLists::gen_male_preflist(Male *m, int idx){
 		cursol[i]=0;
 
 	add_to_map(prefmap,m,cursol);
-/*	a=(int*)&cursol;
+	a=(int*)&cursol;
 	b=(int*)&nxsol;
 	while(m->CSP_next(a,0.0f,b)){
 		add_to_map(prefmap,m,b);
@@ -44,8 +44,8 @@ void GSLists::gen_male_preflist(Male *m, int idx){
 		a=b;
 		b=tmp;
 
-	}*/
-	int instvals[NUMVARS];
+	}
+	/*int instvals[NUMVARS];
 		for(int i=0;i<NUMVARS;i++)
 			instvals[i]=0;
 		instvals[NUMVARS-1]=-1;
@@ -59,31 +59,41 @@ void GSLists::gen_male_preflist(Male *m, int idx){
 					instvals[j]=0;
 			}
 			add_to_map(prefmap,m,instvals);
-		}
+		}*/
 	//linearizzo la mappa nella lista di preferenza
-	int index=0;
+	int index=num_individuals;
 	int *prefarr=(int*)malloc(sizeof(int)*num_individuals);
+	//cout<<"first: ";
 	for (std::map<float,list<SolDesc*> *>::iterator it=prefmap.begin(); it!=prefmap.end(); ++it){
-		cout<<"first: "<<it->first;
+		//cout<<it->first<<"\n";
 		list<SolDesc*> l=(*it->second);
 	    for (list<SolDesc*>::iterator itl=l.begin(); itl != l.end(); ++itl){
 	    	//print_arr((*itl)->sol,NUMVARS);+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ERROROR
-	    	prefarr[index++]=womencont->find_female_with_instance((*itl)->sol);
+	    	prefarr[--index]=womencont->find_female_with_instance((*itl)->sol);
 	    }
 	}
-	cout<<index<<" sols generated\n";
 	maleprefs[idx]=prefarr;
+	//cout<<"end\n";
+	//svuoto map
+	for( map<float,list<SolDesc*>*>::iterator i = prefmap.begin(); i != prefmap.end(); ++i ){
+		list<SolDesc*> l=(*i->second);
+		for (list<SolDesc*>::iterator itl=l.begin(); itl != l.end(); ++itl){
+			delete (*itl);
+		}
+
+		delete (i->second);
+	}
 
 }
 
 void GSLists::add_to_map(map<float,list< SolDesc*>*> &m,Male *mm,int *s){
 	float p=mm->instpref(s);
-	print_arr(s,NUMVARS);
+	//print_arr(s,NUMVARS);
 	list<SolDesc*>* l;
 	if(m.count(p)>0)
 		l=m[p];
 	else{
-		cout<<"creating entry for "<<p<<"\n";
+		//cout<<"creating entry for "<<p<<"\n";
 	   l=new list<SolDesc*>;
 	   m[p]=l;
 	}
@@ -98,7 +108,7 @@ void GSLists::add_to_list(list< SolDesc*> &l, int *s,float pref,Male *m){
 		exit(1);
 	}
 	SolDesc *sd=new SolDesc();
-	memcpy(sd->sol,s,NUMVARS);
+	memcpy(sd->sol,s,NUMVARS*sizeof(int));
 	sd->t_gen=t;
 	sd->n_t_change=0;
 	sd->q_t_change=0.0f;
@@ -141,7 +151,7 @@ void GSLists::add_to_list(list< SolDesc*> &l, int *s,float pref,Male *m){
 				 }
 			 }
 			 //ultima risorsa: lex
-			 if(lex_precedes(sd->sol,(*it)->sol)>1){
+			 if(lex_precedes(sd->sol,(*it)->sol)>0){
 				 l.insert(it,sd);
 				 inserted=true;
 				 break;

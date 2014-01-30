@@ -88,6 +88,7 @@ void SM_problem::gen_random_instance(int *instance){
 // a partire da men_matchings veriifca weak stability //TODO verify unmatched criteria
 bool SM_problem::verify_is_weakstable(){
 	cout<<"Verifying stability...\n";
+	print_arr(men_matches,NUM_INDIVIDUALS);
 	bool result=true;
 	int women_matches[NUM_INDIVIDUALS];	//struttra simmetrica di male_match che mi da i matching dal punto di vista delle donne
 	for(int i=0;i<NUM_INDIVIDUALS;i++)

@@ -43,7 +43,7 @@ int main() {
 				p= new SM_problem();
 	prof->start();
 	bool stable=true;
-	int nprops23=p->solve_with_GSLists(1);
+	int nprops23=p->solve_with_GSLists(3);
 	prof->stop(&tm0);
 	if(p->verify_is_weakstable())
 				cout<< "SOFTGS_n23 Verified weak stable OK\n";
