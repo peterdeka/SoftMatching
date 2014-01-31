@@ -33,7 +33,7 @@ void GSLists::gen_male_preflist(Male *m, int idx){
 	int *a,*b,*tmp;
 	for(int i=0;i<NUMVARS;i++)
 		cursol[i]=0;
-
+/*
 	add_to_map(prefmap,m,cursol);
 	a=(int*)&cursol;
 	b=(int*)&nxsol;
@@ -44,8 +44,8 @@ void GSLists::gen_male_preflist(Male *m, int idx){
 		a=b;
 		b=tmp;
 
-	}
-	/*int instvals[NUMVARS];
+	}*/
+	int instvals[NUMVARS];
 		for(int i=0;i<NUMVARS;i++)
 			instvals[i]=0;
 		instvals[NUMVARS-1]=-1;
@@ -59,15 +59,14 @@ void GSLists::gen_male_preflist(Male *m, int idx){
 					instvals[j]=0;
 			}
 			add_to_map(prefmap,m,instvals);
-		}*/
+		}
 	//linearizzo la mappa nella lista di preferenza
 	int index=num_individuals;
 	int *prefarr=(int*)malloc(sizeof(int)*num_individuals);
 	//cout<<"first: ";
 	for (std::map<float,list<SolDesc*> *>::iterator it=prefmap.begin(); it!=prefmap.end(); ++it){
-		//cout<<it->first<<"\n";
 		list<SolDesc*> l=(*it->second);
-	    for (list<SolDesc*>::iterator itl=l.begin(); itl != l.end(); ++itl){
+	    for (list<SolDesc*>::reverse_iterator itl=l.rbegin(); itl != l.rend(); ++itl){
 	    	//print_arr((*itl)->sol,NUMVARS);+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ERROROR
 	    	prefarr[--index]=womencont->find_female_with_instance((*itl)->sol);
 	    }
@@ -135,6 +134,8 @@ void GSLists::add_to_list(list< SolDesc*> &l, int *s,float pref,Male *m){
 				 	 inserted=true;
 				 	 break;
 			 }
+			 else if(t.idx_in_bintbl[0] > (*it)->t_gen.idx_in_bintbl[0] || (t.idx_in_bintbl[0] == (*it)->t_gen.idx_in_bintbl[0] && t.idx_in_bintbl[1] > (*it)->t_gen.idx_in_bintbl[1]))
+				 continue;
 		// }
 		 if(linearization>1){
 			 //numero tuple da cambiare
@@ -159,11 +160,11 @@ void GSLists::add_to_list(list< SolDesc*> &l, int *s,float pref,Male *m){
 			 }
 		 }
 		 //ultima risorsa: lex
-					 if(lex_precedes(sd->sol,(*it)->sol)>0){
-						 l.insert(it,sd);
-						 inserted=true;
-						 break;
-					 }
+		if(lex_precedes(sd->sol,(*it)->sol)>0){
+			l.insert(it,sd);
+			inserted=true;
+			break;
+		}
 	 }
 	 if(!inserted){
 		 l.push_back(sd);

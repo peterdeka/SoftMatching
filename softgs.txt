@@ -1,186 +1,161 @@
-m0 ? w5 with pref 0.36
-free girl: men 0 <- women 5 
-m1 ? w3 with pref 0.33
-free girl: men 1 <- women 3 
-m2 ? w30 with pref 0.54
-free girl: men 2 <- women 30 
-m3 ? w0 with pref 0.62
-free girl: men 3 <- women 0 
-m4 ? w15 with pref 0.83
-free girl: men 4 <- women 15 
-m5 ? w20 with pref 0.26
-free girl: men 5 <- women 20 
-m6 ? w12 with pref 0.67
-free girl: men 6 <- women 12 
-m7 ? w0 with pref 0.41
-m7 ? w2 with pref 0.41
-free girl: men 7 <- women 2 
-m8 ? w8 with pref 0.69
-free girl: men 8 <- women 8 
-m9 ? w18 with pref 0.59
+m0 ? w4 with pref 0.4
+free girl: men 0 <- women 4 
+m1 ? w21 with pref 0.54
+free girl: men 1 <- women 21 
+m2 ? w17 with pref 0.5
+free girl: men 2 <- women 17 
+m3 ? w3 with pref 0.52
+free girl: men 3 <- women 3 
+m4 ? w20 with pref 0.67
+free girl: men 4 <- women 20 
+m5 ? w22 with pref 0.3
+free girl: men 5 <- women 22 
+m6 ? w16 with pref 0.53
+free girl: men 6 <- women 16 
+m7 ? w16 with pref 0.47
+m7 ? w17 with pref 0.41
+girl 17 says goodbye to men 2 for men 7 
+m8 ? w11 with pref 0.43
+free girl: men 8 <- women 11 
+m9 ? w18 with pref 0.5
 free girl: men 9 <- women 18 
-m10 ? w1 with pref 0.8
-free girl: men 10 <- women 1 
-m11 ? w6 with pref 0.75
-free girl: men 11 <- women 6 
-m12 ? w12 with pref 0.74
-m12 ? w28 with pref 0.74
+m10 ? w18 with pref 0.21
+girl 18 says goodbye to men 9 for men 10 
+m11 ? w0 with pref 0.2
+free girl: men 11 <- women 0 
+m12 ? w28 with pref 0.22
 free girl: men 12 <- women 28 
-m13 ? w0 with pref 0.54
-m13 ? w1 with pref 0.54
-girl 1 says goodbye to men 10 for men 13 
-m14 ? w10 with pref 0.66
-free girl: men 14 <- women 10 
-m15 ? w10 with pref 0.28
-m15 ? w14 with pref 0.28
-free girl: men 15 <- women 14 
-m16 ? w27 with pref 0.76
-free girl: men 16 <- women 27 
-m17 ? w8 with pref 0.34
-girl 8 says goodbye to men 8 for men 17 
-m18 ? w10 with pref 0.48
+m13 ? w4 with pref 0.45
+m13 ? w20 with pref 0.45
+girl 20 says goodbye to men 4 for men 13 
+m14 ? w7 with pref 0.78
+free girl: men 14 <- women 7 
+m15 ? w26 with pref 0.49
+free girl: men 15 <- women 26 
+m16 ? w3 with pref 0.34
+m16 ? w19 with pref 0.34
+free girl: men 16 <- women 19 
+m17 ? w13 with pref 0.54
+free girl: men 17 <- women 13 
+m18 ? w1 with pref 0.61
+free girl: men 18 <- women 1 
+m19 ? w20 with pref 0.6
+m19 ? w16 with pref 0.41
+m19 ? w17 with pref 0.41
+m19 ? w21 with pref 0.33
+m19 ? w0 with pref 0.27
+m19 ? w1 with pref 0.27
+m19 ? w4 with pref 0.27
+m19 ? w5 with pref 0.27
+free girl: men 19 <- women 5 
+m20 ? w8 with pref 0.6
+free girl: men 20 <- women 8 
+m21 ? w4 with pref 0.56
+m21 ? w20 with pref 0.56
+m21 ? w5 with pref 0.52
+m21 ? w21 with pref 0.52
+m21 ? w28 with pref 0.33
+m21 ? w29 with pref 0.33
+free girl: men 21 <- women 29 
+m22 ? w16 with pref 0.52
+girl 16 says goodbye to men 6 for men 22 
+m23 ? w4 with pref 0.52
+girl 4 says goodbye to men 0 for men 23 
+m24 ? w24 with pref 0.45
+free girl: men 24 <- women 24 
+m25 ? w1 with pref 0.42
+m25 ? w17 with pref 0.42
+m25 ? w0 with pref 0.39
+m25 ? w16 with pref 0.39
+m25 ? w7 with pref 0.37
+girl 7 says goodbye to men 14 for men 25 
+m26 ? w1 with pref 0.26
+m26 ? w3 with pref 0.26
+girl 3 says goodbye to men 3 for men 26 
+m27 ? w9 with pref 0.17
+free girl: men 27 <- women 9 
+m28 ? w23 with pref 0.71
+free girl: men 28 <- women 23 
+m29 ? w6 with pref 0.58
+free girl: men 29 <- women 6 
+m30 ? w8 with pref 0.69
+m30 ? w10 with pref 0.69
+free girl: men 30 <- women 10 
+m31 ? w16 with pref 0.31
+m31 ? w17 with pref 0.31
+girl 17 says goodbye to men 7 for men 31 
+m0 ? w5 with pref 0.4
+m0 ? w0 with pref 0.39
+girl 0 says goodbye to men 11 for men 0 
+m2 ? w21 with pref 0.5
+m2 ? w26 with pref 0.42
+m2 ? w27 with pref 0.42
+free girl: men 2 <- women 27 
+m3 ? w19 with pref 0.52
+girl 19 says goodbye to men 16 for men 3 
+m4 ? w21 with pref 0.33
+m4 ? w22 with pref 0.29
+girl 22 says goodbye to men 5 for men 4 
+m5 ? w23 with pref 0.3
+girl 23 says goodbye to men 28 for men 5 
+m6 ? w14 with pref 0.4
+free girl: men 6 <- women 14 
+m7 ? w12 with pref 0.34
+free girl: men 7 <- women 12 
+m9 ? w19 with pref 0.5
+m9 ? w22 with pref 0.5
+m9 ? w23 with pref 0.48
+m9 ? w2 with pref 0.37
+free girl: men 9 <- women 2 
+m11 ? w1 with pref 0.2
+m11 ? w2 with pref 0.2
+m11 ? w3 with pref 0.2
+girl 3 says goodbye to men 26 for men 11 
+m14 ? w5 with pref 0.61
+m14 ? w13 with pref 0.59
+m14 ? w29 with pref 0.56
+girl 29 says goodbye to men 21 for men 14 
+m16 ? w27 with pref 0.34
+girl 27 says goodbye to men 2 for men 16 
+m21 ? w24 with pref 0.31
+girl 24 says goodbye to men 24 for men 21 
+m24 ? w25 with pref 0.45
+free girl: men 24 <- women 25 
+m26 ? w17 with pref 0.26
+m26 ? w19 with pref 0.26
+m26 ? w0 with pref 0.18
+m26 ? w2 with pref 0.18
+m26 ? w16 with pref 0.18
+m26 ? w18 with pref 0.18
+m26 ? w8 with pref 0.16
+m26 ? w9 with pref 0.16
+girl 9 says goodbye to men 27 for men 26 
+m27 ? w11 with pref 0.17
+m27 ? w13 with pref 0.17
+m27 ? w15 with pref 0.17
+free girl: men 27 <- women 15 
+m28 ? w1 with pref 0.7
+girl 1 says goodbye to men 18 for men 28 
+m2 ? w30 with pref 0.42
+free girl: men 2 <- women 30 
+m18 ? w17 with pref 0.55
 m18 ? w11 with pref 0.48
-free girl: men 18 <- women 11 
-m19 ? w1 with pref 0.61
-m19 ? w0 with pref 0.56
-m19 ? w12 with pref 0.29
-m19 ? w13 with pref 0.29
-free girl: men 19 <- women 13 
-m20 ? w19 with pref 0.51
-free girl: men 20 <- women 19 
-m21 ? w10 with pref 0.71
-girl 10 says goodbye to men 14 for men 21 
-m22 ? w0 with pref 0.43
-m22 ? w2 with pref 0.43
-m22 ? w4 with pref 0.43
-free girl: men 22 <- women 4 
-m23 ? w25 with pref 0.47
-free girl: men 23 <- women 25 
-m24 ? w11 with pref 0.47
-m24 ? w9 with pref 0.44
-free girl: men 24 <- women 9 
-m25 ? w0 with pref 0.52
-m25 ? w2 with pref 0.47
-m25 ? w6 with pref 0.47
-girl 6 says goodbye to men 11 for men 25 
-m26 ? w9 with pref 0.46
-m26 ? w25 with pref 0.46
-m26 ? w8 with pref 0.41
-m26 ? w24 with pref 0.41
-free girl: men 26 <- women 24 
-m27 ? w28 with pref 0.64
-girl 28 says goodbye to men 12 for men 27 
-m28 ? w9 with pref 0.71
-m28 ? w13 with pref 0.71
-girl 13 says goodbye to men 19 for men 28 
-m29 ? w19 with pref 0.54
-m29 ? w22 with pref 0.54
-free girl: men 29 <- women 22 
-m30 ? w3 with pref 0.48
-m30 ? w19 with pref 0.47
-m30 ? w6 with pref 0.32
-m30 ? w22 with pref 0.32
-girl 22 says goodbye to men 29 for men 30 
-m31 ? w28 with pref 0.52
-m31 ? w30 with pref 0.51
-m31 ? w29 with pref 0.38
-free girl: men 31 <- women 29 
-m8 ? w10 with pref 0.69
-m8 ? w24 with pref 0.69
-girl 24 says goodbye to men 26 for men 8 
-m10 ? w0 with pref 0.63
-m10 ? w4 with pref 0.54
-girl 4 says goodbye to men 22 for men 10 
-m11 ? w7 with pref 0.75
-free girl: men 11 <- women 7 
-m12 ? w13 with pref 0.67
-m12 ? w29 with pref 0.67
-m12 ? w20 with pref 0.53
-m12 ? w21 with pref 0.53
-free girl: men 12 <- women 21 
-m14 ? w11 with pref 0.66
-girl 11 says goodbye to men 18 for men 14 
-m18 ? w14 with pref 0.48
+m18 ? w5 with pref 0.4
 m18 ? w15 with pref 0.4
-m18 ? w26 with pref 0.34
-free girl: men 18 <- women 26 
-m19 ? w14 with pref 0.29
-m19 ? w15 with pref 0.29
-m19 ? w28 with pref 0.25
-girl 28 says goodbye to men 27 for men 19 
-m22 ? w6 with pref 0.43
-m22 ? w20 with pref 0.43
-m22 ? w22 with pref 0.43
-m22 ? w8 with pref 0.36
-m22 ? w10 with pref 0.36
-m22 ? w12 with pref 0.36
-m22 ? w14 with pref 0.36
-m22 ? w1 with pref 0.31
-m22 ? w3 with pref 0.31
-m22 ? w5 with pref 0.31
-m22 ? w7 with pref 0.31
-m22 ? w21 with pref 0.31
-m22 ? w23 with pref 0.31
-free girl: men 22 <- women 23 
-m26 ? w11 with pref 0.2
-m26 ? w27 with pref 0.2
-m26 ? w0 with pref 0.1
-m26 ? w1 with pref 0.1
-m26 ? w2 with pref 0.1
-m26 ? w3 with pref 0.1
-m26 ? w4 with pref 0.1
-m26 ? w5 with pref 0.1
-m26 ? w6 with pref 0.1
-m26 ? w7 with pref 0.1
-m26 ? w16 with pref 0.1
-free girl: men 26 <- women 16 
-m27 ? w29 with pref 0.64
-girl 29 says goodbye to men 31 for men 27 
-m29 ? w23 with pref 0.54
-girl 23 says goodbye to men 22 for men 29 
-m31 ? w31 with pref 0.38
-free girl: men 31 <- women 31 
-m22 ? w28 with pref 0.29
-girl 28 says goodbye to men 19 for men 22 
-m19 ? w29 with pref 0.25
-m19 ? w30 with pref 0.25
-m19 ? w31 with pref 0.25
-girl 31 says goodbye to men 31 for men 19 
-m31 ? w1 with pref 0.22
-m31 ? w4 with pref 0.22
-m31 ? w5 with pref 0.22
-girl 5 says goodbye to men 0 for men 31 
-m0 ? w13 with pref 0.36
-m0 ? w15 with pref 0.36
-girl 15 says goodbye to men 4 for men 0 
-m4 ? w14 with pref 0.81
-girl 14 says goodbye to men 15 for men 4 
-m15 ? w30 with pref 0.28
-m15 ? w11 with pref 0.24
-m15 ? w15 with pref 0.24
-m15 ? w31 with pref 0.24
-m15 ? w1 with pref 0.22
-m15 ? w5 with pref 0.22
-girl 5 says goodbye to men 31 for men 15 
-m31 ? w20 with pref 0.22
-m31 ? w21 with pref 0.22
-girl 21 says goodbye to men 12 for men 31 
-m12 ? w22 with pref 0.53
-girl 22 says goodbye to men 30 for men 12 
-m30 ? w7 with pref 0.31
-m30 ? w23 with pref 0.31
-m30 ? w2 with pref 0.2
-m30 ? w18 with pref 0.2
-m30 ? w30 with pref 0.19
-m30 ? w31 with pref 0.19
-m30 ? w14 with pref 0.13
-m30 ? w15 with pref 0.13
-m30 ? w8 with pref 0.1
-m30 ? w9 with pref 0.1
-girl 9 says goodbye to men 24 for men 30 
-m24 ? w10 with pref 0.25
-m24 ? w1 with pref 0.23
-m24 ? w2 with pref 0.23
-m24 ? w3 with pref 0.23
-m24 ? w17 with pref 0.23
-free girl: men 24 <- women 17 
+girl 15 says goodbye to men 27 for men 18 
+m27 ? w25 with pref 0.17
+m27 ? w27 with pref 0.17
+girl 27 says goodbye to men 16 for men 27 
+m16 ? w2 with pref 0.27
+m16 ? w18 with pref 0.27
+m16 ? w26 with pref 0.27
+girl 26 says goodbye to men 15 for men 16 
+m15 ? w24 with pref 0.47
+m15 ? w25 with pref 0.47
+girl 25 says goodbye to men 24 for men 15 
+m24 ? w28 with pref 0.45
+girl 28 says goodbye to men 12 for men 24 
+m12 ? w30 with pref 0.22
+girl 30 says goodbye to men 2 for men 12 
+m2 ? w31 with pref 0.42
+free girl: men 2 <- women 31 

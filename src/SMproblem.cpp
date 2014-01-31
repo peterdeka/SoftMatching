@@ -160,7 +160,7 @@ int SM_problem::solve_with_classicGSNext(){
 }
 
 int SM_problem::solve_with_next23(){
-	int lineariz=2;
+	int lineariz=3;
 	SoftGS softgs(NUM_INDIVIDUALS,men,women);
 	softgs.init_n23_solver(lineariz);
 	int nprops=softgs.gale_shapley_men_opt_next23(this->men_matches,lineariz);
